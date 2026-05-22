@@ -14,10 +14,12 @@ customStyles.innerHTML = `
     background-color: transparent !important;
   }
   
-  [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner {
+  /* THE SMOKING GUN: customBillboardLoading */
+  [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading {
     display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
+    pointer-events: none !important;
   }
 
   audio, video, #mpe-audio-player, .mpe-audio-player {
@@ -164,19 +166,16 @@ setInterval(() => {
       el.style.setProperty('background', 'transparent', 'important'); 
   });
 
-  // 1C. THE SPINNER ASSASSIN (Hunts SVGs and loader classes)
-  document.querySelectorAll('.mpe-loader, .spinner, [class*="media-loader"]').forEach(loader => {
+  // 1C. THE SPINNER ASSASSIN
+  document.querySelectorAll('.mpe-loader, .spinner, [class*="media-loader"], #customBillboardLoading').forEach(loader => {
         loader.style.setProperty('display', 'none', 'important');
         loader.style.setProperty('opacity', '0', 'important');
   });
   
-  // Specific SVG hunt (Original)
+  // Specific SVG hunt
   document.querySelectorAll('svg').forEach(svg => {
-    // Protect the popup X
-    if (svg.closest('.mpe-window-close, [class*="close"]')) return;
-
     const parent = svg.parentElement;
-    if (parent && window.getComputedStyle(parent).position === 'absolute' && parseInt(window.getComputedStyle(parent).zIndex) > 1000) {
+    if (parent && window.getComputedStyle(parent).position === 'absolute' && window.getComputedStyle(parent).zIndex > 1000) {
         svg.style.setProperty('display', 'none', 'important');
         svg.style.setProperty('opacity', '0', 'important');
         parent.style.setProperty('display', 'none', 'important');
@@ -184,14 +183,12 @@ setInterval(() => {
     }
   });
 
-  // Specific Matterport Circle Hunt (New)
-  document.querySelectorAll('circle').forEach(circle => {
-    if (!circle.closest('[class*="close"]')) {
-       circle.style.setProperty('display', 'none', 'important');
-       circle.style.setProperty('stroke', 'transparent', 'important');
+  // 1D. BLUE CURSOR FIX
+  [document.body, document.documentElement, ...document.querySelectorAll('canvas')].forEach(el => {
+    if (el.style.cursor === 'wait' || el.style.cursor === 'progress') {
+      el.style.removeProperty('cursor'); 
     }
   });
-
 
   // 2. THE TEXT BANNER FORMATTER
   const textElements = document.querySelectorAll('div, span, p, h1, h2, h3');
