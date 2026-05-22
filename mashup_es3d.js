@@ -43,7 +43,7 @@ function injectCustomUI() {
     audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"] { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
-    /* B&W WITH SLIGHT RED TINT START SCREEN FILTER */
+    /* START SCREEN OVERLAY (Matched to Load Screen) */
     #eye-spy-dark-overlay { 
         position: fixed !important; 
         top: 0 !important; left: 0 !important; 
@@ -63,7 +63,7 @@ function injectCustomUI() {
     #eye-spy-start-btn:hover { transform: scale(1.05) !important; }
     #eye-spy-loading-text { position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; }
     
-    /* PILL CONTROL PANEL STYLES */
+    /* CONTROL PANEL STYLES */
     #es-control-panel { 
       display: none !important; 
       position: fixed !important; 
@@ -162,7 +162,7 @@ function injectCustomUI() {
   `;
   document.body.appendChild(startUI);
 
-  // PILL CONTROL PANEL HTML (Explicit IMG tags and Tooltips)
+  // PILL CONTROL PANEL HTML 
   const panel = document.createElement('div');
   panel.id = 'es-control-panel';
   panel.innerHTML = `
@@ -189,12 +189,12 @@ function injectCustomUI() {
       <div class="es-tooltip" id="es-audio-tooltip">Mute / Unmute</div>
     </button>
 
-    <div class="es-panel-divider"></div>
+    <div class="es-panel-divider" id="es-div-next" style="opacity: 0 !important;"></div>
 
-    <button class="es-panel-btn" id="es-btn-next">
+    <button class="es-panel-btn" id="es-btn-next" style="opacity: 0 !important; pointer-events: none !important; transition: opacity 0.3s ease !important;">
       <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z'/%3E%3C/svg%3E">
-      <span>SKIP</span>
-      <div class="es-tooltip">Skip</div>
+      <span>CHEAT</span>
+      <div class="es-tooltip">Cheat</div>
     </button>
   `;
   document.body.appendChild(panel);
@@ -205,7 +205,6 @@ function injectCustomUI() {
 function startMechanics() {
   const INTRO_SWEEP = '7k4p5mu5f5eydt8h0f8cygptb'; // Sweep 30
 
-  // Removed Intro Sweep from Level 1. Level 1 starts properly at sweep 28/27
   const LEVELS = [
     { level: 1, startSweeps: ['cwckxx365uimbeqk6ngp0t5ud'], targetSweep: 'ep98q9hxumexd83q38p12k4xc', imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
     { level: 2, startSweeps: ['ep98q9hxumexd83q38p12k4xc'], targetSweep: 't3si6z3gnc6ix4qh6cgmtgnfa', imagesToFind: ['/decongestant cough elixir.jpeg', '/plastic fruit.jpeg', '/pineapple sunday.jpeg'] },
@@ -222,6 +221,10 @@ function startMechanics() {
   window.isTeleporting = false; 
   window.pathsPreloaded = false; 
   window.activeOpenPopups = new Set(); 
+  
+  // Custom tracking for UI Unlocks
+  window.hasReached28 = false;
+  window.hasReached27 = false;
 
   const targetMatchStrings = [];
   LEVELS.forEach(level => {
@@ -245,23 +248,35 @@ function startMechanics() {
       } catch(e) {}
 
       if (window.mpSdk) {
-          // Teleport out of Sweep 30 immediately to Level 1
           window.mpSdk.Sweep.moveTo(LEVELS[0].startSweeps[0], { transition: window.mpSdk.Sweep.Transition.FLY }).then(() => {
-              window.mpSdk.Sweep.disable(INTRO_SWEEP).catch(()=>{}); // Kill Sweep 30 forever
+              window.mpSdk.Sweep.disable(INTRO_SWEEP).catch(()=>{}); // Strict lock on Sweep 30
               const controls = document.getElementById('es-control-panel');
-              if (controls) controls.style.setProperty('display', 'flex', 'important');
-              updatePanelVisibility();
+              if (controls) {
+                  controls.style.setProperty('display', 'flex', 'important');
+              }
           });
       }
     });
   }
 
-  // --- UI VISIBILITY LOGIC (Back hidden on Level 1) ---
+  // --- UI VISIBILITY LOGIC ---
   function updatePanelVisibility() {
     const prevBtn = document.getElementById('es-btn-prev');
+    const nextBtn = document.getElementById('es-btn-next');
     const divPrev = document.getElementById('es-div-prev');
+    const divNext = document.getElementById('es-div-next');
     
-    if (window.currentLevelIndex > 0) {
+    // SKIP BUTTON (Unlock at Sweep 28)
+    if (window.hasReached28 || window.currentLevelIndex > 0) {
+        if (nextBtn) { nextBtn.style.setProperty('opacity', '1', 'important'); nextBtn.style.setProperty('pointer-events', 'auto', 'important'); }
+        if (divNext) divNext.style.setProperty('opacity', '1', 'important');
+    } else {
+        if (nextBtn) { nextBtn.style.setProperty('opacity', '0', 'important'); nextBtn.style.setProperty('pointer-events', 'none', 'important'); }
+        if (divNext) divNext.style.setProperty('opacity', '0', 'important');
+    }
+
+    // BACK BUTTON (Unlock at Sweep 27)
+    if (window.hasReached27 || window.currentLevelIndex > 1) {
         if (prevBtn) { prevBtn.style.setProperty('opacity', '1', 'important'); prevBtn.style.setProperty('pointer-events', 'auto', 'important'); }
         if (divPrev) divPrev.style.setProperty('opacity', '1', 'important');
     } else {
@@ -304,6 +319,8 @@ function startMechanics() {
   });
 
   document.getElementById('es-btn-prev').addEventListener('click', () => {
+      // Prevents returning to Sweep 30. Level 1 starts at array index 0. 
+      // If we are at index 0, we are at Sweep 28/27. We cannot go back further.
       if (window.currentLevelIndex <= 0 || window.isTeleporting) return;
       
       window.globalSfx.pause();
@@ -336,7 +353,7 @@ function startMechanics() {
     return Object.values(window.foundImages).every(status => status === true);
   }
 
-  // --- VISUAL HUNTER (NO DIVS - FIXES LEVEL 5 LAG) ---
+  // --- VISUAL HUNTER (NO DIVS) ---
   setInterval(() => {
     document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
       if (btn.getBoundingClientRect().bottom > window.innerHeight - 100) { btn.style.setProperty('display', 'none', 'important'); btn.style.setProperty('opacity', '0', 'important'); }
@@ -346,7 +363,7 @@ function startMechanics() {
         el.style.setProperty('filter', 'none', 'important'); el.style.setProperty('-webkit-filter', 'none', 'important'); el.style.setProperty('backdrop-filter', 'none', 'important'); el.style.setProperty('-webkit-backdrop-filter', 'none', 'important'); el.style.setProperty('background', 'transparent', 'important'); 
     });
 
-    const textElements = document.querySelectorAll('span, p, h1, h2, h3, h4, h5, strong, em');
+    const textElements = document.querySelectorAll('span, p, h1, h2, h3');
     textElements.forEach(el => {
       if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
         const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -452,8 +469,12 @@ function startMechanics() {
     const welcomeBlock = document.getElementById('eye-spy-welcome-block');
     if (welcomeBlock) welcomeBlock.style.display = "flex";
 
-    // Play Clue audio upon entering a new sweep
+    // Ambient Audio Reset and Unlocks
     mpSdk.on(mpSdk.Sweep.Event.ENTER, function(sweepId) {
+        if (sweepId === '28') window.hasReached28 = true;
+        if (sweepId === '27') window.hasReached27 = true;
+        updatePanelVisibility();
+
         setTimeout(() => {
             document.querySelectorAll('audio, video').forEach(media => {
                 media.currentTime = 0;
@@ -462,7 +483,6 @@ function startMechanics() {
         }, 500); 
     });
 
-    // Kill audio immediately when leaving a sweep
     mpSdk.on(mpSdk.Sweep.Event.EXIT, function(fromSweep) {
       document.querySelectorAll('audio, video').forEach(media => {
           media.pause();
