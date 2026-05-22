@@ -44,7 +44,17 @@ function injectCustomUI() {
     audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"] { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
-    #eye-spy-dark-overlay { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0, 0, 0, 0.75) !important; z-index: 2147483645 !important; }
+    /* SEPIA/B&W START SCREEN FILTER */
+    #eye-spy-dark-overlay { 
+        position: fixed !important; 
+        top: 0 !important; left: 0 !important; 
+        width: 100vw !important; height: 100vh !important; 
+        background: rgba(0, 0, 0, 0.3) !important; 
+        backdrop-filter: grayscale(100%) sepia(30%) !important;
+        -webkit-backdrop-filter: grayscale(100%) sepia(30%) !important;
+        z-index: 2147483645 !important; 
+    }
+
     #eye-spy-image-cover { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/ES3D_load%20screen%20omni.png') !important; background-size: cover !important; background-position: center !important; z-index: 2147483646 !important; }
     #eye-spy-image-cover::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: inherit; background-size: contain !important; background-repeat: no-repeat !important; background-position: center !important; backdrop-filter: blur(15px); background-color: rgba(0,0,0,0.4); }
     #eye-spy-start-ui { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483647 !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; }
@@ -54,18 +64,16 @@ function injectCustomUI() {
     #eye-spy-start-btn:hover { transform: scale(1.05) !important; }
     #eye-spy-loading-text { position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; }
     
-    /* PILL CONTROL PANEL STYLES */
+    /* PILL CONTROL PANEL STYLES - FIXED DIMENSIONS */
     #es-control-panel { 
       display: none !important; 
       position: fixed !important; 
       bottom: 15px !important; 
       left: 15px !important; 
-      width: auto !important; 
-      min-width: 50px !important;
+      width: 220px !important; 
       height: 50px !important; 
       align-items: center !important; 
-      justify-content: center !important;
-      gap: 15px !important;
+      justify-content: space-between !important;
       background: #1c1c1c !important; 
       padding: 0 25px !important; 
       border-radius: 25px !important; 
@@ -73,7 +81,6 @@ function injectCustomUI() {
       z-index: 2147483647 !important; 
       border: 2px solid #333 !important; 
       box-sizing: border-box !important;
-      transition: width 0.3s ease !important;
     }
     .es-panel-btn { 
       background: transparent !important; 
@@ -117,7 +124,7 @@ function injectCustomUI() {
   `;
   document.body.appendChild(startUI);
 
-  // PILL CONTROL PANEL HTML (Buttons hidden by default via JS later)
+  // PILL CONTROL PANEL HTML 
   const panel = document.createElement('div');
   panel.id = 'es-control-panel';
   panel.innerHTML = `
@@ -179,7 +186,7 @@ function startMechanics() {
     level.imagesToFind.forEach(img => targetMatchStrings.push(img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', '')));
   });
 
-  // --- VISUAL HUNTER (Optimized text scan) ---
+  // --- VISUAL HUNTER ---
   setInterval(() => {
     document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
       if (btn.getBoundingClientRect().bottom > window.innerHeight - 100) { btn.style.setProperty('display', 'none', 'important'); btn.style.setProperty('opacity', '0', 'important'); }
@@ -206,22 +213,20 @@ function startMechanics() {
     });
   }, 250); 
 
-  // --- UI VISIBILITY LOGIC ---
+  // --- UI VISIBILITY LOGIC (Maintains 220px width) ---
   function updatePanelVisibility() {
     const prevBtn = document.getElementById('es-btn-prev');
     const nextBtn = document.getElementById('es-btn-next');
     const dividers = document.querySelectorAll('.es-panel-divider');
     
     if (window.currentLevelIndex > 0) {
-        // We have passed level 1, show skip buttons
-        if (prevBtn) prevBtn.style.setProperty('display', 'flex', 'important');
-        if (nextBtn) nextBtn.style.setProperty('display', 'flex', 'important');
-        dividers.forEach(d => d.style.setProperty('display', 'block', 'important'));
+        if (prevBtn) { prevBtn.style.setProperty('visibility', 'visible', 'important'); prevBtn.style.setProperty('pointer-events', 'auto', 'important'); }
+        if (nextBtn) { nextBtn.style.setProperty('visibility', 'visible', 'important'); nextBtn.style.setProperty('pointer-events', 'auto', 'important'); }
+        dividers.forEach(d => d.style.setProperty('visibility', 'visible', 'important'));
     } else {
-        // Level 1: Hide skips, show only Audio button
-        if (prevBtn) prevBtn.style.setProperty('display', 'none', 'important');
-        if (nextBtn) nextBtn.style.setProperty('display', 'none', 'important');
-        dividers.forEach(d => d.style.setProperty('display', 'none', 'important'));
+        if (prevBtn) { prevBtn.style.setProperty('visibility', 'hidden', 'important'); prevBtn.style.setProperty('pointer-events', 'none', 'important'); }
+        if (nextBtn) { nextBtn.style.setProperty('visibility', 'hidden', 'important'); nextBtn.style.setProperty('pointer-events', 'none', 'important'); }
+        dividers.forEach(d => d.style.setProperty('visibility', 'hidden', 'important'));
     }
   }
 
@@ -254,7 +259,7 @@ function startMechanics() {
           window.mpSdk.Sweep.moveTo(pLevel.startSweeps[0], { transition: window.mpSdk.Sweep.Transition.INSTANT }).then(() => {
               setupLevelTracking();
               lockMapForCurrentLevel(window.mpSdk);
-              updatePanelVisibility(); // Hide buttons if we went back to level 1
+              updatePanelVisibility(); 
           });
       });
   });
@@ -272,7 +277,7 @@ function startMechanics() {
     return Object.values(window.foundImages).every(status => status === true);
   }
 
-  // --- OPTIMIZED TRIPWIRE ---
+  // --- OPTIMIZED TRIPWIRE WITH INFINITE AUDIO REPLAY ---
   const observer = new MutationObserver((mutations) => {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel) return; 
@@ -291,11 +296,18 @@ function startMechanics() {
             const encodedName = encodeURI(filename).toLowerCase();
             
             if (searchString.includes(cleanName) || searchString.includes(encodedName)) {
-              if (!window.foundImages[filename]) {
+              
+              // Infinite Audio Replay Logic
+              if (!window.activeOpenPopups.has(filename)) {
                 playItemSound(filename); 
+                window.activeOpenPopups.add(filename); 
               }
-              window.activeOpenPopups.add(filename); 
-              window.foundImages[filename] = true;
+
+              // Found Item Tracking Logic
+              if (!window.foundImages[filename]) {
+                 console.log(`🎯 [Escape Room] Found: ${filename}`);
+                 window.foundImages[filename] = true;
+              }
               
               if (checkAllFound() && !window.pathsPreloaded) {
                 window.pathsPreloaded = true;
@@ -357,7 +369,6 @@ function startMechanics() {
     const welcomeBlock = document.getElementById('eye-spy-welcome-block');
     if (welcomeBlock) welcomeBlock.style.display = "flex";
 
-    // Reveal UI Controls once map is loaded
     const controls = document.getElementById('es-control-panel');
     if (controls) {
       controls.style.setProperty('display', 'flex', 'important');
@@ -365,7 +376,6 @@ function startMechanics() {
     }
 
     mpSdk.on(mpSdk.Sweep.Event.ENTER, function(sweepId) {
-      // Hardcode safeguard: if they manually navigate to sweep 28, show skip buttons
       if (sweepId === '28' && window.currentLevelIndex === 0) {
          window.currentLevelIndex = 1;
          updatePanelVisibility();
@@ -398,7 +408,7 @@ function startMechanics() {
       
       if (LEVELS[window.currentLevelIndex]) {
           setupLevelTracking(); 
-          updatePanelVisibility(); // Expand the pill here!
+          updatePanelVisibility(); 
       } else {
           const controls = document.getElementById('es-control-panel');
           if (controls) controls.remove();
