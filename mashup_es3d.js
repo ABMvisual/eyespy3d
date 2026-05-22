@@ -14,10 +14,12 @@ customStyles.innerHTML = `
     background-color: transparent !important;
   }
   
-  [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner {
+  /* TARGETED ASSASSINATION: The White Circle is an image file! */
+  [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, img[src*="loader.svg"] {
     display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
+    pointer-events: none !important;
   }
 
   audio, video, #mpe-audio-player, .mpe-audio-player {
@@ -56,6 +58,7 @@ customStyles.innerHTML = `
     padding: 0 !important;
   }
   
+  /* Default button state is LOCKED to prevent crash */
   #eye-spy-start-btn {
     padding: 16px 32px !important; 
     font-size: 20px !important; 
@@ -64,11 +67,19 @@ customStyles.innerHTML = `
     color: #000 !important; 
     border: none !important; 
     border-radius: 8px !important;
-    cursor: pointer !important; 
+    cursor: wait !important; 
     transition: transform 0.2s ease !important;
+    opacity: 0.5 !important;
+    pointer-events: none !important;
   }
   
-  #eye-spy-start-btn:hover { 
+  #eye-spy-start-btn.ready { 
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+  }
+
+  #eye-spy-start-btn.ready:hover { 
     transform: scale(1.05) !important; 
   }
 `;
@@ -80,7 +91,7 @@ startScreen.id = 'eye-spy-start-screen';
 startScreen.innerHTML = `
   <h1 style="margin-bottom: 15px; text-align: center; font-size: 32px; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Welcome to Eye Spy 3D</h1>
   <p style="margin-bottom: 40px; font-size: 18px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Audio is required for this experience.</p>
-  <button id="eye-spy-start-btn">Start Experience</button>
+  <button id="eye-spy-start-btn">Loading 3D Experience...</button>
 `;
 document.body.appendChild(startScreen);
 
@@ -163,25 +174,7 @@ setInterval(() => {
       el.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
       el.style.setProperty('background', 'transparent', 'important'); 
   });
-
-  // 1C. THE SPINNER ASSASSIN (Hunts SVGs and loader classes)
-  document.querySelectorAll('.mpe-loader, .spinner, [class*="media-loader"]').forEach(loader => {
-        loader.style.setProperty('display', 'none', 'important');
-        loader.style.setProperty('opacity', '0', 'important');
-  });
   
-  // Specific SVG hunt
-  document.querySelectorAll('svg').forEach(svg => {
-    const parent = svg.parentElement;
-    if (parent && window.getComputedStyle(parent).position === 'absolute' && window.getComputedStyle(parent).zIndex > 1000) {
-        svg.style.setProperty('display', 'none', 'important');
-        svg.style.setProperty('opacity', '0', 'important');
-        parent.style.setProperty('display', 'none', 'important');
-        parent.style.setProperty('background', 'transparent', 'important');
-    }
-  });
-
-
   // 2. THE TEXT BANNER FORMATTER
   const textElements = document.querySelectorAll('div, span, p, h1, h2, h3');
   
@@ -371,10 +364,29 @@ async function executeFastTeleport(mpSdk, levelData) {
   }
 }
 
-// Boot-up
+// --- 6. SMART LOCK BOOT-UP ---
+// Prevents the user from starting the game and crashing the intro fly-in
+let gameInitialized = false;
 let checkSdkInterval = setInterval(function() {
-  if (window.mpSdk && window.mpSdk.Sweep) {
+  if (window.mpSdk && window.mpSdk.Sweep && window.mpSdk.App) {
     clearInterval(checkSdkInterval); 
-    initMashupLogic(window.mpSdk);
+    
+    // Subscribe to the Matterport Application State
+    window.mpSdk.App.state.subscribe(function(appState) {
+      // Wait strictly until the intro sequence is finished and we are PLAYING
+      if (appState.phase === window.mpSdk.App.Phase.PLAYING && !gameInitialized) {
+        gameInitialized = true;
+        
+        // The camera has safely landed. Unlock the Start Button.
+        const startBtn = document.getElementById('eye-spy-start-btn');
+        if (startBtn) {
+            startBtn.innerText = "Start Experience";
+            startBtn.classList.add('ready');
+        }
+        
+        // Safely lock the doors without WebGL panicking
+        initMashupLogic(window.mpSdk);
+      }
+    });
   }
 }, 500);
