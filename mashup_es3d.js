@@ -44,14 +44,14 @@ function injectCustomUI() {
     audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"] { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
-    /* DUOCHROME SEPIA START SCREEN FILTER */
+    /* B&W/SLIGHT RED TINT START SCREEN FILTER */
     #eye-spy-dark-overlay { 
         position: fixed !important; 
         top: 0 !important; left: 0 !important; 
         width: 100vw !important; height: 100vh !important; 
-        background: rgba(90, 60, 30, 0.3) !important; 
-        backdrop-filter: sepia(100%) contrast(110%) brightness(85%) hue-rotate(-5deg) !important;
-        -webkit-backdrop-filter: sepia(100%) contrast(110%) brightness(85%) hue-rotate(-5deg) !important;
+        background: rgba(25, 5, 5, 0.5) !important; 
+        backdrop-filter: grayscale(90%) sepia(10%) contrast(110%) brightness(95%) !important;
+        -webkit-backdrop-filter: grayscale(90%) sepia(10%) contrast(110%) brightness(95%) !important;
         z-index: 2147483645 !important; 
     }
 
@@ -64,7 +64,7 @@ function injectCustomUI() {
     #eye-spy-start-btn:hover { transform: scale(1.05) !important; }
     #eye-spy-loading-text { position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; }
     
-    /* PILL CONTROL PANEL STYLES - 4 BUTTONS */
+    /* PILL CONTROL PANEL STYLES */
     #es-control-panel { 
       display: none !important; 
       position: fixed !important; 
@@ -95,31 +95,53 @@ function injectCustomUI() {
       transition: transform 0.2s ease, background 0.2s ease !important; 
       width: 60px !important;
       gap: 3px !important;
+      position: relative !important;
     }
     .es-panel-btn:hover { 
       transform: scale(1.1) !important; 
       background: rgba(204, 255, 0, 0.1) !important; 
     }
-    
-    /* BULLETPROOF SVG BACKGROUND ICONS */
-    .es-icon-prev { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 22px; height: 22px; }
-    .es-icon-clue { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.69l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 22px; height: 22px; }
-    .es-icon-unmute { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 24px; height: 24px; }
-    .es-icon-mute { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 24px; height: 24px; display: none; }
-    .es-icon-next { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 22px; height: 22px; }
-
+    .es-panel-btn img {
+      width: 24px !important;
+      height: 24px !important;
+      pointer-events: none !important;
+    }
     .es-panel-btn span {
       font-size: 10px !important;
       font-weight: bold !important;
       color: #CCFF00 !important;
       letter-spacing: 0.5px !important;
       font-family: sans-serif !important;
+      pointer-events: none !important;
     }
     .es-panel-divider { 
       width: 2px !important; 
       height: 30px !important; 
       background: #444 !important; 
       border-radius: 2px !important; 
+      transition: opacity 0.3s ease !important;
+    }
+
+    /* CUSTOM CSS TOOLTIPS */
+    .es-tooltip {
+      position: absolute !important;
+      top: -35px !important;
+      background: rgba(0,0,0,0.9) !important;
+      color: #fff !important;
+      padding: 4px 8px !important;
+      border-radius: 4px !important;
+      font-size: 12px !important;
+      font-weight: normal !important;
+      font-family: sans-serif !important;
+      white-space: nowrap !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transition: opacity 0.2s ease !important;
+      z-index: 999999 !important;
+      border: 1px solid #444 !important;
+    }
+    .es-panel-btn:hover .es-tooltip {
+      opacity: 1 !important;
     }
 
     @keyframes eye-spy-fade { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
@@ -140,35 +162,39 @@ function injectCustomUI() {
   `;
   document.body.appendChild(startUI);
 
-  // PILL CONTROL PANEL HTML (Panel is fully hidden on start screen)
+  // PILL CONTROL PANEL HTML 
   const panel = document.createElement('div');
   panel.id = 'es-control-panel';
   panel.innerHTML = `
-    <button class="es-panel-btn" id="es-btn-prev" title="Back">
-      <div class="es-icon-prev"></div>
+    <button class="es-panel-btn" id="es-btn-prev" style="opacity: 0 !important; pointer-events: none !important; transition: opacity 0.3s ease !important;">
+      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z'/%3E%3C/svg%3E">
       <span>BACK</span>
+      <div class="es-tooltip">Back</div>
     </button>
     
-    <div class="es-panel-divider"></div>
+    <div class="es-panel-divider" id="es-div-prev" style="opacity: 0 !important;"></div>
 
-    <button class="es-panel-btn" id="es-btn-clue" title="Replay Clue">
-      <div class="es-icon-clue"></div>
+    <button class="es-panel-btn" id="es-btn-clue">
+      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z'/%3E%3C/svg%3E">
       <span>CLUE</span>
+      <div class="es-tooltip">Replay Clue</div>
     </button>
 
     <div class="es-panel-divider"></div>
     
-    <button class="es-panel-btn" id="es-btn-audio" title="Mute / Unmute">
-      <div class="es-icon-unmute" id="es-svg-unmute"></div>
-      <div class="es-icon-mute" id="es-svg-mute"></div>
+    <button class="es-panel-btn" id="es-btn-audio">
+      <img id="es-img-unmute" src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E">
+      <img id="es-img-mute" style="display:none !important;" src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E">
       <span id="es-audio-label">MUTE</span>
+      <div class="es-tooltip" id="es-audio-tooltip">Mute</div>
     </button>
 
-    <div class="es-panel-divider"></div>
+    <div class="es-panel-divider" id="es-div-next" style="opacity: 0 !important;"></div>
 
-    <button class="es-panel-btn" id="es-btn-next" title="Skip">
-      <div class="es-icon-next"></div>
+    <button class="es-panel-btn" id="es-btn-next" style="opacity: 0 !important; pointer-events: none !important; transition: opacity 0.3s ease !important;">
+      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z'/%3E%3C/svg%3E">
       <span>SKIP</span>
+      <div class="es-tooltip">Skip</div>
     </button>
   `;
   document.body.appendChild(panel);
@@ -193,13 +219,17 @@ function startMechanics() {
   window.isTeleporting = false; 
   window.pathsPreloaded = false; 
   window.activeOpenPopups = new Set(); 
+  
+  // Custom tracking for Level 1 unlocks
+  window.hasReached28 = false;
+  window.hasReached27 = false;
 
   const targetMatchStrings = [];
   LEVELS.forEach(level => {
     level.imagesToFind.forEach(img => targetMatchStrings.push(img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', '')));
   });
 
-  // --- START BUTTON LOGIC (TELEPORTS DIRECTLY TO LEVEL 1) ---
+  // --- START BUTTON LOGIC ---
   const startBtn = document.getElementById('eye-spy-start-btn');
   if(startBtn) {
     startBtn.addEventListener('click', () => {
@@ -215,10 +245,8 @@ function startMechanics() {
           window.globalChime.play().then(() => { window.globalChime.pause(); window.globalChime.volume = 1; window.globalChime.currentTime = 0; }).catch(()=>{});
       } catch(e) {}
 
-      // Teleport to Level 1 instantly
       if (window.mpSdk) {
           window.mpSdk.Sweep.moveTo(LEVELS[0].startSweeps[0], { transition: window.mpSdk.Sweep.Transition.FLY }).then(() => {
-              // Reveal Panel with all buttons AFTER start is clicked
               const controls = document.getElementById('es-control-panel');
               if (controls) controls.style.setProperty('display', 'flex', 'important');
           });
@@ -226,7 +254,100 @@ function startMechanics() {
     });
   }
 
-  // --- VISUAL HUNTER (RESTORED DIV CHECKER) ---
+  // --- UI VISIBILITY LOGIC ---
+  function updatePanelVisibility() {
+    const prevBtn = document.getElementById('es-btn-prev');
+    const nextBtn = document.getElementById('es-btn-next');
+    const divPrev = document.getElementById('es-div-prev');
+    const divNext = document.getElementById('es-div-next');
+    
+    // SKIP BUTTON (Appears at Sweep 28)
+    if (window.currentLevelIndex > 0 || window.hasReached28) {
+        if (nextBtn) { nextBtn.style.setProperty('opacity', '1', 'important'); nextBtn.style.setProperty('pointer-events', 'auto', 'important'); }
+        if (divNext) divNext.style.setProperty('opacity', '1', 'important');
+    } else {
+        if (nextBtn) { nextBtn.style.setProperty('opacity', '0', 'important'); nextBtn.style.setProperty('pointer-events', 'none', 'important'); }
+        if (divNext) divNext.style.setProperty('opacity', '0', 'important');
+    }
+
+    // BACK BUTTON (Appears at Sweep 27)
+    if (window.currentLevelIndex > 0 || window.hasReached27) {
+        if (prevBtn) { prevBtn.style.setProperty('opacity', '1', 'important'); prevBtn.style.setProperty('pointer-events', 'auto', 'important'); }
+        if (divPrev) divPrev.style.setProperty('opacity', '1', 'important');
+    } else {
+        if (prevBtn) { prevBtn.style.setProperty('opacity', '0', 'important'); prevBtn.style.setProperty('pointer-events', 'none', 'important'); }
+        if (divPrev) divPrev.style.setProperty('opacity', '0', 'important');
+    }
+  }
+
+  // --- BUTTON LOGIC ---
+  let isMuted = false;
+  document.getElementById('es-btn-audio').addEventListener('click', () => {
+      isMuted = !isMuted;
+      window.globalSfx.muted = isMuted;
+      window.globalChime.muted = isMuted;
+      document.getElementById('es-img-unmute').style.setProperty('display', isMuted ? 'none' : 'block', 'important');
+      document.getElementById('es-img-mute').style.setProperty('display', isMuted ? 'block' : 'none', 'important');
+      document.getElementById('es-audio-label').innerText = isMuted ? 'UNMUTE' : 'MUTE';
+      document.getElementById('es-audio-tooltip').innerText = isMuted ? 'Unmute' : 'Mute';
+      
+      document.querySelectorAll('audio, video').forEach(media => { media.muted = isMuted; });
+  });
+
+  document.getElementById('es-btn-clue').addEventListener('click', () => {
+      document.querySelectorAll('audio, video').forEach(media => {
+          media.currentTime = 0;
+          media.play().catch(()=>{});
+      });
+  });
+
+  document.getElementById('es-btn-next').addEventListener('click', () => {
+      const cLevel = LEVELS[window.currentLevelIndex];
+      if (cLevel && window.mpSdk && !window.isTeleporting) {
+          window.globalSfx.pause();
+          window.globalSfx.currentTime = 0;
+          window.activeOpenPopups.clear();
+          
+          cLevel.imagesToFind.forEach(img => window.foundImages[img] = true);
+          executeFastTeleport(window.mpSdk, cLevel);
+      }
+  });
+
+  document.getElementById('es-btn-prev').addEventListener('click', () => {
+      // Hard block preventing return to Sweep 30
+      if (window.currentLevelIndex <= 0 || window.isTeleporting) return;
+      
+      window.globalSfx.pause();
+      window.globalSfx.currentTime = 0;
+      window.activeOpenPopups.clear();
+
+      window.isTeleporting = true;
+      window.currentLevelIndex--;
+      const pLevel = LEVELS[window.currentLevelIndex];
+
+      window.mpSdk.Sweep.enable(...pLevel.startSweeps).then(() => {
+          window.mpSdk.Sweep.moveTo(pLevel.startSweeps[0], { transition: window.mpSdk.Sweep.Transition.INSTANT }).then(() => {
+              setupLevelTracking();
+              lockMapForCurrentLevel(window.mpSdk);
+              updatePanelVisibility();
+          });
+      });
+  });
+
+  function setupLevelTracking() {
+    window.foundImages = {};
+    const currentLevel = LEVELS[window.currentLevelIndex];
+    if (currentLevel) currentLevel.imagesToFind.forEach(image => window.foundImages[image] = false);
+    window.isTeleporting = false;
+    window.pathsPreloaded = false;
+    window.activeOpenPopups.clear();
+  }
+
+  function checkAllFound() {
+    return Object.values(window.foundImages).every(status => status === true);
+  }
+
+  // --- VISUAL HUNTER ---
   setInterval(() => {
     document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
       if (btn.getBoundingClientRect().bottom > window.innerHeight - 100) { btn.style.setProperty('display', 'none', 'important'); btn.style.setProperty('opacity', '0', 'important'); }
@@ -252,73 +373,6 @@ function startMechanics() {
       }
     });
   }, 250); 
-
-  // --- BUTTON LOGIC ---
-  let isMuted = false;
-  document.getElementById('es-btn-audio').addEventListener('click', () => {
-      isMuted = !isMuted;
-      window.globalSfx.muted = isMuted;
-      window.globalChime.muted = isMuted;
-      document.getElementById('es-svg-unmute').style.display = isMuted ? 'none' : 'block';
-      document.getElementById('es-svg-mute').style.display = isMuted ? 'block' : 'none';
-      document.getElementById('es-audio-label').innerText = isMuted ? 'UNMUTE' : 'MUTE';
-      
-      // Mute hidden MPEmbed ambient player
-      document.querySelectorAll('audio, video').forEach(media => { media.muted = isMuted; });
-  });
-
-  // CLUE REPLAY BUTTON (Replays hidden MPEmbed sweep audio)
-  document.getElementById('es-btn-clue').addEventListener('click', () => {
-      document.querySelectorAll('audio, video').forEach(media => {
-          media.currentTime = 0;
-          media.play().catch(()=>{});
-      });
-  });
-
-  document.getElementById('es-btn-next').addEventListener('click', () => {
-      const cLevel = LEVELS[window.currentLevelIndex];
-      if (cLevel && window.mpSdk && !window.isTeleporting) {
-          window.globalSfx.pause();
-          window.globalSfx.currentTime = 0;
-          window.activeOpenPopups.clear();
-          
-          cLevel.imagesToFind.forEach(img => window.foundImages[img] = true);
-          executeFastTeleport(window.mpSdk, cLevel);
-      }
-  });
-
-  document.getElementById('es-btn-prev').addEventListener('click', () => {
-      // Locked out of Sweep 30 (Level 1). Doing nothing if on Level 1.
-      if (window.currentLevelIndex <= 0 || window.isTeleporting) return;
-      
-      window.globalSfx.pause();
-      window.globalSfx.currentTime = 0;
-      window.activeOpenPopups.clear();
-
-      window.isTeleporting = true;
-      window.currentLevelIndex--;
-      const pLevel = LEVELS[window.currentLevelIndex];
-
-      window.mpSdk.Sweep.enable(...pLevel.startSweeps).then(() => {
-          window.mpSdk.Sweep.moveTo(pLevel.startSweeps[0], { transition: window.mpSdk.Sweep.Transition.INSTANT }).then(() => {
-              setupLevelTracking();
-              lockMapForCurrentLevel(window.mpSdk);
-          });
-      });
-  });
-
-  function setupLevelTracking() {
-    window.foundImages = {};
-    const currentLevel = LEVELS[window.currentLevelIndex];
-    if (currentLevel) currentLevel.imagesToFind.forEach(image => window.foundImages[image] = false);
-    window.isTeleporting = false;
-    window.pathsPreloaded = false;
-    window.activeOpenPopups.clear();
-  }
-
-  function checkAllFound() {
-    return Object.values(window.foundImages).every(status => status === true);
-  }
 
   // --- TRIPWIRE ---
   const observer = new MutationObserver((mutations) => {
@@ -409,17 +463,20 @@ function startMechanics() {
     const welcomeBlock = document.getElementById('eye-spy-welcome-block');
     if (welcomeBlock) welcomeBlock.style.display = "flex";
 
-    // GLOBAL MPEmbed Audio Override (Forces replay when entering sweeps)
     mpSdk.on(mpSdk.Sweep.Event.ENTER, function(sweepId) {
-        setTimeout(() => {
-            document.querySelectorAll('audio, video').forEach(media => {
-                media.currentTime = 0;
-                media.play().catch(()=>{});
-            });
-        }, 800); // Give MPEmbed a fraction of a second to load the track
+        if (window.currentLevelIndex === 0) {
+            if (sweepId === '28') window.hasReached28 = true;
+            if (sweepId === '27') window.hasReached27 = true;
+        }
+        updatePanelVisibility();
     });
 
     mpSdk.on(mpSdk.Sweep.Event.EXIT, function(fromSweep) {
+      document.querySelectorAll('audio, video').forEach(media => {
+          media.pause();
+          media.currentTime = 0;
+      });
+        
       const cLevel = LEVELS[window.currentLevelIndex];
       if (cLevel && cLevel.startSweeps.includes(fromSweep)) { mpSdk.Sweep.disable(fromSweep).catch(() => {}); }
     });
@@ -445,6 +502,7 @@ function startMechanics() {
       
       if (LEVELS[window.currentLevelIndex]) {
           setupLevelTracking(); 
+          updatePanelVisibility();
       } else {
           const controls = document.getElementById('es-control-panel');
           if (controls) controls.remove();
