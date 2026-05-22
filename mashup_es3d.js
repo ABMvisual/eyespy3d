@@ -14,12 +14,10 @@ customStyles.innerHTML = `
     background-color: transparent !important;
   }
   
-  /* THE SMOKING GUN: customBillboardLoading */
-  [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading {
+  [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner {
     display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
-    pointer-events: none !important;
   }
 
   audio, video, #mpe-audio-player, .mpe-audio-player {
@@ -166,8 +164,8 @@ setInterval(() => {
       el.style.setProperty('background', 'transparent', 'important'); 
   });
 
-  // 1C. THE SPINNER ASSASSIN
-  document.querySelectorAll('.mpe-loader, .spinner, [class*="media-loader"], #customBillboardLoading').forEach(loader => {
+  // 1C. THE SPINNER ASSASSIN (Hunts SVGs and loader classes)
+  document.querySelectorAll('.mpe-loader, .spinner, [class*="media-loader"]').forEach(loader => {
         loader.style.setProperty('display', 'none', 'important');
         loader.style.setProperty('opacity', '0', 'important');
   });
@@ -183,12 +181,6 @@ setInterval(() => {
     }
   });
 
-  // 1D. BLUE CURSOR FIX
-  [document.body, document.documentElement, ...document.querySelectorAll('canvas')].forEach(el => {
-    if (el.style.cursor === 'wait' || el.style.cursor === 'progress') {
-      el.style.removeProperty('cursor'); 
-    }
-  });
 
   // 2. THE TEXT BANNER FORMATTER
   const textElements = document.querySelectorAll('div, span, p, h1, h2, h3');
@@ -226,6 +218,39 @@ setInterval(() => {
     }
   });
 }, 250); 
+
+
+// --- 1.75 NEW: THE IFRAME TROJAN HORSE ---
+// Sneaks across the border into Matterport's native document to assassinate its internal spinners
+setInterval(() => {
+  try {
+    const iframe = document.querySelector('iframe#showcase');
+    // If the browser security allows us to access the inside of the iframe...
+    if (iframe && iframe.contentDocument) {
+      const iDoc = iframe.contentDocument;
+      
+      // Inject our hit-list directly into Matterport's brain
+      if (!iDoc.getElementById('kill-native-spinners')) {
+        const style = iDoc.createElement('style');
+        style.id = 'kill-native-spinners';
+        style.innerHTML = `
+          /* Nukes Matterport's native WebGL/HTML loading circles and blue reticles */
+          [class*="spinner"], [class*="loader"], .mp-spinner, .loading-spinner, circle[stroke-width] {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            stroke: transparent !important;
+            animation: none !important;
+          }
+        `;
+        iDoc.head.appendChild(style);
+        console.log("Trojan Horse successfully deployed into Matterport iframe.");
+      }
+    }
+  } catch(e) {
+    // Fails silently if strict Cross-Origin bounds block us
+  }
+}, 1000);
 
 
 // --- 2. GLOBAL STATE TRACKING ---
