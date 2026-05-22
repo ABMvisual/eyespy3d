@@ -1,4 +1,3 @@
-
 // --- 0. START SCREEN, AUDIO UI NUKE & GLOBAL CSS ---
 const customStyles = document.createElement('style');
 customStyles.innerHTML = `
@@ -8,11 +7,20 @@ customStyles.innerHTML = `
     -webkit-backdrop-filter: none !important;
   }
 
+  /* DESTROY THE INVISIBLE GLASS SHIELD */
   [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay {
     filter: none !important;
     -webkit-filter: none !important;
     background: transparent !important;
     background-color: transparent !important;
+    pointer-events: none !important; /* Lets your mouse clicks pass THROUGH the overlay to the polygons */
+  }
+  
+  /* KILL THE LOADING BLOCKER */
+  #mpe-loading, .mpe-loading, .mpe-busy, [class*="busy"], [id*="busy"] {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 
   audio, video, #mpe-audio-player, .mpe-audio-player {
@@ -29,17 +37,18 @@ customStyles.innerHTML = `
     top: 25px !important; /* Pushes it down into the banner */
     opacity: 1 !important;
     visibility: visible !important;
+    pointer-events: auto !important; /* Forces the X to remain clickable even though the overlay is not */
     z-index: 99999 !important;
   }
 
   /* 3. SURGICAL SPINNER ASSASSIN (CSS) */
-  /* Instantly hides the white loading circles, but PROTECTS the 'X' button */
   circle:not(.mpe-window-close circle):not(.mpe-popup-close circle):not([class*="close"] circle),
   [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner {
     display: none !important;
     opacity: 0 !important;
     stroke: transparent !important;
     animation: none !important;
+    pointer-events: none !important;
   }
 
   /* 4. Isolated Start Screen Styling */
@@ -141,7 +150,7 @@ const LEVELS = [
   }
 ];
 
-// --- 1.5. THE VISUAL HUNTER ---
+// --- 1.5. THE VISUAL HUNTER (Force Overwrites MPEmbed Layout) ---
 const targetMatchStrings = [];
 LEVELS.forEach(level => {
   level.imagesToFind.forEach(img => {
@@ -160,12 +169,13 @@ setInterval(() => {
     }
   });
 
-  // B. THE BLUR STRIPPER
+  // B. THE SHATTERED GLASS PROTOCOL
   document.querySelectorAll('div').forEach(el => {
     if (el.style.filter && el.style.filter.includes('blur')) {
       el.style.setProperty('filter', 'none', 'important');
       el.style.setProperty('-webkit-filter', 'none', 'important');
       el.style.setProperty('background', 'transparent', 'important'); 
+      el.style.setProperty('pointer-events', 'none', 'important'); // Stops it from blocking clicks
     }
     if (el.style.backdropFilter) {
       el.style.setProperty('backdrop-filter', 'none', 'important');
@@ -173,20 +183,36 @@ setInterval(() => {
     }
   });
 
-  // C. THE BLUE CURSOR ASSASSIN
-  // Reverts MPEmbed's "loading" mouse cursor back to normal so you don't see the blue wheel.
+  // C. THE SVG BLOCKER ASSASSIN (Dynamic)
+  document.querySelectorAll('svg, circle, path').forEach(el => {
+    if (el.closest('[class*="close"], [id*="close"]')) return; // Protect the X button!
+    
+    // If it has a CSS animation (like a spinning loading wheel), kill it and let clicks pass through
+    try {
+      const style = window.getComputedStyle(el);
+      if (style.animationName && style.animationName !== 'none') {
+        el.style.setProperty('display', 'none', 'important');
+        el.style.setProperty('opacity', '0', 'important');
+        el.style.setProperty('pointer-events', 'none', 'important');
+      }
+    } catch(e) {}
+  });
+
+  // D. THE BLUE CURSOR ASSASSIN
   [document.body, document.documentElement, ...document.querySelectorAll('canvas')].forEach(el => {
     if (el.style.cursor === 'wait' || el.style.cursor === 'progress') {
       el.style.removeProperty('cursor'); 
     }
   });
 
-  // D. THE TEXT BANNER FORMATTER
+  // E. THE TEXT BANNER FORMATTER
   const textElements = document.querySelectorAll('div, span, p, h1, h2, h3');
   textElements.forEach(el => {
     if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
       const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
+      
       if (textClean.length > 3 && targetMatchStrings.includes(textClean)) {
+        
         el.style.setProperty('position', 'absolute', 'important');
         el.style.setProperty('left', '50%', 'important');
         el.style.setProperty('top', '50%', 'important'); 
