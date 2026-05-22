@@ -55,11 +55,49 @@ function injectCustomUI() {
     #eye-spy-loading-text { position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; }
     
     /* PILL CONTROL PANEL STYLES */
-    #es-control-panel { display: none !important; position: fixed !important; bottom: 20px !important; left: 20px !important; align-items: center !important; gap: 15px !important; background: #1c1c1c !important; padding: 10px 20px !important; border-radius: 50px !important; box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important; z-index: 2147483647 !important; border: 2px solid #333 !important; }
-    .es-panel-btn { background: transparent !important; border: none !important; cursor: pointer !important; display: flex !important; align-items: center !important; justify-content: center !important; padding: 5px !important; border-radius: 50% !important; transition: transform 0.2s ease, background 0.2s ease !important; }
-    .es-panel-btn:hover { transform: scale(1.15) !important; background: rgba(204, 255, 0, 0.1) !important; }
-    .es-panel-btn svg { width: 28px !important; height: 28px !important; fill: #CCFF00 !important; }
-    .es-panel-divider { width: 2px !important; height: 28px !important; background: #444 !important; border-radius: 2px !important; }
+    #es-control-panel { 
+      display: none !important; 
+      position: fixed !important; 
+      bottom: 15px !important; 
+      left: 15px !important; 
+      width: auto !important; 
+      min-width: 50px !important;
+      height: 50px !important; 
+      align-items: center !important; 
+      justify-content: center !important;
+      gap: 15px !important;
+      background: #1c1c1c !important; 
+      padding: 0 25px !important; 
+      border-radius: 25px !important; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.8) !important; 
+      z-index: 2147483647 !important; 
+      border: 2px solid #333 !important; 
+      box-sizing: border-box !important;
+      transition: width 0.3s ease !important;
+    }
+    .es-panel-btn { 
+      background: transparent !important; 
+      border: none !important; 
+      cursor: pointer !important; 
+      display: flex !important; 
+      align-items: center !important; 
+      justify-content: center !important; 
+      padding: 5px !important; 
+      border-radius: 50% !important; 
+      transition: transform 0.2s ease, background 0.2s ease !important; 
+      width: 36px !important;
+      height: 36px !important;
+    }
+    .es-panel-btn:hover { 
+      transform: scale(1.15) !important; 
+      background: rgba(204, 255, 0, 0.1) !important; 
+    }
+    .es-panel-divider { 
+      width: 2px !important; 
+      height: 24px !important; 
+      background: #444 !important; 
+      border-radius: 2px !important; 
+    }
 
     @keyframes eye-spy-fade { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
   `;
@@ -79,21 +117,21 @@ function injectCustomUI() {
   `;
   document.body.appendChild(startUI);
 
-  // PILL CONTROL PANEL HTML
+  // PILL CONTROL PANEL HTML (Buttons hidden by default via JS later)
   const panel = document.createElement('div');
   panel.id = 'es-control-panel';
   panel.innerHTML = `
     <button class="es-panel-btn" id="es-btn-prev" title="Skip Backward">
-      <svg viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="#CCFF00"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
     </button>
     <div class="es-panel-divider"></div>
     <button class="es-panel-btn" id="es-btn-audio" title="Mute/Unmute Audio">
-      <svg id="es-svg-unmute" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-      <svg id="es-svg-mute" style="display:none;" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+      <svg id="es-svg-unmute" width="26" height="26" viewBox="0 0 24 24" fill="#CCFF00"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+      <svg id="es-svg-mute" style="display:none;" width="26" height="26" viewBox="0 0 24 24" fill="#CCFF00"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
     </button>
     <div class="es-panel-divider"></div>
     <button class="es-panel-btn" id="es-btn-next" title="Skip Forward">
-      <svg viewBox="0 0 24 24"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="#CCFF00"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
     </button>
   `;
   document.body.appendChild(panel);
@@ -151,7 +189,6 @@ function startMechanics() {
         el.style.setProperty('filter', 'none', 'important'); el.style.setProperty('-webkit-filter', 'none', 'important'); el.style.setProperty('backdrop-filter', 'none', 'important'); el.style.setProperty('-webkit-backdrop-filter', 'none', 'important'); el.style.setProperty('background', 'transparent', 'important'); 
     });
 
-    // CRITICAL FIX: Only query specific text tags, NEVER query all 'div' tags
     const textElements = document.querySelectorAll('span, p, h1, h2, h3');
     textElements.forEach(el => {
       if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
@@ -168,6 +205,25 @@ function startMechanics() {
       }
     });
   }, 250); 
+
+  // --- UI VISIBILITY LOGIC ---
+  function updatePanelVisibility() {
+    const prevBtn = document.getElementById('es-btn-prev');
+    const nextBtn = document.getElementById('es-btn-next');
+    const dividers = document.querySelectorAll('.es-panel-divider');
+    
+    if (window.currentLevelIndex > 0) {
+        // We have passed level 1, show skip buttons
+        if (prevBtn) prevBtn.style.setProperty('display', 'flex', 'important');
+        if (nextBtn) nextBtn.style.setProperty('display', 'flex', 'important');
+        dividers.forEach(d => d.style.setProperty('display', 'block', 'important'));
+    } else {
+        // Level 1: Hide skips, show only Audio button
+        if (prevBtn) prevBtn.style.setProperty('display', 'none', 'important');
+        if (nextBtn) nextBtn.style.setProperty('display', 'none', 'important');
+        dividers.forEach(d => d.style.setProperty('display', 'none', 'important'));
+    }
+  }
 
   // --- BUTTON LOGIC ---
   let isMuted = false;
@@ -198,6 +254,7 @@ function startMechanics() {
           window.mpSdk.Sweep.moveTo(pLevel.startSweeps[0], { transition: window.mpSdk.Sweep.Transition.INSTANT }).then(() => {
               setupLevelTracking();
               lockMapForCurrentLevel(window.mpSdk);
+              updatePanelVisibility(); // Hide buttons if we went back to level 1
           });
       });
   });
@@ -215,7 +272,7 @@ function startMechanics() {
     return Object.values(window.foundImages).every(status => status === true);
   }
 
-  // --- OPTIMIZED TRIPWIRE (No 'div' queries) ---
+  // --- OPTIMIZED TRIPWIRE ---
   const observer = new MutationObserver((mutations) => {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel) return; 
@@ -302,7 +359,18 @@ function startMechanics() {
 
     // Reveal UI Controls once map is loaded
     const controls = document.getElementById('es-control-panel');
-    if (controls) controls.style.setProperty('display', 'flex', 'important');
+    if (controls) {
+      controls.style.setProperty('display', 'flex', 'important');
+      updatePanelVisibility();
+    }
+
+    mpSdk.on(mpSdk.Sweep.Event.ENTER, function(sweepId) {
+      // Hardcode safeguard: if they manually navigate to sweep 28, show skip buttons
+      if (sweepId === '28' && window.currentLevelIndex === 0) {
+         window.currentLevelIndex = 1;
+         updatePanelVisibility();
+      }
+    });
 
     mpSdk.on(mpSdk.Sweep.Event.EXIT, function(fromSweep) {
       const cLevel = LEVELS[window.currentLevelIndex];
@@ -327,8 +395,11 @@ function startMechanics() {
       await mpSdk.Sweep.disable(...sweepsToLock).catch(() => {});
 
       window.currentLevelIndex++; 
-      if (LEVELS[window.currentLevelIndex]) setupLevelTracking(); 
-      else {
+      
+      if (LEVELS[window.currentLevelIndex]) {
+          setupLevelTracking(); 
+          updatePanelVisibility(); // Expand the pill here!
+      } else {
           const controls = document.getElementById('es-control-panel');
           if (controls) controls.remove();
       }
