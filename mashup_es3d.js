@@ -1,4 +1,4 @@
-here is the best version. everything is sxcellent, except the spinning circle animation, it still appears. the blue circle animation also appears. let's work on this version of code, and try to remove the spinning cirlce as the next step: // --- 0. START SCREEN, AUDIO UI NUKE & GLOBAL CSS ---
+// --- 0. START SCREEN, AUDIO UI NUKE & GLOBAL CSS ---
 
 const customStyles = document.createElement('style');
 
