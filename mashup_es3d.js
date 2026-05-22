@@ -14,8 +14,8 @@ customStyles.innerHTML = `
     background-color: transparent !important;
   }
   
-  /* TARGETED ASSASSINATION: The White Circle is an image file! */
-  [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, img[src*="loader.svg"] {
+  /* TARGETED ASSASSINATION: The White Circle image and Custom Billboard */
+  [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] {
     display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
@@ -29,11 +29,11 @@ customStyles.innerHTML = `
     pointer-events: none !important;
   }
 
-  /* 2. SCALE UP *ONLY* THE POPUP 'X' BUTTON (Make it HUGE & Inside Banner) */
+  /* 2. SCALE UP *ONLY* THE POPUP 'X' BUTTON */
   .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close {
-    transform: scale(2.5) !important; /* 250% larger */
-    right: 25px !important; /* Pulls it inward from the right edge */
-    top: 25px !important; /* Pushes it down into the banner */
+    transform: scale(2.5) !important; 
+    right: 25px !important; 
+    top: 25px !important; 
     opacity: 1 !important;
     visibility: visible !important;
     z-index: 99999 !important;
@@ -58,7 +58,7 @@ customStyles.innerHTML = `
     padding: 0 !important;
   }
   
-  /* Default button state is LOCKED to prevent crash */
+  /* LOCKED Button State (Prevents the crash) */
   #eye-spy-start-btn {
     padding: 16px 32px !important; 
     font-size: 20px !important; 
@@ -68,14 +68,15 @@ customStyles.innerHTML = `
     border: none !important; 
     border-radius: 8px !important;
     cursor: wait !important; 
-    transition: transform 0.2s ease !important;
+    transition: transform 0.2s ease, opacity 0.2s ease !important;
     opacity: 0.5 !important;
-    pointer-events: none !important;
+    pointer-events: none !important; /* Forces mouse to ignore the button */
   }
   
+  /* UNLOCKED Button State */
   #eye-spy-start-btn.ready { 
     opacity: 1 !important;
-    pointer-events: auto !important;
+    pointer-events: auto !important; /* Restores clickability */
     cursor: pointer !important;
   }
 
@@ -147,7 +148,7 @@ const LEVELS = [
   }
 ];
 
-// --- 1.5. THE VISUAL HUNTER (Force Overwrites MPEmbed Layout) ---
+// --- 1.5. THE VISUAL HUNTER ---
 const targetMatchStrings = [];
 LEVELS.forEach(level => {
   level.imagesToFind.forEach(img => {
@@ -166,7 +167,7 @@ setInterval(() => {
     }
   });
 
-  // 1B. THE BLUR STRIPPER (Targeting specific MPEmbed overlay classes)
+  // 1B. THE BLUR STRIPPER
   document.querySelectorAll('.mpe-media-overlay, .mpe-overlay').forEach(el => {
       el.style.setProperty('filter', 'none', 'important');
       el.style.setProperty('-webkit-filter', 'none', 'important');
@@ -174,7 +175,25 @@ setInterval(() => {
       el.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
       el.style.setProperty('background', 'transparent', 'important'); 
   });
+
+  // 1C. THE SPINNER ASSASSIN
+  document.querySelectorAll('.mpe-loader, .spinner, [class*="media-loader"]').forEach(loader => {
+        loader.style.setProperty('display', 'none', 'important');
+        loader.style.setProperty('opacity', '0', 'important');
+  });
   
+  // Specific SVG hunt
+  document.querySelectorAll('svg').forEach(svg => {
+    const parent = svg.parentElement;
+    if (parent && window.getComputedStyle(parent).position === 'absolute' && window.getComputedStyle(parent).zIndex > 1000) {
+        svg.style.setProperty('display', 'none', 'important');
+        svg.style.setProperty('opacity', '0', 'important');
+        parent.style.setProperty('display', 'none', 'important');
+        parent.style.setProperty('background', 'transparent', 'important');
+    }
+  });
+
+
   // 2. THE TEXT BANNER FORMATTER
   const textElements = document.querySelectorAll('div, span, p, h1, h2, h3');
   
@@ -184,7 +203,6 @@ setInterval(() => {
       
       if (textClean.length > 3 && targetMatchStrings.includes(textClean)) {
         
-        // Force the TEXT to dead-center (Horizontal AND Vertical) and 200% size
         el.style.setProperty('position', 'absolute', 'important');
         el.style.setProperty('left', '50%', 'important');
         el.style.setProperty('top', '50%', 'important'); 
@@ -194,7 +212,6 @@ setInterval(() => {
         el.style.setProperty('margin', '0', 'important');
         el.style.setProperty('white-space', 'nowrap', 'important');
         
-        // Force the BANNER to the Custom Dark Charcoal
         const banner = el.parentElement;
         if (banner && !banner.dataset.styled) {
           banner.style.setProperty('background-color', '#1c1c1c', 'important');
@@ -239,7 +256,7 @@ function checkAllFound() {
 }
 
 
-// --- 3. THE TRIPWIRE LISTENER (Logic Only) ---
+// --- 3. THE TRIPWIRE LISTENER ---
 const observer = new MutationObserver((mutations) => {
   const currentLevel = LEVELS[window.currentLevelIndex];
   if (!currentLevel) return; 
@@ -307,14 +324,24 @@ async function initMashupLogic(mpSdk) {
   let sweepCollection = await new Promise((resolve) => {
     let sub = mpSdk.Sweep.data.subscribe({
       onCollectionUpdated: function (collection) {
-        resolve(collection);
-        sub.cancel(); 
+        // ONLY resolve when the sweeps actually exist in the data
+        if (Object.keys(collection).length > 0) {
+            resolve(collection);
+            sub.cancel(); 
+        }
       }
     });
   });
 
   window.allModelSweeps = Object.keys(sweepCollection);
   lockMapForCurrentLevel(mpSdk);
+
+  // CRITICAL: The model sweeps are loaded. Unlock the Start Button!
+  const startBtn = document.getElementById('eye-spy-start-btn');
+  if (startBtn) {
+      startBtn.innerText = "Start Experience";
+      startBtn.classList.add('ready');
+  }
 
   mpSdk.on(mpSdk.Sweep.Event.EXIT, function(fromSweep) {
     const cLevel = LEVELS[window.currentLevelIndex];
@@ -364,29 +391,10 @@ async function executeFastTeleport(mpSdk, levelData) {
   }
 }
 
-// --- 6. SMART LOCK BOOT-UP ---
-// Prevents the user from starting the game and crashing the intro fly-in
-let gameInitialized = false;
+// Boot-up
 let checkSdkInterval = setInterval(function() {
-  if (window.mpSdk && window.mpSdk.Sweep && window.mpSdk.App) {
+  if (window.mpSdk && window.mpSdk.Sweep) {
     clearInterval(checkSdkInterval); 
-    
-    // Subscribe to the Matterport Application State
-    window.mpSdk.App.state.subscribe(function(appState) {
-      // Wait strictly until the intro sequence is finished and we are PLAYING
-      if (appState.phase === window.mpSdk.App.Phase.PLAYING && !gameInitialized) {
-        gameInitialized = true;
-        
-        // The camera has safely landed. Unlock the Start Button.
-        const startBtn = document.getElementById('eye-spy-start-btn');
-        if (startBtn) {
-            startBtn.innerText = "Start Experience";
-            startBtn.classList.add('ready');
-        }
-        
-        // Safely lock the doors without WebGL panicking
-        initMashupLogic(window.mpSdk);
-      }
-    });
+    initMashupLogic(window.mpSdk);
   }
 }, 500);
