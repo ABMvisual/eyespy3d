@@ -44,14 +44,14 @@ function injectCustomUI() {
     audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"] { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
-    /* SEPIA/B&W START SCREEN FILTER */
+    /* BLACK & WHITE START SCREEN FILTER */
     #eye-spy-dark-overlay { 
         position: fixed !important; 
         top: 0 !important; left: 0 !important; 
         width: 100vw !important; height: 100vh !important; 
-        background: rgba(50, 30, 10, 0.5) !important; 
-        backdrop-filter: sepia(80%) contrast(120%) brightness(90%) !important;
-        -webkit-backdrop-filter: sepia(80%) contrast(120%) brightness(90%) !important;
+        background: rgba(0, 0, 0, 0.5) !important; 
+        backdrop-filter: grayscale(100%) brightness(80%) !important;
+        -webkit-backdrop-filter: grayscale(100%) brightness(80%) !important;
         z-index: 2147483645 !important; 
     }
 
@@ -64,7 +64,7 @@ function injectCustomUI() {
     #eye-spy-start-btn:hover { transform: scale(1.05) !important; }
     #eye-spy-loading-text { position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; }
     
-    /* PILL CONTROL PANEL STYLES - WITH TEXT LABELS */
+    /* PILL CONTROL PANEL STYLES - BULLETPROOF SVGS */
     #es-control-panel { 
       display: none !important; 
       position: fixed !important; 
@@ -100,11 +100,6 @@ function injectCustomUI() {
       transform: scale(1.1) !important; 
       background: rgba(204, 255, 0, 0.1) !important; 
     }
-    .es-panel-btn svg {
-      width: 24px !important;
-      height: 24px !important;
-      fill: #CCFF00 !important; /* Force override MPEmbed CSS */
-    }
     .es-panel-btn span {
       font-size: 10px !important;
       font-weight: bold !important;
@@ -137,25 +132,27 @@ function injectCustomUI() {
   `;
   document.body.appendChild(startUI);
 
-  // PILL CONTROL PANEL HTML 
+  // PILL CONTROL PANEL HTML (Forcing fills)
   const panel = document.createElement('div');
   panel.id = 'es-control-panel';
   panel.innerHTML = `
     <button class="es-panel-btn" id="es-btn-prev" style="visibility: hidden; pointer-events: none;">
-      <svg viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
+      <svg width="24" height="24" viewBox="0 0 24 24" style="display: block;"><path style="fill: #CCFF00 !important;" d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
       <span>BACK</span>
     </button>
-    <div class="es-panel-divider" style="visibility: hidden;"></div>
+
+    <div class="es-panel-divider" id="es-div-1" style="visibility: hidden;"></div>
     
     <button class="es-panel-btn" id="es-btn-audio">
-      <svg id="es-svg-unmute" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-      <svg id="es-svg-mute" style="display:none;" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+      <svg id="es-svg-unmute" width="26" height="26" viewBox="0 0 24 24" style="display: block;"><path style="fill: #CCFF00 !important;" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+      <svg id="es-svg-mute" width="26" height="26" viewBox="0 0 24 24" style="display:none;"><path style="fill: #CCFF00 !important;" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
       <span id="es-audio-label">MUTE</span>
     </button>
 
-    <div class="es-panel-divider" style="visibility: hidden;"></div>
+    <div class="es-panel-divider" id="es-div-2" style="visibility: hidden;"></div>
+
     <button class="es-panel-btn" id="es-btn-next" style="visibility: hidden; pointer-events: none;">
-      <svg viewBox="0 0 24 24"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+      <svg width="24" height="24" viewBox="0 0 24 24" style="display: block;"><path style="fill: #CCFF00 !important;" d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
       <span>CHEAT</span>
     </button>
   `;
@@ -168,6 +165,12 @@ function injectCustomUI() {
       const overlay = document.getElementById('eye-spy-dark-overlay');
       if(ui) { ui.style.transition = "opacity 0.4s ease"; ui.style.opacity = "0"; setTimeout(() => ui.remove(), 400); }
       if(overlay) { overlay.style.transition = "opacity 0.4s ease"; overlay.style.opacity = "0"; setTimeout(() => overlay.remove(), 400); }
+
+      // Reveal Panel ONLY after start is clicked
+      const controls = document.getElementById('es-control-panel');
+      if (controls) {
+        controls.style.setProperty('display', 'flex', 'important');
+      }
 
       try {
           window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; 
@@ -198,14 +201,13 @@ function startMechanics() {
   window.isTeleporting = false; 
   window.pathsPreloaded = false; 
   window.activeOpenPopups = new Set(); 
-  window.skipsUnlocked = false; // Tracks if they hit sweep 28
 
   const targetMatchStrings = [];
   LEVELS.forEach(level => {
     level.imagesToFind.forEach(img => targetMatchStrings.push(img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', '')));
   });
 
-  // --- VISUAL HUNTER (Restored EXACTLY to v50 with 'div' included) ---
+  // --- VISUAL HUNTER (RESTORED DIV CHECKER) ---
   setInterval(() => {
     document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
       if (btn.getBoundingClientRect().bottom > window.innerHeight - 100) { btn.style.setProperty('display', 'none', 'important'); btn.style.setProperty('opacity', '0', 'important'); }
@@ -232,20 +234,29 @@ function startMechanics() {
     });
   }, 250); 
 
-  // --- UI VISIBILITY LOGIC ---
+  // --- UI VISIBILITY LOGIC (Level Locks) ---
   function updatePanelVisibility() {
     const prevBtn = document.getElementById('es-btn-prev');
     const nextBtn = document.getElementById('es-btn-next');
-    const dividers = document.querySelectorAll('.es-panel-divider');
+    const div1 = document.getElementById('es-div-1');
+    const div2 = document.getElementById('es-div-2');
     
-    if (window.currentLevelIndex > 0 || window.skipsUnlocked) {
-        if (prevBtn) { prevBtn.style.setProperty('visibility', 'visible', 'important'); prevBtn.style.setProperty('pointer-events', 'auto', 'important'); }
+    // CHEAT (Next) appears when we reach Level 2 (Index 1)
+    if (window.currentLevelIndex >= 1) {
         if (nextBtn) { nextBtn.style.setProperty('visibility', 'visible', 'important'); nextBtn.style.setProperty('pointer-events', 'auto', 'important'); }
-        dividers.forEach(d => d.style.setProperty('visibility', 'visible', 'important'));
+        if (div2) div2.style.setProperty('visibility', 'visible', 'important');
+    } else {
+        if (nextBtn) { nextBtn.style.setProperty('visibility', 'hidden', 'important'); nextBtn.style.setProperty('pointer-events', 'none', 'important'); }
+        if (div2) div2.style.setProperty('visibility', 'hidden', 'important');
+    }
+
+    // BACK (Prev) appears ONLY when we reach Level 3 (Index 2). Prevents going back to Level 1.
+    if (window.currentLevelIndex >= 2) {
+        if (prevBtn) { prevBtn.style.setProperty('visibility', 'visible', 'important'); prevBtn.style.setProperty('pointer-events', 'auto', 'important'); }
+        if (div1) div1.style.setProperty('visibility', 'visible', 'important');
     } else {
         if (prevBtn) { prevBtn.style.setProperty('visibility', 'hidden', 'important'); prevBtn.style.setProperty('pointer-events', 'none', 'important'); }
-        if (nextBtn) { nextBtn.style.setProperty('visibility', 'hidden', 'important'); nextBtn.style.setProperty('pointer-events', 'none', 'important'); }
-        dividers.forEach(d => d.style.setProperty('visibility', 'hidden', 'important'));
+        if (div1) div1.style.setProperty('visibility', 'hidden', 'important');
     }
   }
 
@@ -263,14 +274,26 @@ function startMechanics() {
   document.getElementById('es-btn-next').addEventListener('click', () => {
       const cLevel = LEVELS[window.currentLevelIndex];
       if (cLevel && window.mpSdk && !window.isTeleporting) {
-          cLevel.imagesToFind.forEach(img => window.foundImages[img] = true);
+          
+          // Kill audio before jump
+          window.globalSfx.pause();
+          window.globalSfx.currentTime = 0;
           window.activeOpenPopups.clear();
+
+          cLevel.imagesToFind.forEach(img => window.foundImages[img] = true);
           executeFastTeleport(window.mpSdk, cLevel);
       }
   });
 
   document.getElementById('es-btn-prev').addEventListener('click', () => {
-      if (window.currentLevelIndex === 0 || window.isTeleporting) return;
+      // Hard block preventing return to Sweep 30 (Level 1 / Index 0)
+      if (window.currentLevelIndex <= 1 || window.isTeleporting) return;
+      
+      // Kill audio before jump
+      window.globalSfx.pause();
+      window.globalSfx.currentTime = 0;
+      window.activeOpenPopups.clear();
+
       window.isTeleporting = true;
       window.currentLevelIndex--;
       const pLevel = LEVELS[window.currentLevelIndex];
@@ -389,19 +412,12 @@ function startMechanics() {
     const welcomeBlock = document.getElementById('eye-spy-welcome-block');
     if (welcomeBlock) welcomeBlock.style.display = "flex";
 
-    // Reveal UI Controls once map is loaded
-    const controls = document.getElementById('es-control-panel');
-    if (controls) {
-      controls.style.setProperty('display', 'flex', 'important');
-      updatePanelVisibility();
-    }
-
+    // GLOBAL AUDIO RESET ON ENTERING NEW ROOM
     mpSdk.on(mpSdk.Sweep.Event.ENTER, function(sweepId) {
-      // Trigger to reveal skip buttons at sweep 28
-      if (sweepId === '28' && window.currentLevelIndex === 0 && !window.skipsUnlocked) {
-         window.skipsUnlocked = true;
-         updatePanelVisibility();
-      }
+      window.globalSfx.pause();
+      window.globalSfx.currentTime = 0;
+      window.activeOpenPopups.clear();
+      updatePanelVisibility();
     });
 
     mpSdk.on(mpSdk.Sweep.Event.EXIT, function(fromSweep) {
