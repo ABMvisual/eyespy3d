@@ -130,7 +130,7 @@ customStyles.innerHTML = `
     transform: scale(1.05) !important; 
   }
 
-  /* STEP 1 FIX: THE FLASHING LOADER TEXT */
+  /* THE FLASHING LOADER TEXT */
   #eye-spy-loading-text {
       position: absolute;
       bottom: 20px;
@@ -414,7 +414,7 @@ async function initMashupLogic(mpSdk) {
   // 3. Update and unlock the button
   const finalBtn = document.getElementById('eye-spy-start-btn');
   if (finalBtn) {
-      finalBtn.innerText = "Start now!"; // STEP 1 FIX: UPDATED BUTTON TEXT
+      finalBtn.innerText = "Start now!"; 
       finalBtn.classList.add('ready');
   }
 
@@ -444,10 +444,19 @@ async function executeFastTeleport(mpSdk, levelData) {
   window.isTeleporting = true;
   
   try {
+    // Look straight down (x: 80 degrees) while flying to the next sweep
+    const lookDownRotation = { x: 80, y: 0 }; 
+
     try {
-      await mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: mpSdk.Sweep.Transition.FLY });
+      await mpSdk.Sweep.moveTo(levelData.targetSweep, { 
+          transition: mpSdk.Sweep.Transition.FLY,
+          rotation: lookDownRotation
+      });
     } catch (flyError) {
-      await mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: mpSdk.Sweep.Transition.INSTANT });
+      await mpSdk.Sweep.moveTo(levelData.targetSweep, { 
+          transition: mpSdk.Sweep.Transition.INSTANT,
+          rotation: lookDownRotation
+      });
     }
 
     const sweepsToLock = window.allModelSweeps.filter(id => id !== levelData.targetSweep);
