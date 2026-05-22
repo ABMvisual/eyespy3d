@@ -257,7 +257,7 @@ function startMechanics() {
     }
   ];
 
-  // --- 3. THE VISUAL HUNTER ---
+  // --- 3. THE VISUAL HUNTER (Restored to exact v50 logic) ---
   const targetMatchStrings = [];
   LEVELS.forEach(level => {
     level.imagesToFind.forEach(img => {
@@ -337,7 +337,7 @@ function startMechanics() {
     return Object.values(window.foundImages).every(status => status === true);
   }
 
-  // --- 5. THE TRIPWIRE LISTENER ---
+  // --- 5. THE SURGICAL TRIPWIRE LISTENER (No CPU-killing InnerHTML) ---
   const observer = new MutationObserver((mutations) => {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel) return; 
@@ -345,14 +345,20 @@ function startMechanics() {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === 1 || node.nodeType === 3) { 
-          const html = node.innerHTML || '';
-          const outer = node.outerHTML || '';
-          const text = node.textContent || '';
+          
+          // FAST SCAN: Just grab pure text and image links
+          let searchString = (node.textContent || '').toLowerCase();
+          if (node.nodeType === 1) {
+            if (node.tagName === 'IMG') searchString += ' ' + (node.src || '').toLowerCase();
+            const imgs = node.querySelectorAll ? node.querySelectorAll('img, [style*="background-image"]') : [];
+            imgs.forEach(m => searchString += ' ' + (m.src || m.style.backgroundImage || '').toLowerCase());
+          }
 
           currentLevel.imagesToFind.forEach((filename) => {
-            const encodedName = encodeURI(filename);
+            const cleanName = filename.toLowerCase();
+            const encodedName = encodeURI(filename).toLowerCase();
 
-            if (html.includes(filename) || html.includes(encodedName) || outer.includes(filename) || text.includes(filename)) {
+            if (searchString.includes(cleanName) || searchString.includes(encodedName)) {
               if (!window.foundImages[filename]) {
                 console.log(`🎯 [Escape Room] Found: ${filename}`);
                 playItemSound(filename); 
@@ -381,14 +387,20 @@ function startMechanics() {
 
       mutation.removedNodes.forEach((node) => {
         if (node.nodeType === 1 || node.nodeType === 3) { 
-          const html = node.innerHTML || '';
-          const outer = node.outerHTML || '';
-          const text = node.textContent || '';
+          
+          // FAST SCAN: Just grab pure text and image links
+          let searchString = (node.textContent || '').toLowerCase();
+          if (node.nodeType === 1) {
+            if (node.tagName === 'IMG') searchString += ' ' + (node.src || '').toLowerCase();
+            const imgs = node.querySelectorAll ? node.querySelectorAll('img, [style*="background-image"]') : [];
+            imgs.forEach(m => searchString += ' ' + (m.src || m.style.backgroundImage || '').toLowerCase());
+          }
 
           currentLevel.imagesToFind.forEach((filename) => {
-            const encodedName = encodeURI(filename);
+            const cleanName = filename.toLowerCase();
+            const encodedName = encodeURI(filename).toLowerCase();
 
-            if (html.includes(filename) || html.includes(encodedName) || outer.includes(filename) || text.includes(filename)) {
+            if (searchString.includes(cleanName) || searchString.includes(encodedName)) {
               window.activeOpenPopups.delete(filename); 
               
               if (checkAllFound() && window.activeOpenPopups.size === 0 && !window.isTeleporting) {
@@ -436,6 +448,12 @@ function startMechanics() {
     
     const welcomeBlock = document.getElementById('eye-spy-welcome-block');
     if (welcomeBlock) welcomeBlock.style.display = "flex";
+
+    const finalBtn = document.getElementById('eye-spy-start-btn');
+    if (finalBtn) {
+        finalBtn.innerText = "Start now!"; 
+        finalBtn.classList.add('ready');
+    }
 
     mpSdk.on(mpSdk.Sweep.Event.EXIT, function(fromSweep) {
       const cLevel = LEVELS[window.currentLevelIndex];
