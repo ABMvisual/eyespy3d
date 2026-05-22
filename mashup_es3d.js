@@ -1,20 +1,25 @@
 // --- 0. START SCREEN, AUDIO UI NUKE & GLOBAL CSS ---
 const customStyles = document.createElement('style');
 customStyles.innerHTML = `
-  /* 1. AGGRESSIVELY NUKE MPEMBED AUDIO UI (CSS Baseline) */
+  /* 1. AGGRESSIVELY NUKE MPEMBED AUDIO UI */
   * {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
 
-  [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay {
-    filter: none !important;
-    -webkit-filter: none !important;
-    background: transparent !important;
-    background-color: transparent !important;
-    pointer-events: none !important; 
+  /* 2. SCALE UP *ONLY* THE POPUP 'X' BUTTON & FORCE CLICKABILITY */
+  .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close, [class*="close"] {
+    transform: scale(2.5) !important; 
+    right: 25px !important; 
+    top: 25px !important; 
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important; /* Forces the X to remain clickable always */
+    z-index: 999999 !important;
+    display: block !important;
   }
 
+  /* HIDE THE NATIVE AUDIO PLAYER */
   audio, video, #mpe-audio-player, .mpe-audio-player {
     opacity: 0 !important;
     position: absolute !important;
@@ -22,18 +27,7 @@ customStyles.innerHTML = `
     pointer-events: none !important;
   }
 
-  /* 2. SCALE UP *ONLY* THE POPUP 'X' BUTTON */
-  .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close {
-    transform: scale(2.5) !important; 
-    right: 25px !important; 
-    top: 25px !important; 
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important; /* Keep clickable */
-    z-index: 99999 !important;
-  }
-
-  /* 3. Isolated Start Screen Styling */
+  /* 3. ISOLATED START SCREEN STYLING */
   #eye-spy-start-screen {
     position: fixed !important; 
     top: 0 !important; 
@@ -132,7 +126,7 @@ const LEVELS = [
   }
 ];
 
-// --- 1.5. THE VISUAL HUNTER (Force Overwrites MPEmbed Layout) ---
+// --- 1.5. THE VISUAL HUNTER (The Ultimate Auto-Scanner) ---
 const targetMatchStrings = [];
 LEVELS.forEach(level => {
   level.imagesToFind.forEach(img => {
@@ -141,52 +135,58 @@ LEVELS.forEach(level => {
 });
 
 setInterval(() => {
-  // A. DYNAMIC AUDIO UI SNIPER (The Bottom X)
-  document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
-    const rect = btn.getBoundingClientRect();
-    if (rect.bottom > window.innerHeight - 100 && rect.bottom > 0) {
-      btn.style.setProperty('display', 'none', 'important');
-      btn.style.setProperty('pointer-events', 'none', 'important');
-    }
+  // A. FORCE THE "X" BUTTON TO BE CLICKABLE
+  document.querySelectorAll('.mpe-window-close, .mpe-popup-close, [class*="close"]').forEach(btn => {
+    btn.style.setProperty('pointer-events', 'auto', 'important');
   });
 
-  // B. THE SHATTERED GLASS PROTOCOL
-  document.querySelectorAll('div').forEach(el => {
-    if (el.style.filter && el.style.filter.includes('blur')) {
-      el.style.setProperty('filter', 'none', 'important');
-      el.style.setProperty('-webkit-filter', 'none', 'important');
-      el.style.setProperty('background', 'transparent', 'important'); 
-      el.style.setProperty('pointer-events', 'none', 'important'); // Stops it from blocking clicks
-    }
-  });
+  // B. THE CSS SPINNER ASSASSIN AND INVISIBLE SHIELD DESTROYER
+  document.querySelectorAll('div, svg, img').forEach(el => {
+    // 1. Protect the X button! If this element is the X or inside the X, ignore it.
+    if (el.closest('[class*="close"]')) return;
 
-  // C. THE SIZE-BASED SPINNER ASSASSIN (MEASUREMENT CHECK)
-  // Instead of guessing classes, we physically measure the circles.
-  document.querySelectorAll('circle').forEach(circle => {
-    const rect = circle.getBoundingClientRect();
-    const radius = parseFloat(circle.getAttribute('r')) || 0;
-    
-    // The loading spinner is huge. The 'X' background is tiny.
-    if (rect.width > 40 || radius > 20) {
-      circle.style.setProperty('display', 'none', 'important');
-      circle.style.setProperty('opacity', '0', 'important');
+    try {
+      const style = window.getComputedStyle(el);
+      const rect = el.getBoundingClientRect();
       
-      // Destroy the parent SVG shield to restore your clicking ability
-      if (circle.parentElement && circle.parentElement.tagName.toLowerCase() === 'svg') {
-         circle.parentElement.style.setProperty('display', 'none', 'important');
-         circle.parentElement.style.setProperty('pointer-events', 'none', 'important');
+      // 2. DESTROY CSS ANIMATIONS (The Spinning Wheel)
+      // If it's spinning or pulsing, kill it visually and physically.
+      if (style.animationName && style.animationName !== 'none') {
+        el.style.setProperty('display', 'none', 'important');
+        el.style.setProperty('opacity', '0', 'important');
+        el.style.setProperty('pointer-events', 'none', 'important');
       }
-    }
+
+      // 3. DESTROY KNOWN LOADERS BY CLASS NAME
+      if (el.className && typeof el.className === 'string') {
+        const className = el.className.toLowerCase();
+        if (className.includes('loader') || className.includes('spinner') || className.includes('busy')) {
+          el.style.setProperty('display', 'none', 'important');
+          el.style.setProperty('pointer-events', 'none', 'important');
+        }
+      }
+
+      // 4. SHATTER FULL-SCREEN INVISIBLE GLASS SHIELDS
+      // If a div is absolute/fixed and takes up >90% of the screen, it's an MPEmbed shield.
+      // (We explicitly protect 'showcase' so we don't break the 3D model itself).
+      if ((style.position === 'absolute' || style.position === 'fixed') && 
+          rect.width > window.innerWidth * 0.9 && rect.height > window.innerHeight * 0.9 &&
+          el.id !== 'showcase' && !el.classList.contains('showcase-container')) {
+          
+          el.style.setProperty('pointer-events', 'none', 'important');
+          el.style.setProperty('background', 'transparent', 'important');
+      }
+    } catch(e) {}
   });
 
-  // D. THE BLUE CURSOR ASSASSIN
+  // C. STRIP BLUE CURSORS
   [document.body, document.documentElement, ...document.querySelectorAll('canvas, iframe')].forEach(el => {
     if (el.style.cursor === 'wait' || el.style.cursor === 'progress') {
       el.style.removeProperty('cursor'); 
     }
   });
 
-  // E. THE TEXT BANNER FORMATTER
+  // D. THE TEXT BANNER FORMATTER
   const textElements = document.querySelectorAll('div, span, p, h1, h2, h3');
   textElements.forEach(el => {
     if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
@@ -244,7 +244,7 @@ function checkAllFound() {
 }
 
 
-// --- 3. THE TRIPWIRE LISTENER (Logic Only) ---
+// --- 3. THE TRIPWIRE LISTENER ---
 const observer = new MutationObserver((mutations) => {
   const currentLevel = LEVELS[window.currentLevelIndex];
   if (!currentLevel) return; 
