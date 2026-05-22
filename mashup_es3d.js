@@ -37,27 +37,7 @@ customStyles.innerHTML = `
     z-index: 99999 !important;
   }
 
-  /* 3. THE PSEUDO-ELEMENT CSS CARPET BOMB (White Circle Assassin) */
-  .expanded::before, .expanded::after,
-  .expanded *::before, .expanded *::after,
-  .tag-media-content::before, .tag-media-content::after,
-  [class*="loading"]::before, [class*="loading"]::after,
-  [class*="loader"]::before, [class*="loader"]::after {
-      display: none !important;
-      content: none !important;
-      animation: none !important;
-      border: none !important;
-      background: transparent !important;
-  }
-
-  [class*="loader" i], [class*="spin" i], [class*="busy" i] {
-      border: none !important;
-      animation: none !important;
-      -webkit-animation: none !important;
-      background-image: none !important;
-  }
-
-  /* 4. Isolated Start Screen Styling */
+  /* 3. Isolated Start Screen Styling */
   #eye-spy-start-screen {
     position: fixed !important; 
     top: 0 !important; 
