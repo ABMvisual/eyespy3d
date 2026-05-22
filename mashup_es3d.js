@@ -7,20 +7,12 @@ customStyles.innerHTML = `
     -webkit-backdrop-filter: none !important;
   }
 
-  /* DESTROY THE INVISIBLE GLASS SHIELD */
   [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay {
     filter: none !important;
     -webkit-filter: none !important;
     background: transparent !important;
     background-color: transparent !important;
-    pointer-events: none !important; /* Lets your mouse clicks pass THROUGH the overlay to the polygons */
-  }
-  
-  /* KILL THE LOADING BLOCKER */
-  #mpe-loading, .mpe-loading, .mpe-busy, [class*="busy"], [id*="busy"] {
-    display: none !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
+    pointer-events: none !important; 
   }
 
   audio, video, #mpe-audio-player, .mpe-audio-player {
@@ -30,28 +22,18 @@ customStyles.innerHTML = `
     pointer-events: none !important;
   }
 
-  /* 2. SCALE UP *ONLY* THE POPUP 'X' BUTTON (Make it HUGE & Inside Banner) */
+  /* 2. SCALE UP *ONLY* THE POPUP 'X' BUTTON */
   .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close {
-    transform: scale(2.5) !important; /* 250% larger */
-    right: 25px !important; /* Pulls it inward from the right edge */
-    top: 25px !important; /* Pushes it down into the banner */
+    transform: scale(2.5) !important; 
+    right: 25px !important; 
+    top: 25px !important; 
     opacity: 1 !important;
     visibility: visible !important;
-    pointer-events: auto !important; /* Forces the X to remain clickable even though the overlay is not */
+    pointer-events: auto !important; /* Keep clickable */
     z-index: 99999 !important;
   }
 
-  /* 3. SURGICAL SPINNER ASSASSIN (CSS) */
-  circle:not(.mpe-window-close circle):not(.mpe-popup-close circle):not([class*="close"] circle),
-  [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner {
-    display: none !important;
-    opacity: 0 !important;
-    stroke: transparent !important;
-    animation: none !important;
-    pointer-events: none !important;
-  }
-
-  /* 4. Isolated Start Screen Styling */
+  /* 3. Isolated Start Screen Styling */
   #eye-spy-start-screen {
     position: fixed !important; 
     top: 0 !important; 
@@ -162,9 +144,8 @@ setInterval(() => {
   // A. DYNAMIC AUDIO UI SNIPER (The Bottom X)
   document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
     const rect = btn.getBoundingClientRect();
-    if (rect.bottom > window.innerHeight - 100) {
+    if (rect.bottom > window.innerHeight - 100 && rect.bottom > 0) {
       btn.style.setProperty('display', 'none', 'important');
-      btn.style.setProperty('opacity', '0', 'important');
       btn.style.setProperty('pointer-events', 'none', 'important');
     }
   });
@@ -177,29 +158,29 @@ setInterval(() => {
       el.style.setProperty('background', 'transparent', 'important'); 
       el.style.setProperty('pointer-events', 'none', 'important'); // Stops it from blocking clicks
     }
-    if (el.style.backdropFilter) {
-      el.style.setProperty('backdrop-filter', 'none', 'important');
-      el.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+  });
+
+  // C. THE SIZE-BASED SPINNER ASSASSIN (MEASUREMENT CHECK)
+  // Instead of guessing classes, we physically measure the circles.
+  document.querySelectorAll('circle').forEach(circle => {
+    const rect = circle.getBoundingClientRect();
+    const radius = parseFloat(circle.getAttribute('r')) || 0;
+    
+    // The loading spinner is huge. The 'X' background is tiny.
+    if (rect.width > 40 || radius > 20) {
+      circle.style.setProperty('display', 'none', 'important');
+      circle.style.setProperty('opacity', '0', 'important');
+      
+      // Destroy the parent SVG shield to restore your clicking ability
+      if (circle.parentElement && circle.parentElement.tagName.toLowerCase() === 'svg') {
+         circle.parentElement.style.setProperty('display', 'none', 'important');
+         circle.parentElement.style.setProperty('pointer-events', 'none', 'important');
+      }
     }
   });
 
-  // C. THE SVG BLOCKER ASSASSIN (Dynamic)
-  document.querySelectorAll('svg, circle, path').forEach(el => {
-    if (el.closest('[class*="close"], [id*="close"]')) return; // Protect the X button!
-    
-    // If it has a CSS animation (like a spinning loading wheel), kill it and let clicks pass through
-    try {
-      const style = window.getComputedStyle(el);
-      if (style.animationName && style.animationName !== 'none') {
-        el.style.setProperty('display', 'none', 'important');
-        el.style.setProperty('opacity', '0', 'important');
-        el.style.setProperty('pointer-events', 'none', 'important');
-      }
-    } catch(e) {}
-  });
-
   // D. THE BLUE CURSOR ASSASSIN
-  [document.body, document.documentElement, ...document.querySelectorAll('canvas')].forEach(el => {
+  [document.body, document.documentElement, ...document.querySelectorAll('canvas, iframe')].forEach(el => {
     if (el.style.cursor === 'wait' || el.style.cursor === 'progress') {
       el.style.removeProperty('cursor'); 
     }
@@ -212,7 +193,6 @@ setInterval(() => {
       const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
       
       if (textClean.length > 3 && targetMatchStrings.includes(textClean)) {
-        
         el.style.setProperty('position', 'absolute', 'important');
         el.style.setProperty('left', '50%', 'important');
         el.style.setProperty('top', '50%', 'important'); 
@@ -288,7 +268,6 @@ const observer = new MutationObserver((mutations) => {
             
             if (checkAllFound() && !window.pathsPreloaded) {
               window.pathsPreloaded = true;
-              console.log(`🔓 [Escape Room] All items found! Unlocking map for flight...`);
               if (window.mpSdk) {
                 window.mpSdk.Sweep.enable(...window.allModelSweeps).catch(() => {});
               }
@@ -311,7 +290,6 @@ const observer = new MutationObserver((mutations) => {
             window.activeOpenPopups.delete(filename); 
             
             if (checkAllFound() && window.activeOpenPopups.size === 0 && !window.isTeleporting) {
-              console.log(`🚀 [Escape Room] Initiating Teleport sequence!`);
               executeFastTeleport(window.mpSdk, currentLevel);
             }
           }
@@ -380,13 +358,8 @@ async function executeFastTeleport(mpSdk, levelData) {
     
     if (LEVELS[window.currentLevelIndex]) {
       setupLevelTracking(); 
-    } else {
-      console.log("🏆 [Escape Room] Complete!");
     }
-
-  } catch (error) {
-    console.error("Teleport failed:", error);
-  }
+  } catch (error) {}
 }
 
 // Boot-up
