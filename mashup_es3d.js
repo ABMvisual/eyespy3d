@@ -26,7 +26,6 @@ function playItemSound(imageFilename) {
   } catch(e) {}
 }
 
-
 // --- 1. BOOT LOADER ---
 let bootInterval = setInterval(() => {
   if (document.head && document.body) {
@@ -44,14 +43,14 @@ function injectCustomUI() {
     audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"] { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
-    /* B&W/SLIGHT RED TINT START SCREEN FILTER */
+    /* B&W WITH SLIGHT RED TINT START SCREEN FILTER */
     #eye-spy-dark-overlay { 
         position: fixed !important; 
         top: 0 !important; left: 0 !important; 
         width: 100vw !important; height: 100vh !important; 
-        background: rgba(25, 5, 5, 0.5) !important; 
-        backdrop-filter: grayscale(90%) sepia(10%) contrast(110%) brightness(95%) !important;
-        -webkit-backdrop-filter: grayscale(90%) sepia(10%) contrast(110%) brightness(95%) !important;
+        background: rgba(40, 10, 10, 0.4) !important; 
+        backdrop-filter: grayscale(100%) contrast(110%) brightness(95%) !important;
+        -webkit-backdrop-filter: grayscale(100%) contrast(110%) brightness(95%) !important;
         z-index: 2147483645 !important; 
     }
 
@@ -128,10 +127,10 @@ function injectCustomUI() {
       top: -35px !important;
       background: rgba(0,0,0,0.9) !important;
       color: #fff !important;
-      padding: 4px 8px !important;
+      padding: 6px 10px !important;
       border-radius: 4px !important;
       font-size: 12px !important;
-      font-weight: normal !important;
+      font-weight: bold !important;
       font-family: sans-serif !important;
       white-space: nowrap !important;
       opacity: 0 !important;
@@ -139,6 +138,7 @@ function injectCustomUI() {
       transition: opacity 0.2s ease !important;
       z-index: 999999 !important;
       border: 1px solid #444 !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.8) !important;
     }
     .es-panel-btn:hover .es-tooltip {
       opacity: 1 !important;
@@ -162,7 +162,7 @@ function injectCustomUI() {
   `;
   document.body.appendChild(startUI);
 
-  // PILL CONTROL PANEL HTML 
+  // PILL CONTROL PANEL HTML (Explicit IMG tags and Tooltips)
   const panel = document.createElement('div');
   panel.id = 'es-control-panel';
   panel.innerHTML = `
@@ -186,12 +186,12 @@ function injectCustomUI() {
       <img id="es-img-unmute" src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E">
       <img id="es-img-mute" style="display:none !important;" src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E">
       <span id="es-audio-label">MUTE</span>
-      <div class="es-tooltip" id="es-audio-tooltip">Mute</div>
+      <div class="es-tooltip" id="es-audio-tooltip">Mute / Unmute</div>
     </button>
 
-    <div class="es-panel-divider" id="es-div-next" style="opacity: 0 !important;"></div>
+    <div class="es-panel-divider"></div>
 
-    <button class="es-panel-btn" id="es-btn-next" style="opacity: 0 !important; pointer-events: none !important; transition: opacity 0.3s ease !important;">
+    <button class="es-panel-btn" id="es-btn-next">
       <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z'/%3E%3C/svg%3E">
       <span>SKIP</span>
       <div class="es-tooltip">Skip</div>
@@ -203,8 +203,11 @@ function injectCustomUI() {
 }
 
 function startMechanics() {
+  const INTRO_SWEEP = '7k4p5mu5f5eydt8h0f8cygptb'; // Sweep 30
+
+  // Removed Intro Sweep from Level 1. Level 1 starts properly at sweep 28/27
   const LEVELS = [
-    { level: 1, startSweeps: ['7k4p5mu5f5eydt8h0f8cygptb', 'cwckxx365uimbeqk6ngp0t5ud'], targetSweep: 'ep98q9hxumexd83q38p12k4xc', imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
+    { level: 1, startSweeps: ['cwckxx365uimbeqk6ngp0t5ud'], targetSweep: 'ep98q9hxumexd83q38p12k4xc', imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
     { level: 2, startSweeps: ['ep98q9hxumexd83q38p12k4xc'], targetSweep: 't3si6z3gnc6ix4qh6cgmtgnfa', imagesToFind: ['/decongestant cough elixir.jpeg', '/plastic fruit.jpeg', '/pineapple sunday.jpeg'] },
     { level: 3, startSweeps: ['t3si6z3gnc6ix4qh6cgmtgnfa'], targetSweep: '2cngsqh5q4t1ep85y5ky0h49d', imagesToFind: ['/aztec chocolate.jpeg', '/atomic coffee.jpeg', '/royal perambulator.jpeg'] },
     { level: 4, startSweeps: ['2cngsqh5q4t1ep85y5ky0h49d'], targetSweep: '66yna1yh5e2ig14bmzzf1sn2c', imagesToFind: ['/a crow in a bag.jpeg', '/a hand in two.jpeg', '/vitreous china.jpeg', '/musical tyre.jpeg'] },
@@ -219,10 +222,6 @@ function startMechanics() {
   window.isTeleporting = false; 
   window.pathsPreloaded = false; 
   window.activeOpenPopups = new Set(); 
-  
-  // Custom tracking for Level 1 unlocks
-  window.hasReached28 = false;
-  window.hasReached27 = false;
 
   const targetMatchStrings = [];
   LEVELS.forEach(level => {
@@ -246,32 +245,23 @@ function startMechanics() {
       } catch(e) {}
 
       if (window.mpSdk) {
+          // Teleport out of Sweep 30 immediately to Level 1
           window.mpSdk.Sweep.moveTo(LEVELS[0].startSweeps[0], { transition: window.mpSdk.Sweep.Transition.FLY }).then(() => {
+              window.mpSdk.Sweep.disable(INTRO_SWEEP).catch(()=>{}); // Kill Sweep 30 forever
               const controls = document.getElementById('es-control-panel');
               if (controls) controls.style.setProperty('display', 'flex', 'important');
+              updatePanelVisibility();
           });
       }
     });
   }
 
-  // --- UI VISIBILITY LOGIC ---
+  // --- UI VISIBILITY LOGIC (Back hidden on Level 1) ---
   function updatePanelVisibility() {
     const prevBtn = document.getElementById('es-btn-prev');
-    const nextBtn = document.getElementById('es-btn-next');
     const divPrev = document.getElementById('es-div-prev');
-    const divNext = document.getElementById('es-div-next');
     
-    // SKIP BUTTON (Appears at Sweep 28)
-    if (window.currentLevelIndex > 0 || window.hasReached28) {
-        if (nextBtn) { nextBtn.style.setProperty('opacity', '1', 'important'); nextBtn.style.setProperty('pointer-events', 'auto', 'important'); }
-        if (divNext) divNext.style.setProperty('opacity', '1', 'important');
-    } else {
-        if (nextBtn) { nextBtn.style.setProperty('opacity', '0', 'important'); nextBtn.style.setProperty('pointer-events', 'none', 'important'); }
-        if (divNext) divNext.style.setProperty('opacity', '0', 'important');
-    }
-
-    // BACK BUTTON (Appears at Sweep 27)
-    if (window.currentLevelIndex > 0 || window.hasReached27) {
+    if (window.currentLevelIndex > 0) {
         if (prevBtn) { prevBtn.style.setProperty('opacity', '1', 'important'); prevBtn.style.setProperty('pointer-events', 'auto', 'important'); }
         if (divPrev) divPrev.style.setProperty('opacity', '1', 'important');
     } else {
@@ -314,7 +304,6 @@ function startMechanics() {
   });
 
   document.getElementById('es-btn-prev').addEventListener('click', () => {
-      // Hard block preventing return to Sweep 30
       if (window.currentLevelIndex <= 0 || window.isTeleporting) return;
       
       window.globalSfx.pause();
@@ -347,7 +336,7 @@ function startMechanics() {
     return Object.values(window.foundImages).every(status => status === true);
   }
 
-  // --- VISUAL HUNTER ---
+  // --- VISUAL HUNTER (NO DIVS - FIXES LEVEL 5 LAG) ---
   setInterval(() => {
     document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
       if (btn.getBoundingClientRect().bottom > window.innerHeight - 100) { btn.style.setProperty('display', 'none', 'important'); btn.style.setProperty('opacity', '0', 'important'); }
@@ -357,7 +346,7 @@ function startMechanics() {
         el.style.setProperty('filter', 'none', 'important'); el.style.setProperty('-webkit-filter', 'none', 'important'); el.style.setProperty('backdrop-filter', 'none', 'important'); el.style.setProperty('-webkit-backdrop-filter', 'none', 'important'); el.style.setProperty('background', 'transparent', 'important'); 
     });
 
-    const textElements = document.querySelectorAll('div, span, p, h1, h2, h3');
+    const textElements = document.querySelectorAll('span, p, h1, h2, h3, h4, h5, strong, em');
     textElements.forEach(el => {
       if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
         const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -463,14 +452,17 @@ function startMechanics() {
     const welcomeBlock = document.getElementById('eye-spy-welcome-block');
     if (welcomeBlock) welcomeBlock.style.display = "flex";
 
+    // Play Clue audio upon entering a new sweep
     mpSdk.on(mpSdk.Sweep.Event.ENTER, function(sweepId) {
-        if (window.currentLevelIndex === 0) {
-            if (sweepId === '28') window.hasReached28 = true;
-            if (sweepId === '27') window.hasReached27 = true;
-        }
-        updatePanelVisibility();
+        setTimeout(() => {
+            document.querySelectorAll('audio, video').forEach(media => {
+                media.currentTime = 0;
+                media.play().catch(()=>{});
+            });
+        }, 500); 
     });
 
+    // Kill audio immediately when leaving a sweep
     mpSdk.on(mpSdk.Sweep.Event.EXIT, function(fromSweep) {
       document.querySelectorAll('audio, video').forEach(media => {
           media.pause();
