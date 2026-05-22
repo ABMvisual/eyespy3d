@@ -1,6 +1,6 @@
-// --- 0. AUDIO SETUP ---
-window.audioSuccess = new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3');
-window.audioUnlock = new Audio('https://cdn.pixabay.com/download/audio/2021/08/09/audio_24e370a563.mp3');
+// --- 0. AUDIO SETUP (Using reliable Google CDN links to bypass 403 Forbidden errors) ---
+window.audioSuccess = new Audio('https://actions.google.com/sounds/v1/cartoon/clown_change_slip.ogg');
+window.audioUnlock = new Audio('https://actions.google.com/sounds/v1/cartoon/magic_chime_scifi.ogg');
 
 
 // --- 1. START SCREEN, AUDIO UI NUKE & GLOBAL CSS ---
@@ -27,13 +27,16 @@ customStyles.innerHTML = `
     pointer-events: none !important;
   }
 
-  /* PREVENT THE AUDIO 'X' FLASH */
-  audio, video, #mpe-audio-player, .mpe-audio-player, div[style*="bottom: 0"][style*="right: 0"] > [class*="close"] {
+  /* PREVENT THE AUDIO 'X' MICRO-FLASH (Kills it before it paints) */
+  audio, video, [id*="audio"], [class*="audio-player"], 
+  div[style*="bottom: 0px"] [class*="close"], 
+  div[style*="bottom: 0"] [class*="close"] {
     display: none !important;
     opacity: 0 !important;
     position: absolute !important;
     left: -9999px !important;
     pointer-events: none !important;
+    visibility: hidden !important;
   }
 
   /* SCALE UP *ONLY* THE POPUP 'X' BUTTON */
@@ -68,7 +71,7 @@ customStyles.innerHTML = `
     left: 0 !important; 
     width: 100vw !important; 
     height: 100vh !important;
-    background: transparent !important; 
+    background: rgba(0, 0, 0, 0.6) !important; /* RESTORED TRANSPARENT DARK LAYER */
     z-index: 2147483646 !important; 
     display: none; 
     flex-direction: column !important; 
@@ -111,7 +114,11 @@ document.body.appendChild(imageCover);
 
 const startUI = document.createElement('div');
 startUI.id = 'eye-spy-start-ui';
-startUI.innerHTML = `<button id="eye-spy-start-btn">Loading 3D Experience...</button>`;
+startUI.innerHTML = `
+  <h1 style="margin-bottom: 15px; text-align: center; font-size: 36px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); color: white;">Welcome to Eye Spy 3D</h1>
+  <p style="margin-bottom: 40px; font-size: 18px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Audio is required for this experience.</p>
+  <button id="eye-spy-start-btn">Loading 3D Experience...</button>
+`;
 document.body.appendChild(startUI);
 
 document.getElementById('eye-spy-start-btn').addEventListener('click', () => {
@@ -186,6 +193,7 @@ setInterval(() => {
     const rect = btn.getBoundingClientRect();
     if (rect.bottom > window.innerHeight - 100) {
       btn.style.setProperty('display', 'none', 'important');
+      btn.style.setProperty('opacity', '0', 'important');
     }
   });
 
@@ -273,7 +281,7 @@ const observer = new MutationObserver((mutations) => {
             if (!window.foundImages[filename]) {
               console.log(`🎯 [Escape Room] Found: ${filename}`);
               
-              // FIRE AUDIO
+              // FIRE SUCCESS AUDIO
               window.audioSuccess.currentTime = 0; 
               window.audioSuccess.play().catch(e => console.log("Audio blocked:", e));
             }
