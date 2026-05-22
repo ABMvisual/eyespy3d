@@ -1,25 +1,25 @@
 // --- 0. START SCREEN, AUDIO UI NUKE & GLOBAL CSS ---
 const customStyles = document.createElement('style');
 customStyles.innerHTML = `
-  /* 1. AGGRESSIVELY NUKE MPEMBED AUDIO UI */
+  /* 1. AGGRESSIVELY NUKE MPEMBED AUDIO UI (CSS Baseline) */
   * {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
 
-  /* 2. SCALE UP *ONLY* THE POPUP 'X' BUTTON & FORCE CLICKABILITY */
-  .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close, [class*="close"] {
-    transform: scale(2.5) !important; 
-    right: 25px !important; 
-    top: 25px !important; 
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important; /* Forces the X to remain clickable always */
-    z-index: 999999 !important;
-    display: block !important;
+  [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay {
+    filter: none !important;
+    -webkit-filter: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+  
+  [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
   }
 
-  /* HIDE THE NATIVE AUDIO PLAYER */
   audio, video, #mpe-audio-player, .mpe-audio-player {
     opacity: 0 !important;
     position: absolute !important;
@@ -27,7 +27,17 @@ customStyles.innerHTML = `
     pointer-events: none !important;
   }
 
-  /* 3. ISOLATED START SCREEN STYLING */
+  /* 2. SCALE UP *ONLY* THE POPUP 'X' BUTTON (Make it HUGE & Inside Banner) */
+  .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close {
+    transform: scale(2.5) !important; /* 250% larger */
+    right: 25px !important; /* Pulls it inward from the right edge */
+    top: 25px !important; /* Pushes it down into the banner */
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 99999 !important;
+  }
+
+  /* 3. Isolated Start Screen Styling */
   #eye-spy-start-screen {
     position: fixed !important; 
     top: 0 !important; 
@@ -126,7 +136,7 @@ const LEVELS = [
   }
 ];
 
-// --- 1.5. THE VISUAL HUNTER (The Ultimate Auto-Scanner) ---
+// --- 1.5. THE VISUAL HUNTER (Force Overwrites MPEmbed Layout) ---
 const targetMatchStrings = [];
 LEVELS.forEach(level => {
   level.imagesToFind.forEach(img => {
@@ -135,64 +145,53 @@ LEVELS.forEach(level => {
 });
 
 setInterval(() => {
-  // A. FORCE THE "X" BUTTON TO BE CLICKABLE
-  document.querySelectorAll('.mpe-window-close, .mpe-popup-close, [class*="close"]').forEach(btn => {
-    btn.style.setProperty('pointer-events', 'auto', 'important');
-  });
-
-  // B. THE CSS SPINNER ASSASSIN AND INVISIBLE SHIELD DESTROYER
-  document.querySelectorAll('div, svg, img').forEach(el => {
-    // 1. Protect the X button! If this element is the X or inside the X, ignore it.
-    if (el.closest('[class*="close"]')) return;
-
-    try {
-      const style = window.getComputedStyle(el);
-      const rect = el.getBoundingClientRect();
-      
-      // 2. DESTROY CSS ANIMATIONS (The Spinning Wheel)
-      // If it's spinning or pulsing, kill it visually and physically.
-      if (style.animationName && style.animationName !== 'none') {
-        el.style.setProperty('display', 'none', 'important');
-        el.style.setProperty('opacity', '0', 'important');
-        el.style.setProperty('pointer-events', 'none', 'important');
-      }
-
-      // 3. DESTROY KNOWN LOADERS BY CLASS NAME
-      if (el.className && typeof el.className === 'string') {
-        const className = el.className.toLowerCase();
-        if (className.includes('loader') || className.includes('spinner') || className.includes('busy')) {
-          el.style.setProperty('display', 'none', 'important');
-          el.style.setProperty('pointer-events', 'none', 'important');
-        }
-      }
-
-      // 4. SHATTER FULL-SCREEN INVISIBLE GLASS SHIELDS
-      // If a div is absolute/fixed and takes up >90% of the screen, it's an MPEmbed shield.
-      // (We explicitly protect 'showcase' so we don't break the 3D model itself).
-      if ((style.position === 'absolute' || style.position === 'fixed') && 
-          rect.width > window.innerWidth * 0.9 && rect.height > window.innerHeight * 0.9 &&
-          el.id !== 'showcase' && !el.classList.contains('showcase-container')) {
-          
-          el.style.setProperty('pointer-events', 'none', 'important');
-          el.style.setProperty('background', 'transparent', 'important');
-      }
-    } catch(e) {}
-  });
-
-  // C. STRIP BLUE CURSORS
-  [document.body, document.documentElement, ...document.querySelectorAll('canvas, iframe')].forEach(el => {
-    if (el.style.cursor === 'wait' || el.style.cursor === 'progress') {
-      el.style.removeProperty('cursor'); 
+  // 1A. DYNAMIC AUDIO UI SNIPER (The Bottom X)
+  document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
+    const rect = btn.getBoundingClientRect();
+    if (rect.bottom > window.innerHeight - 100) {
+      btn.style.setProperty('display', 'none', 'important');
+      btn.style.setProperty('opacity', '0', 'important');
+      btn.style.setProperty('pointer-events', 'none', 'important');
     }
   });
 
-  // D. THE TEXT BANNER FORMATTER
+  // 1B. THE BLUR STRIPPER (Targeting specific MPEmbed overlay classes)
+  document.querySelectorAll('.mpe-media-overlay, .mpe-overlay').forEach(el => {
+      el.style.setProperty('filter', 'none', 'important');
+      el.style.setProperty('-webkit-filter', 'none', 'important');
+      el.style.setProperty('backdrop-filter', 'none', 'important');
+      el.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+      el.style.setProperty('background', 'transparent', 'important'); 
+  });
+
+  // 1C. THE SPINNER ASSASSIN (Hunts SVGs and loader classes)
+  document.querySelectorAll('.mpe-loader, .spinner, [class*="media-loader"]').forEach(loader => {
+        loader.style.setProperty('display', 'none', 'important');
+        loader.style.setProperty('opacity', '0', 'important');
+  });
+  
+  // Specific SVG hunt
+  document.querySelectorAll('svg').forEach(svg => {
+    const parent = svg.parentElement;
+    if (parent && window.getComputedStyle(parent).position === 'absolute' && window.getComputedStyle(parent).zIndex > 1000) {
+        svg.style.setProperty('display', 'none', 'important');
+        svg.style.setProperty('opacity', '0', 'important');
+        parent.style.setProperty('display', 'none', 'important');
+        parent.style.setProperty('background', 'transparent', 'important');
+    }
+  });
+
+
+  // 2. THE TEXT BANNER FORMATTER
   const textElements = document.querySelectorAll('div, span, p, h1, h2, h3');
+  
   textElements.forEach(el => {
     if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
       const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
       
       if (textClean.length > 3 && targetMatchStrings.includes(textClean)) {
+        
+        // Force the TEXT to dead-center (Horizontal AND Vertical) and 200% size
         el.style.setProperty('position', 'absolute', 'important');
         el.style.setProperty('left', '50%', 'important');
         el.style.setProperty('top', '50%', 'important'); 
@@ -202,13 +201,16 @@ setInterval(() => {
         el.style.setProperty('margin', '0', 'important');
         el.style.setProperty('white-space', 'nowrap', 'important');
         
+        // Force the BANNER to the Custom Dark Charcoal
         const banner = el.parentElement;
         if (banner && !banner.dataset.styled) {
           banner.style.setProperty('background-color', '#1c1c1c', 'important');
           banner.style.setProperty('background', '#1c1c1c', 'important'); 
+          
           if (window.getComputedStyle(banner).position === 'static') {
             banner.style.setProperty('position', 'relative', 'important');
           }
+          
           banner.style.setProperty('min-height', '75px', 'important');
           banner.dataset.styled = "true"; 
         }
@@ -244,7 +246,7 @@ function checkAllFound() {
 }
 
 
-// --- 3. THE TRIPWIRE LISTENER ---
+// --- 3. THE TRIPWIRE LISTENER (Logic Only) ---
 const observer = new MutationObserver((mutations) => {
   const currentLevel = LEVELS[window.currentLevelIndex];
   if (!currentLevel) return; 
@@ -268,6 +270,7 @@ const observer = new MutationObserver((mutations) => {
             
             if (checkAllFound() && !window.pathsPreloaded) {
               window.pathsPreloaded = true;
+              console.log(`🔓 [Escape Room] All items found! Unlocking map for flight...`);
               if (window.mpSdk) {
                 window.mpSdk.Sweep.enable(...window.allModelSweeps).catch(() => {});
               }
@@ -290,6 +293,7 @@ const observer = new MutationObserver((mutations) => {
             window.activeOpenPopups.delete(filename); 
             
             if (checkAllFound() && window.activeOpenPopups.size === 0 && !window.isTeleporting) {
+              console.log(`🚀 [Escape Room] Initiating Teleport sequence!`);
               executeFastTeleport(window.mpSdk, currentLevel);
             }
           }
@@ -358,8 +362,13 @@ async function executeFastTeleport(mpSdk, levelData) {
     
     if (LEVELS[window.currentLevelIndex]) {
       setupLevelTracking(); 
+    } else {
+      console.log("🏆 [Escape Room] Complete!");
     }
-  } catch (error) {}
+
+  } catch (error) {
+    console.error("Teleport failed:", error);
+  }
 }
 
 // Boot-up
