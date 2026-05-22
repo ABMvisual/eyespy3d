@@ -85,7 +85,29 @@ customStyles.innerHTML = `
     z-index: 2147483645 !important; 
   }
 
-  /* Layer 2: Text and Buttons (Always on top) */
+  /* Layer 2: The Load Image Cover */
+  #eye-spy-image-cover {
+    position: fixed !important; 
+    top: 0 !important; left: 0 !important; 
+    width: 100vw !important; height: 100vh !important;
+    background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/ES3D_load%20screen%20omni.png') !important; 
+    background-size: cover !important;
+    background-position: center !important;
+    z-index: 2147483646 !important; 
+  }
+  
+  #eye-spy-image-cover::after {
+    content: "";
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: inherit;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    backdrop-filter: blur(15px);
+    background-color: rgba(0,0,0,0.4);
+  }
+
+  /* Layer 3: Text and Buttons (Always on top) */
   #eye-spy-start-ui {
     position: fixed !important; 
     top: 0 !important; left: 0 !important; 
@@ -98,7 +120,7 @@ customStyles.innerHTML = `
   }
 
   #eye-spy-welcome-block {
-    display: none; /* Hidden until sweeps load to prevent flashing */
+    display: none; 
     flex-direction: column;
     align-items: center;
   }
@@ -107,7 +129,7 @@ customStyles.innerHTML = `
     padding: 16px 40px !important; 
     font-size: 24px !important; 
     font-weight: bold !important;
-    background: #888 !important; /* Solid grey while loading */
+    background: #888 !important; 
     color: #fff !important; 
     border: none !important; 
     border-radius: 8px !important;
@@ -120,7 +142,7 @@ customStyles.innerHTML = `
   }
   
   #eye-spy-start-btn.ready { 
-    background: #CCFF00 !important; /* Pops to Bright Green */
+    background: #CCFF00 !important; 
     color: #000 !important;
     pointer-events: auto !important; 
     cursor: pointer !important;
@@ -154,6 +176,12 @@ document.head.appendChild(customStyles);
 const darkOverlay = document.createElement('div');
 darkOverlay.id = 'eye-spy-dark-overlay';
 document.body.appendChild(darkOverlay);
+
+// ---> I FORGOT THIS ENTIRE BLOCK LAST TIME <---
+const imageCover = document.createElement('div');
+imageCover.id = 'eye-spy-image-cover';
+document.body.appendChild(imageCover);
+// ----------------------------------------------
 
 const startUI = document.createElement('div');
 startUI.id = 'eye-spy-start-ui';
@@ -403,15 +431,23 @@ async function initMashupLogic(mpSdk) {
   lockMapForCurrentLevel(mpSdk);
 
   // CRITICAL: Sweeps are loaded! 
-  // 1. Hide the lazy flashing text
+  // 1. Hide the Image Cover ONLY (Leave the dark overlay)
+  const cover = document.getElementById('eye-spy-image-cover');
+  if (cover) {
+    cover.style.transition = "opacity 0.5s ease";
+    cover.style.opacity = "0";
+    setTimeout(() => cover.remove(), 500);
+  }
+  
+  // 2. Hide the lazy flashing text
   const loadingText = document.getElementById('eye-spy-loading-text');
   if (loadingText) loadingText.remove();
   
-  // 2. Reveal the welcome block (This prevents the flashing issue)
+  // 3. Reveal the welcome block (This prevents the flashing issue)
   const welcomeBlock = document.getElementById('eye-spy-welcome-block');
   if (welcomeBlock) welcomeBlock.style.display = "flex";
 
-  // 3. Update and unlock the button
+  // 4. Update and unlock the button
   const finalBtn = document.getElementById('eye-spy-start-btn');
   if (finalBtn) {
       finalBtn.innerText = "Start now!"; 
