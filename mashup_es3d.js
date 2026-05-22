@@ -44,14 +44,14 @@ function injectCustomUI() {
     audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"] { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
-    /* BLACK & WHITE START SCREEN FILTER */
+    /* VINTAGE SEPIA START SCREEN FILTER */
     #eye-spy-dark-overlay { 
         position: fixed !important; 
         top: 0 !important; left: 0 !important; 
         width: 100vw !important; height: 100vh !important; 
-        background: rgba(0, 0, 0, 0.5) !important; 
-        backdrop-filter: grayscale(100%) brightness(80%) !important;
-        -webkit-backdrop-filter: grayscale(100%) brightness(80%) !important;
+        background: rgba(60, 40, 20, 0.4) !important; 
+        backdrop-filter: sepia(70%) contrast(110%) brightness(90%) !important;
+        -webkit-backdrop-filter: sepia(70%) contrast(110%) brightness(90%) !important;
         z-index: 2147483645 !important; 
     }
 
@@ -64,7 +64,7 @@ function injectCustomUI() {
     #eye-spy-start-btn:hover { transform: scale(1.05) !important; }
     #eye-spy-loading-text { position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; }
     
-    /* PILL CONTROL PANEL STYLES - BULLETPROOF SVGS */
+    /* PILL CONTROL PANEL STYLES - BULLETPROOF CSS ICONS */
     #es-control-panel { 
       display: none !important; 
       position: fixed !important; 
@@ -94,12 +94,19 @@ function injectCustomUI() {
       border-radius: 8px !important; 
       transition: transform 0.2s ease, background 0.2s ease !important; 
       width: 60px !important;
-      gap: 2px !important;
+      gap: 3px !important;
     }
     .es-panel-btn:hover { 
       transform: scale(1.1) !important; 
       background: rgba(204, 255, 0, 0.1) !important; 
     }
+    
+    /* BULLETPROOF SVG BACKGROUNDS TO DEFEAT MPEMBED SANITIZER */
+    .es-icon-prev { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 24px; height: 24px; }
+    .es-icon-next { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 24px; height: 24px; }
+    .es-icon-unmute { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 26px; height: 26px; }
+    .es-icon-mute { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 26px; height: 26px; display: none; }
+
     .es-panel-btn span {
       font-size: 10px !important;
       font-weight: bold !important;
@@ -132,27 +139,27 @@ function injectCustomUI() {
   `;
   document.body.appendChild(startUI);
 
-  // PILL CONTROL PANEL HTML (Forcing fills)
+  // PILL CONTROL PANEL HTML (Bulletproof backgrounds)
   const panel = document.createElement('div');
   panel.id = 'es-control-panel';
   panel.innerHTML = `
-    <button class="es-panel-btn" id="es-btn-prev" style="visibility: hidden; pointer-events: none;">
-      <svg width="24" height="24" viewBox="0 0 24 24" style="display: block;"><path style="fill: #CCFF00 !important;" d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
+    <button class="es-panel-btn" id="es-btn-prev" title="Skip Backward">
+      <div class="es-icon-prev"></div>
       <span>BACK</span>
     </button>
 
-    <div class="es-panel-divider" id="es-div-1" style="visibility: hidden;"></div>
+    <div class="es-panel-divider"></div>
     
-    <button class="es-panel-btn" id="es-btn-audio">
-      <svg id="es-svg-unmute" width="26" height="26" viewBox="0 0 24 24" style="display: block;"><path style="fill: #CCFF00 !important;" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-      <svg id="es-svg-mute" width="26" height="26" viewBox="0 0 24 24" style="display:none;"><path style="fill: #CCFF00 !important;" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+    <button class="es-panel-btn" id="es-btn-audio" title="Mute / Unmute Audio">
+      <div class="es-icon-unmute" id="es-svg-unmute"></div>
+      <div class="es-icon-mute" id="es-svg-mute"></div>
       <span id="es-audio-label">MUTE</span>
     </button>
 
-    <div class="es-panel-divider" id="es-div-2" style="visibility: hidden;"></div>
+    <div class="es-panel-divider"></div>
 
-    <button class="es-panel-btn" id="es-btn-next" style="visibility: hidden; pointer-events: none;">
-      <svg width="24" height="24" viewBox="0 0 24 24" style="display: block;"><path style="fill: #CCFF00 !important;" d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+    <button class="es-panel-btn" id="es-btn-next" title="Skip Forward">
+      <div class="es-icon-next"></div>
       <span>CHEAT</span>
     </button>
   `;
@@ -168,9 +175,7 @@ function injectCustomUI() {
 
       // Reveal Panel ONLY after start is clicked
       const controls = document.getElementById('es-control-panel');
-      if (controls) {
-        controls.style.setProperty('display', 'flex', 'important');
-      }
+      if (controls) controls.style.setProperty('display', 'flex', 'important');
 
       try {
           window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; 
@@ -200,6 +205,8 @@ function startMechanics() {
   window.foundImages = {};
   window.isTeleporting = false; 
   window.pathsPreloaded = false; 
+  
+  // Decoupled tracking: found status vs currently active audio status
   window.activeOpenPopups = new Set(); 
 
   const targetMatchStrings = [];
@@ -207,7 +214,7 @@ function startMechanics() {
     level.imagesToFind.forEach(img => targetMatchStrings.push(img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', '')));
   });
 
-  // --- VISUAL HUNTER (RESTORED DIV CHECKER) ---
+  // --- VISUAL HUNTER (RESTORED TO GOLDEN v50) ---
   setInterval(() => {
     document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
       if (btn.getBoundingClientRect().bottom > window.innerHeight - 100) { btn.style.setProperty('display', 'none', 'important'); btn.style.setProperty('opacity', '0', 'important'); }
@@ -217,6 +224,7 @@ function startMechanics() {
         el.style.setProperty('filter', 'none', 'important'); el.style.setProperty('-webkit-filter', 'none', 'important'); el.style.setProperty('backdrop-filter', 'none', 'important'); el.style.setProperty('-webkit-backdrop-filter', 'none', 'important'); el.style.setProperty('background', 'transparent', 'important'); 
     });
 
+    // Contains 'div' for proper popup styling
     const textElements = document.querySelectorAll('div, span, p, h1, h2, h3');
     textElements.forEach(el => {
       if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
@@ -234,32 +242,6 @@ function startMechanics() {
     });
   }, 250); 
 
-  // --- UI VISIBILITY LOGIC (Level Locks) ---
-  function updatePanelVisibility() {
-    const prevBtn = document.getElementById('es-btn-prev');
-    const nextBtn = document.getElementById('es-btn-next');
-    const div1 = document.getElementById('es-div-1');
-    const div2 = document.getElementById('es-div-2');
-    
-    // CHEAT (Next) appears when we reach Level 2 (Index 1)
-    if (window.currentLevelIndex >= 1) {
-        if (nextBtn) { nextBtn.style.setProperty('visibility', 'visible', 'important'); nextBtn.style.setProperty('pointer-events', 'auto', 'important'); }
-        if (div2) div2.style.setProperty('visibility', 'visible', 'important');
-    } else {
-        if (nextBtn) { nextBtn.style.setProperty('visibility', 'hidden', 'important'); nextBtn.style.setProperty('pointer-events', 'none', 'important'); }
-        if (div2) div2.style.setProperty('visibility', 'hidden', 'important');
-    }
-
-    // BACK (Prev) appears ONLY when we reach Level 3 (Index 2). Prevents going back to Level 1.
-    if (window.currentLevelIndex >= 2) {
-        if (prevBtn) { prevBtn.style.setProperty('visibility', 'visible', 'important'); prevBtn.style.setProperty('pointer-events', 'auto', 'important'); }
-        if (div1) div1.style.setProperty('visibility', 'visible', 'important');
-    } else {
-        if (prevBtn) { prevBtn.style.setProperty('visibility', 'hidden', 'important'); prevBtn.style.setProperty('pointer-events', 'none', 'important'); }
-        if (div1) div1.style.setProperty('visibility', 'hidden', 'important');
-    }
-  }
-
   // --- BUTTON LOGIC ---
   let isMuted = false;
   document.getElementById('es-btn-audio').addEventListener('click', () => {
@@ -274,8 +256,7 @@ function startMechanics() {
   document.getElementById('es-btn-next').addEventListener('click', () => {
       const cLevel = LEVELS[window.currentLevelIndex];
       if (cLevel && window.mpSdk && !window.isTeleporting) {
-          
-          // Kill audio before jump
+          // Kill audio and memory before jump
           window.globalSfx.pause();
           window.globalSfx.currentTime = 0;
           window.activeOpenPopups.clear();
@@ -286,10 +267,10 @@ function startMechanics() {
   });
 
   document.getElementById('es-btn-prev').addEventListener('click', () => {
-      // Hard block preventing return to Sweep 30 (Level 1 / Index 0)
-      if (window.currentLevelIndex <= 1 || window.isTeleporting) return;
+      // Hard block preventing return to Sweep 30 (Anything before Index 0)
+      if (window.currentLevelIndex <= 0 || window.isTeleporting) return;
       
-      // Kill audio before jump
+      // Kill audio and memory before jump
       window.globalSfx.pause();
       window.globalSfx.currentTime = 0;
       window.activeOpenPopups.clear();
@@ -302,7 +283,6 @@ function startMechanics() {
           window.mpSdk.Sweep.moveTo(pLevel.startSweeps[0], { transition: window.mpSdk.Sweep.Transition.INSTANT }).then(() => {
               setupLevelTracking();
               lockMapForCurrentLevel(window.mpSdk);
-              updatePanelVisibility(); 
           });
       });
   });
@@ -320,7 +300,7 @@ function startMechanics() {
     return Object.values(window.foundImages).every(status => status === true);
   }
 
-  // --- OPTIMIZED TRIPWIRE WITH INFINITE AUDIO REPLAY ---
+  // --- TRIPWIRE WITH DECOUPLED INFINITE AUDIO REPLAY ---
   const observer = new MutationObserver((mutations) => {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel) return; 
@@ -340,13 +320,13 @@ function startMechanics() {
             
             if (searchString.includes(cleanName) || searchString.includes(encodedName)) {
               
-              // Infinite Audio Replay Logic
+              // 1. Audio Logic: Always play if it isn't currently open
               if (!window.activeOpenPopups.has(filename)) {
                 playItemSound(filename); 
                 window.activeOpenPopups.add(filename); 
               }
 
-              // Found Item Tracking Logic
+              // 2. Escape Room Logic: Track progress
               if (!window.foundImages[filename]) {
                  console.log(`🎯 [Escape Room] Found: ${filename}`);
                  window.foundImages[filename] = true;
@@ -375,7 +355,9 @@ function startMechanics() {
             const encodedName = encodeURI(filename).toLowerCase();
 
             if (searchString.includes(cleanName) || searchString.includes(encodedName)) {
+              // Clear from memory so it can play again next time it opens
               window.activeOpenPopups.delete(filename); 
+              
               if (checkAllFound() && window.activeOpenPopups.size === 0 && !window.isTeleporting) {
                 executeFastTeleport(window.mpSdk, currentLevel);
               }
@@ -412,14 +394,6 @@ function startMechanics() {
     const welcomeBlock = document.getElementById('eye-spy-welcome-block');
     if (welcomeBlock) welcomeBlock.style.display = "flex";
 
-    // GLOBAL AUDIO RESET ON ENTERING NEW ROOM
-    mpSdk.on(mpSdk.Sweep.Event.ENTER, function(sweepId) {
-      window.globalSfx.pause();
-      window.globalSfx.currentTime = 0;
-      window.activeOpenPopups.clear();
-      updatePanelVisibility();
-    });
-
     mpSdk.on(mpSdk.Sweep.Event.EXIT, function(fromSweep) {
       const cLevel = LEVELS[window.currentLevelIndex];
       if (cLevel && cLevel.startSweeps.includes(fromSweep)) { mpSdk.Sweep.disable(fromSweep).catch(() => {}); }
@@ -446,7 +420,6 @@ function startMechanics() {
       
       if (LEVELS[window.currentLevelIndex]) {
           setupLevelTracking(); 
-          updatePanelVisibility(); 
       } else {
           const controls = document.getElementById('es-control-panel');
           if (controls) controls.remove();
