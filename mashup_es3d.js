@@ -37,7 +37,27 @@ customStyles.innerHTML = `
     z-index: 99999 !important;
   }
 
-  /* 3. Isolated Start Screen Styling */
+  /* 3. THE PSEUDO-ELEMENT CSS CARPET BOMB (White Circle Assassin) */
+  .expanded::before, .expanded::after,
+  .expanded *::before, .expanded *::after,
+  .tag-media-content::before, .tag-media-content::after,
+  [class*="loading"]::before, [class*="loading"]::after,
+  [class*="loader"]::before, [class*="loader"]::after {
+      display: none !important;
+      content: none !important;
+      animation: none !important;
+      border: none !important;
+      background: transparent !important;
+  }
+
+  [class*="loader" i], [class*="spin" i], [class*="busy" i] {
+      border: none !important;
+      animation: none !important;
+      -webkit-animation: none !important;
+      background-image: none !important;
+  }
+
+  /* 4. Isolated Start Screen Styling */
   #eye-spy-start-screen {
     position: fixed !important; 
     top: 0 !important; 
@@ -218,39 +238,6 @@ setInterval(() => {
     }
   });
 }, 250); 
-
-
-// --- 1.75 NEW: THE IFRAME TROJAN HORSE ---
-// Sneaks across the border into Matterport's native document to assassinate its internal spinners
-setInterval(() => {
-  try {
-    const iframe = document.querySelector('iframe#showcase');
-    // If the browser security allows us to access the inside of the iframe...
-    if (iframe && iframe.contentDocument) {
-      const iDoc = iframe.contentDocument;
-      
-      // Inject our hit-list directly into Matterport's brain
-      if (!iDoc.getElementById('kill-native-spinners')) {
-        const style = iDoc.createElement('style');
-        style.id = 'kill-native-spinners';
-        style.innerHTML = `
-          /* Nukes Matterport's native WebGL/HTML loading circles and blue reticles */
-          [class*="spinner"], [class*="loader"], .mp-spinner, .loading-spinner, circle[stroke-width] {
-            display: none !important;
-            opacity: 0 !important;
-            visibility: hidden !important;
-            stroke: transparent !important;
-            animation: none !important;
-          }
-        `;
-        iDoc.head.appendChild(style);
-        console.log("Trojan Horse successfully deployed into Matterport iframe.");
-      }
-    }
-  } catch(e) {
-    // Fails silently if strict Cross-Origin bounds block us
-  }
-}, 1000);
 
 
 // --- 2. GLOBAL STATE TRACKING ---
