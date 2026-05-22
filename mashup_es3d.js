@@ -1,8 +1,6 @@
 // --- 0. DYNAMIC AUDIO ENGINE ---
-// Base URL for your GitHub repository
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
-// Dictionary mapping the image found to your specific voiceover MP3s
 const AUDIO_MAP = {
   '/pink bopeep.jpeg': 'pink bo-peep.mp3',
   '/two white cows.jpeg': 'two white cows.mp3',
@@ -12,7 +10,6 @@ const AUDIO_MAP = {
   '/pineapple sunday.jpeg': 'pineapple sunday.mp3'
 };
 
-// Create single global audio players to bypass browser restrictions
 window.globalSfx = new Audio();
 window.globalChime = new Audio('https://upload.wikimedia.org/wikipedia/commons/d/d7/Tada.mp3');
 
@@ -20,10 +17,8 @@ function playItemSound(imageFilename) {
   try {
     let mp3Name = AUDIO_MAP[imageFilename];
     if (mp3Name) {
-      // Plays your custom voiceover from GitHub
       window.globalSfx.src = GITHUB_BASE + encodeURIComponent(mp3Name);
     } else {
-      // Fallback Ping for items that don't have custom audio yet
       window.globalSfx.src = 'https://upload.wikimedia.org/wikipedia/commons/4/42/Ping.mp3';
     }
     window.globalSfx.currentTime = 0;
@@ -48,7 +43,7 @@ customStyles.innerHTML = `
     background-color: transparent !important;
   }
   
-  /* TARGETED ASSASSINATION: The White Circle image & Custom Billboard */
+  /* TARGETED ASSASSINATION */
   [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] {
     display: none !important;
     opacity: 0 !important;
@@ -79,56 +74,78 @@ customStyles.innerHTML = `
     pointer-events: auto !important;
   }
 
-  /* DUAL-LAYER START SCREEN STYLING */
-  /* Layer 1: Your Custom 3D Logo Cover */
-  #eye-spy-image-cover {
+  /* MULTI-LAYER START SCREEN */
+  
+  /* Layer 1: Dark Transparent Overlay (Stays behind the text) */
+  #eye-spy-dark-overlay {
     position: fixed !important; 
-    top: 0 !important; 
-    left: 0 !important; 
-    width: 100vw !important; 
-    height: 100vh !important;
-    background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/es3d_load%20screen.png') !important; 
-    background-size: cover !important;
-    background-position: center !important;
-    background-color: #111 !important;
-    z-index: 2147483646 !important; 
+    top: 0 !important; left: 0 !important; 
+    width: 100vw !important; height: 100vh !important;
+    background: rgba(0, 0, 0, 0.75) !important; 
+    z-index: 2147483645 !important; 
   }
 
-  /* Layer 2: The transparent UI layer (DEAD CENTER) */
+  /* Layer 2: The Load Image Cover (Disappears when loaded) */
+  #eye-spy-image-cover {
+    position: fixed !important; 
+    top: 0 !important; left: 0 !important; 
+    width: 100vw !important; height: 100vh !important;
+    /* UPDATED TO THE NEW 'OMNI' IMAGE URL */
+    background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/ES3D_load%20screen%20omni.png') !important; 
+    background-size: cover !important;
+    background-position: center !important;
+    z-index: 2147483646 !important; 
+  }
+  
+  /* Adds a blurred background with the un-cropped image perfectly centered on top */
+  #eye-spy-image-cover::after {
+    content: "";
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: inherit;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    backdrop-filter: blur(15px);
+    background-color: rgba(0,0,0,0.4);
+  }
+
+  /* Layer 3: Text and Buttons (Always on top) */
   #eye-spy-start-ui {
     position: fixed !important; 
-    top: 0 !important; 
-    left: 0 !important; 
-    width: 100vw !important; 
-    height: 100vh !important;
-    background: rgba(0, 0, 0, 0.6) !important; 
+    top: 0 !important; left: 0 !important; 
+    width: 100vw !important; height: 100vh !important;
     z-index: 2147483647 !important; 
     display: flex !important; 
     flex-direction: column !important; 
     justify-content: center !important; 
     align-items: center !important;
-    margin: 0 !important;
-    padding: 0 !important;
+  }
+
+  #eye-spy-welcome-text {
+    display: none; /* Hidden entirely while the Image Cover is visible */
+    flex-direction: column;
+    align-items: center;
   }
   
   #eye-spy-start-btn {
     padding: 16px 40px !important; 
     font-size: 24px !important; 
     font-weight: bold !important;
-    background: #CCFF00 !important; 
-    color: #000 !important; 
+    background: #888 !important; /* Solid grey while loading */
+    color: #fff !important; 
     border: none !important; 
     border-radius: 8px !important;
     cursor: wait !important; 
-    transition: transform 0.2s ease, opacity 0.2s ease !important;
-    opacity: 0.5 !important;
+    transition: transform 0.2s ease, background 0.3s ease !important;
+    opacity: 1 !important; 
     pointer-events: none !important; 
     box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
     margin-top: 20px !important;
   }
   
   #eye-spy-start-btn.ready { 
-    opacity: 1 !important;
+    background: #CCFF00 !important; /* Pops to Bright Green */
+    color: #000 !important;
     pointer-events: auto !important; 
     cursor: pointer !important;
   }
@@ -139,34 +156,34 @@ customStyles.innerHTML = `
 `;
 document.head.appendChild(customStyles);
 
-// Inject Dual-Layer Start Screen HTML
-const imageCover = document.createElement('div');
-imageCover.id = 'eye-spy-image-cover';
-document.body.appendChild(imageCover);
-
-const startUI = document.createElement('div');
-startUI.id = 'eye-spy-start-ui';
-startUI.innerHTML = `
-  <p id="eye-spy-status-text" style="margin: 0 0 20px 0; font-size: 20px; font-weight: bold; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Retrieving assets...</p>
-  <button id="eye-spy-start-btn">Loading 3D Experience...</button>
-`;
-document.body.appendChild(startUI);
+// Inject HTML structure
+document.body.insertAdjacentHTML('beforeend', `
+  <div id="eye-spy-dark-overlay"></div>
+  <div id="eye-spy-image-cover"></div>
+  <div id="eye-spy-start-ui">
+    <div id="eye-spy-welcome-text">
+      <h1 style="margin: 0 0 15px 0; text-align: center; font-size: 42px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); color: white;">Welcome to Eye Spy 3D</h1>
+      <p style="margin: 0 0 20px 0; font-size: 20px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Audio is required - please enjoy this experience.</p>
+    </div>
+    <button id="eye-spy-start-btn">Loading 3D Experience...</button>
+  </div>
+`);
 
 // Bulletproof Click Event
 const startBtn = document.getElementById('eye-spy-start-btn');
 startBtn.addEventListener('click', () => {
   if (!startBtn.classList.contains('ready')) return; 
 
-  // 1. IMMEDIATELY hide the UI
-  startUI.style.transition = "opacity 0.4s ease";
-  startUI.style.opacity = "0";
-  setTimeout(() => startUI.remove(), 400);
+  // Hide the UI layers
+  const ui = document.getElementById('eye-spy-start-ui');
+  const overlay = document.getElementById('eye-spy-dark-overlay');
+  if(ui) { ui.style.transition = "opacity 0.4s ease"; ui.style.opacity = "0"; setTimeout(() => ui.remove(), 400); }
+  if(overlay) { overlay.style.transition = "opacity 0.4s ease"; overlay.style.opacity = "0"; setTimeout(() => overlay.remove(), 400); }
 
-  // 2. Warm up the global audio elements to unlock them for the browser
+  // Warm up the global audio elements
   try {
-      window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA........'; // Tiny dummy payload
+      window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; 
       window.globalSfx.play().catch(()=>{});
-      
       window.globalChime.volume = 0;
       window.globalChime.play().then(() => { window.globalChime.pause(); window.globalChime.volume = 1; window.globalChime.currentTime = 0; }).catch(()=>{});
   } catch(e) {}
@@ -300,7 +317,7 @@ function checkAllFound() {
 }
 
 
-// --- 5. THE TRIPWIRE LISTENER (DYNAMIC AUDIO) ---
+// --- 5. THE TRIPWIRE LISTENER ---
 const observer = new MutationObserver((mutations) => {
   const currentLevel = LEVELS[window.currentLevelIndex];
   if (!currentLevel) return; 
@@ -318,7 +335,7 @@ const observer = new MutationObserver((mutations) => {
           if (html.includes(filename) || html.includes(encodedName) || outer.includes(filename) || text.includes(filename)) {
             if (!window.foundImages[filename]) {
               console.log(`🎯 [Escape Room] Found: ${filename}`);
-              playItemSound(filename); // <-- Triggers your custom GitHub MP3s!
+              playItemSound(filename); 
             }
             
             window.activeOpenPopups.add(filename); 
@@ -387,7 +404,8 @@ async function initMashupLogic(mpSdk) {
   window.allModelSweeps = Object.keys(sweepCollection);
   lockMapForCurrentLevel(mpSdk);
 
-  // CRITICAL: Sweeps are loaded! Unlock UI.
+  // CRITICAL: Sweeps are loaded! 
+  // 1. Hide the Image Cover ONLY (Leave the dark overlay)
   const cover = document.getElementById('eye-spy-image-cover');
   if (cover) {
     cover.style.transition = "opacity 0.5s ease";
@@ -395,11 +413,12 @@ async function initMashupLogic(mpSdk) {
     setTimeout(() => cover.remove(), 500);
   }
   
+  // 2. Reveal the welcome text and unlock the button
+  const welcomeText = document.getElementById('eye-spy-welcome-text');
+  if (welcomeText) welcomeText.style.display = "flex";
+
   const finalBtn = document.getElementById('eye-spy-start-btn');
-  const statusText = document.getElementById('eye-spy-status-text');
-  
-  if (finalBtn && statusText) {
-      statusText.innerText = "Audio is required. Please turn up your volume!";
+  if (finalBtn) {
       finalBtn.innerText = "Start Experience";
       finalBtn.classList.add('ready');
   }
