@@ -14,8 +14,7 @@ customStyles.innerHTML = `
     background-color: transparent !important;
   }
   
-  /* Added common CSS loader classes just in case */
-  [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, .lds-ring, .lds-dual-ring {
+  [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner {
     display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
@@ -169,17 +168,22 @@ setInterval(() => {
     }
   });
 
-  // NEW: 1C. THE SAFE SVG CIRCLE ASSASSIN
-  // Hunts down <circle> tags but explicitly ignores anything inside a close button so your 'X' is safe.
-  document.querySelectorAll('circle').forEach(circle => {
-    if (!circle.closest('[class*="close"]')) {
-      circle.style.setProperty('display', 'none', 'important');
-      circle.style.setProperty('opacity', '0', 'important');
-      circle.style.setProperty('stroke', 'transparent', 'important');
+  // 1C. THE SURGICAL SPINNER ASSASSIN
+  // Hunts down the white spinning SVG/loader, but rigorously protects the popup 'X' button.
+  document.querySelectorAll('svg, circle, path, [class*="loader"], [id*="loader"], [class*="spinner"]').forEach(el => {
+    // PROTECT THE 'X': If it's inside a close button, leave it completely alone.
+    if (el.closest('.mpe-window-close, .mpe-popup-close, [class*="close"], [id*="close"]')) {
+      return; 
     }
+    
+    // KILL THE SPINNER: If it's outside a close button, hide it.
+    el.style.setProperty('display', 'none', 'important');
+    el.style.setProperty('opacity', '0', 'important');
+    el.style.setProperty('animation', 'none', 'important');
+    el.style.setProperty('-webkit-animation', 'none', 'important');
   });
 
-  // NEW: 1D. THE BLUE CURSOR ASSASSIN
+  // 1D. THE BLUE CURSOR ASSASSIN
   // If MPEmbed forces the inline cursor to "wait" or "progress", we instantly strip it off.
   [document.body, document.documentElement, ...document.querySelectorAll('canvas')].forEach(el => {
     if (el.style.cursor === 'wait' || el.style.cursor === 'progress') {
