@@ -1,146 +1,4 @@
-// --- 1. IMMEDIATE CSS INJECTION (Kills the flash instantly) ---
-const customStyles = document.createElement('style');
-customStyles.innerHTML = `
-  /* AGGRESSIVELY NUKE MPEMBED AUDIO UI */
-  * {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-
-  [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay {
-    filter: none !important;
-    -webkit-filter: none !important;
-    background: transparent !important;
-    background-color: transparent !important;
-  }
-  
-  /* TARGETED ASSASSINATION */
-  [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] {
-    display: none !important;
-    opacity: 0 !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-  }
-
-  /* PREVENT THE AUDIO 'X' MICRO-FLASH */
-  audio, video, [id*="audio"], [class*="audio-player"], 
-  div[style*="bottom: 0px"] [class*="close"], 
-  div[style*="bottom: 0"] [class*="close"] {
-    display: none !important;
-    opacity: 0 !important;
-    position: absolute !important;
-    left: -9999px !important;
-    pointer-events: none !important;
-    visibility: hidden !important;
-  }
-
-  /* SCALE UP *ONLY* THE POPUP 'X' BUTTON */
-  #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close {
-    transform: scale(3.5) !important; 
-    right: 35px !important; 
-    top: 35px !important; 
-    opacity: 1 !important;
-    visibility: visible !important;
-    z-index: 99999 !important;
-    pointer-events: auto !important;
-  }
-
-  /* MULTI-LAYER START SCREEN */
-  #eye-spy-dark-overlay {
-    position: fixed !important; 
-    top: 0 !important; left: 0 !important; 
-    width: 100vw !important; height: 100vh !important;
-    background: rgba(0, 0, 0, 0.75) !important; 
-    z-index: 2147483645 !important; 
-  }
-
-  #eye-spy-image-cover {
-    position: fixed !important; 
-    top: 0 !important; left: 0 !important; 
-    width: 100vw !important; height: 100vh !important;
-    background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/ES3D_load%20screen%20omni.png') !important; 
-    background-size: cover !important;
-    background-position: center !important;
-    z-index: 2147483646 !important; 
-  }
-  
-  #eye-spy-image-cover::after {
-    content: "";
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background-image: inherit;
-    background-size: contain !important;
-    background-repeat: no-repeat !important;
-    background-position: center !important;
-    backdrop-filter: blur(15px);
-    background-color: rgba(0,0,0,0.4);
-  }
-
-  #eye-spy-start-ui {
-    position: fixed !important; 
-    top: 0 !important; left: 0 !important; 
-    width: 100vw !important; height: 100vh !important;
-    z-index: 2147483647 !important; 
-    display: flex !important; 
-    flex-direction: column !important; 
-    justify-content: center !important; 
-    align-items: center !important;
-  }
-
-  #eye-spy-welcome-block {
-    display: none; 
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  #eye-spy-start-btn {
-    padding: 16px 40px !important; 
-    font-size: 24px !important; 
-    font-weight: bold !important;
-    background: #888 !important; 
-    color: #fff !important; 
-    border: none !important; 
-    border-radius: 8px !important;
-    cursor: wait !important; 
-    transition: transform 0.2s ease, background 0.3s ease !important;
-    opacity: 1 !important; 
-    pointer-events: none !important; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
-    margin-top: 20px !important;
-  }
-  
-  #eye-spy-start-btn.ready { 
-    background: #CCFF00 !important; 
-    color: #000 !important;
-    pointer-events: auto !important; 
-    cursor: pointer !important;
-  }
-
-  #eye-spy-start-btn.ready:hover { 
-    transform: scale(1.05) !important; 
-  }
-
-  #eye-spy-loading-text {
-      position: absolute;
-      bottom: 20px;
-      color: white;
-      font-size: 16px;
-      font-weight: plain;
-      animation: eye-spy-fade 1.5s infinite linear;
-      z-index: 2147483647; 
-  }
-
-  @keyframes eye-spy-fade {
-      0% { opacity: 0; }
-      25% { opacity: 1; }
-      75% { opacity: 1; }
-      100% { opacity: 0; }
-  }
-`;
-if (document.head) { document.head.appendChild(customStyles); } 
-else { document.addEventListener("DOMContentLoaded", () => document.head.appendChild(customStyles)); }
-
-
-// --- 2. DYNAMIC AUDIO ENGINE ---
+// --- 0. DYNAMIC AUDIO ENGINE ---
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
 const AUDIO_MAP = {
@@ -168,8 +26,7 @@ function playItemSound(imageFilename) {
   } catch(e) {}
 }
 
-
-// --- 3. BOOT LOADER ---
+// --- 1. BOOT LOADER ---
 let bootInterval = setInterval(() => {
   if (document.head && document.body) {
     clearInterval(bootInterval);
@@ -221,7 +78,7 @@ function injectCustomUI() {
 }
 
 function startMechanics() {
-  // --- 4. LEVEL CONFIGURATION ---
+  // --- 2. LEVEL CONFIGURATION ---
   const LEVELS = [
     {
       level: 1,
@@ -267,7 +124,7 @@ function startMechanics() {
     }
   ];
 
-  // --- 5. THE VISUAL HUNTER ---
+  // --- 3. THE VISUAL HUNTER ---
   const targetMatchStrings = [];
   LEVELS.forEach(level => {
     level.imagesToFind.forEach(img => {
@@ -322,7 +179,7 @@ function startMechanics() {
     });
   }, 250); 
 
-  // --- 6. GLOBAL STATE TRACKING ---
+  // --- 4. GLOBAL STATE TRACKING ---
   window.currentLevelIndex = 0;
   window.allModelSweeps = [];
   window.foundImages = {};
@@ -347,7 +204,7 @@ function startMechanics() {
     return Object.values(window.foundImages).every(status => status === true);
   }
 
-  // --- 7. THE TRIPWIRE LISTENER ---
+  // --- 5. THE TRIPWIRE LISTENER ---
   const observer = new MutationObserver((mutations) => {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel) return; 
@@ -414,7 +271,7 @@ function startMechanics() {
 
   observer.observe(document.body, { childList: true, subtree: true });
 
-  // --- 8. INITIALIZATION & DOOR LOCKS ---
+  // --- 6. INITIALIZATION & DOOR LOCKS ---
   async function initMashupLogic(mpSdk) {
     window.mpSdk = mpSdk;
     setupLevelTracking();
@@ -474,7 +331,7 @@ function startMechanics() {
     }
   }
 
-  // --- 9. THE NATURAL TELEPORT SEQUENCE ---
+  // --- 7. THE NATURAL TELEPORT SEQUENCE ---
   async function executeFastTeleport(mpSdk, levelData) {
     window.isTeleporting = true;
     
