@@ -76,7 +76,7 @@ customStyles.innerHTML = `
 
   /* MULTI-LAYER START SCREEN */
   
-  /* Layer 1: Dark Transparent Overlay (Stays behind the text) */
+  /* Layer 1: Dark Transparent Overlay */
   #eye-spy-dark-overlay {
     position: fixed !important; 
     top: 0 !important; left: 0 !important; 
@@ -85,30 +85,7 @@ customStyles.innerHTML = `
     z-index: 2147483645 !important; 
   }
 
-  /* Layer 2: The Load Image Cover (Disappears when loaded) */
-  #eye-spy-image-cover {
-    position: fixed !important; 
-    top: 0 !important; left: 0 !important; 
-    width: 100vw !important; height: 100vh !important;
-    background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/ES3D_load%20screen%20omni.png') !important; 
-    background-size: cover !important;
-    background-position: center !important;
-    z-index: 2147483646 !important; 
-  }
-  
-  /* Adds a blurred background with the un-cropped image perfectly centered on top */
-  #eye-spy-image-cover::after {
-    content: "";
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background-image: inherit;
-    background-size: contain !important;
-    background-repeat: no-repeat !important;
-    background-position: center !important;
-    backdrop-filter: blur(15px);
-    background-color: rgba(0,0,0,0.4);
-  }
-
-  /* Layer 3: Text and Buttons (Always on top) */
+  /* Layer 2: Text and Buttons (Always on top) */
   #eye-spy-start-ui {
     position: fixed !important; 
     top: 0 !important; left: 0 !important; 
@@ -120,8 +97,8 @@ customStyles.innerHTML = `
     align-items: center !important;
   }
 
-  #eye-spy-welcome-text {
-    display: none; /* Hidden entirely while the Image Cover is visible */
+  #eye-spy-welcome-block {
+    display: none; /* Hidden until sweeps load to prevent flashing */
     flex-direction: column;
     align-items: center;
   }
@@ -152,6 +129,24 @@ customStyles.innerHTML = `
   #eye-spy-start-btn.ready:hover { 
     transform: scale(1.05) !important; 
   }
+
+  /* STEP 1 FIX: THE FLASHING LOADER TEXT */
+  #eye-spy-loading-text {
+      position: absolute;
+      bottom: 20px;
+      color: white;
+      font-size: 16px;
+      font-weight: plain;
+      animation: eye-spy-fade 1.5s infinite linear;
+      z-index: 2147483647; 
+  }
+
+  @keyframes eye-spy-fade {
+      0% { opacity: 0; }
+      25% { opacity: 1; }
+      75% { opacity: 1; }
+      100% { opacity: 0; }
+  }
 `;
 document.head.appendChild(customStyles);
 
@@ -160,18 +155,15 @@ const darkOverlay = document.createElement('div');
 darkOverlay.id = 'eye-spy-dark-overlay';
 document.body.appendChild(darkOverlay);
 
-const imageCover = document.createElement('div');
-imageCover.id = 'eye-spy-image-cover';
-document.body.appendChild(imageCover);
-
 const startUI = document.createElement('div');
 startUI.id = 'eye-spy-start-ui';
 startUI.innerHTML = `
-  <div id="eye-spy-welcome-text">
+  <div id="eye-spy-welcome-block">
     <h1 style="margin: 0 0 15px 0; text-align: center; font-size: 42px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); color: white;">Welcome to Eye Spy 3D</h1>
-    <p style="margin: 0 0 20px 0; font-size: 20px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Audio is required - please enjoy this experience.</p>
+    <p style="margin: 0 0 20px 0; font-size: 20px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Please enjoy this experience with your audio on</p>
+    <button id="eye-spy-start-btn">Loading...</button>
   </div>
-  <button id="eye-spy-start-btn">Loading 3D Experience...</button>
+  <div id="eye-spy-loading-text">Loading 3D experience...</div>
 `;
 document.body.appendChild(startUI);
 
@@ -411,21 +403,18 @@ async function initMashupLogic(mpSdk) {
   lockMapForCurrentLevel(mpSdk);
 
   // CRITICAL: Sweeps are loaded! 
-  // 1. Hide the Image Cover ONLY (Leave the dark overlay)
-  const cover = document.getElementById('eye-spy-image-cover');
-  if (cover) {
-    cover.style.transition = "opacity 0.5s ease";
-    cover.style.opacity = "0";
-    setTimeout(() => cover.remove(), 500);
-  }
+  // 1. Hide the lazy flashing text
+  const loadingText = document.getElementById('eye-spy-loading-text');
+  if (loadingText) loadingText.remove();
   
-  // 2. Reveal the welcome text and unlock the button
-  const welcomeText = document.getElementById('eye-spy-welcome-text');
-  if (welcomeText) welcomeText.style.display = "flex";
+  // 2. Reveal the welcome block (This prevents the flashing issue)
+  const welcomeBlock = document.getElementById('eye-spy-welcome-block');
+  if (welcomeBlock) welcomeBlock.style.display = "flex";
 
+  // 3. Update and unlock the button
   const finalBtn = document.getElementById('eye-spy-start-btn');
   if (finalBtn) {
-      finalBtn.innerText = "Start Experience";
+      finalBtn.innerText = "Start now!"; // STEP 1 FIX: UPDATED BUTTON TEXT
       finalBtn.classList.add('ready');
   }
 
