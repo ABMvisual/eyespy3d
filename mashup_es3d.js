@@ -43,14 +43,14 @@ function injectCustomUI() {
     audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"] { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
-    /* START SCREEN OVERLAY (Matched to Load Screen) */
+    /* PERFECT B&W START SCREEN FILTER */
     #eye-spy-dark-overlay { 
         position: fixed !important; 
         top: 0 !important; left: 0 !important; 
         width: 100vw !important; height: 100vh !important; 
-        background: rgba(40, 10, 10, 0.4) !important; 
-        backdrop-filter: grayscale(100%) contrast(110%) brightness(95%) !important;
-        -webkit-backdrop-filter: grayscale(100%) contrast(110%) brightness(95%) !important;
+        background: rgba(30, 10, 10, 0.3) !important; 
+        backdrop-filter: grayscale(95%) sepia(5%) contrast(110%) brightness(95%) !important;
+        -webkit-backdrop-filter: grayscale(95%) sepia(5%) contrast(110%) brightness(95%) !important;
         z-index: 2147483645 !important; 
     }
 
@@ -63,7 +63,7 @@ function injectCustomUI() {
     #eye-spy-start-btn:hover { transform: scale(1.05) !important; }
     #eye-spy-loading-text { position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; }
     
-    /* CONTROL PANEL STYLES */
+    /* PILL CONTROL PANEL STYLES */
     #es-control-panel { 
       display: none !important; 
       position: fixed !important; 
@@ -162,7 +162,8 @@ function injectCustomUI() {
   `;
   document.body.appendChild(startUI);
 
-  // PILL CONTROL PANEL HTML 
+  // PILL CONTROL PANEL HTML (ID es-btn-audio is DEAD. Now using es-btn-vol to escape MPEmbed assassin css)
+  // CLUE icon is now a large bold ?
   const panel = document.createElement('div');
   panel.id = 'es-control-panel';
   panel.innerHTML = `
@@ -175,18 +176,18 @@ function injectCustomUI() {
     <div class="es-panel-divider" id="es-div-prev" style="opacity: 0 !important;"></div>
 
     <button class="es-panel-btn" id="es-btn-clue">
-      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z'/%3E%3C/svg%3E">
+      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M12.01 2.01c-3.3 0-5.99 2.69-5.99 6h3.41c0-1.42 1.15-2.58 2.58-2.58 1.43 0 2.58 1.15 2.58 2.58 0 2.58-3.87 2.26-3.87 6.45h3.44c0-2.9 3.87-3.23 3.87-6.45 0-3.31-2.69-6-6.02-6zM10.29 18.99h3.44v3.44h-3.44z'/%3E%3C/svg%3E">
       <span>CLUE</span>
       <div class="es-tooltip">Replay Clue</div>
     </button>
 
     <div class="es-panel-divider"></div>
     
-    <button class="es-panel-btn" id="es-btn-audio">
+    <button class="es-panel-btn" id="es-btn-vol">
       <img id="es-img-unmute" src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E">
       <img id="es-img-mute" style="display:none !important;" src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E">
-      <span id="es-audio-label">MUTE</span>
-      <div class="es-tooltip" id="es-audio-tooltip">Mute / Unmute</div>
+      <span id="es-vol-label">MUTE</span>
+      <div class="es-tooltip" id="es-vol-tooltip">Mute / Un-Mute</div>
     </button>
 
     <div class="es-panel-divider" id="es-div-next" style="opacity: 0 !important;"></div>
@@ -221,10 +222,6 @@ function startMechanics() {
   window.isTeleporting = false; 
   window.pathsPreloaded = false; 
   window.activeOpenPopups = new Set(); 
-  
-  // Custom tracking for UI Unlocks
-  window.hasReached28 = false;
-  window.hasReached27 = false;
 
   const targetMatchStrings = [];
   LEVELS.forEach(level => {
@@ -247,15 +244,10 @@ function startMechanics() {
           window.globalChime.play().then(() => { window.globalChime.pause(); window.globalChime.volume = 1; window.globalChime.currentTime = 0; }).catch(()=>{});
       } catch(e) {}
 
-      if (window.mpSdk) {
-          window.mpSdk.Sweep.moveTo(LEVELS[0].startSweeps[0], { transition: window.mpSdk.Sweep.Transition.FLY }).then(() => {
-              window.mpSdk.Sweep.disable(INTRO_SWEEP).catch(()=>{}); // Strict lock on Sweep 30
-              const controls = document.getElementById('es-control-panel');
-              if (controls) {
-                  controls.style.setProperty('display', 'flex', 'important');
-              }
-          });
-      }
+      // Reveal Panel instantly (Clue + Sound only). Let user remain in Sweep 30 natively.
+      const controls = document.getElementById('es-control-panel');
+      if (controls) controls.style.setProperty('display', 'flex', 'important');
+      updatePanelVisibility();
     });
   }
 
@@ -266,8 +258,8 @@ function startMechanics() {
     const divPrev = document.getElementById('es-div-prev');
     const divNext = document.getElementById('es-div-next');
     
-    // SKIP BUTTON (Unlock at Sweep 28)
-    if (window.hasReached28 || window.currentLevelIndex > 0) {
+    // SKIP/CHEAT BUTTON (Appears at Level 1/Sweep 28)
+    if (window.currentLevelIndex >= 1) {
         if (nextBtn) { nextBtn.style.setProperty('opacity', '1', 'important'); nextBtn.style.setProperty('pointer-events', 'auto', 'important'); }
         if (divNext) divNext.style.setProperty('opacity', '1', 'important');
     } else {
@@ -275,8 +267,8 @@ function startMechanics() {
         if (divNext) divNext.style.setProperty('opacity', '0', 'important');
     }
 
-    // BACK BUTTON (Unlock at Sweep 27)
-    if (window.hasReached27 || window.currentLevelIndex > 1) {
+    // BACK BUTTON (Appears at Level 2/Sweep 27)
+    if (window.currentLevelIndex >= 2) {
         if (prevBtn) { prevBtn.style.setProperty('opacity', '1', 'important'); prevBtn.style.setProperty('pointer-events', 'auto', 'important'); }
         if (divPrev) divPrev.style.setProperty('opacity', '1', 'important');
     } else {
@@ -287,14 +279,13 @@ function startMechanics() {
 
   // --- BUTTON LOGIC ---
   let isMuted = false;
-  document.getElementById('es-btn-audio').addEventListener('click', () => {
+  document.getElementById('es-btn-vol').addEventListener('click', () => {
       isMuted = !isMuted;
       window.globalSfx.muted = isMuted;
       window.globalChime.muted = isMuted;
       document.getElementById('es-img-unmute').style.setProperty('display', isMuted ? 'none' : 'block', 'important');
       document.getElementById('es-img-mute').style.setProperty('display', isMuted ? 'block' : 'none', 'important');
-      document.getElementById('es-audio-label').innerText = isMuted ? 'UNMUTE' : 'MUTE';
-      document.getElementById('es-audio-tooltip').innerText = isMuted ? 'Unmute' : 'Mute';
+      document.getElementById('es-vol-label').innerText = isMuted ? 'UN-MUTE' : 'MUTE';
       
       document.querySelectorAll('audio, video').forEach(media => { media.muted = isMuted; });
   });
@@ -307,8 +298,9 @@ function startMechanics() {
   });
 
   document.getElementById('es-btn-next').addEventListener('click', () => {
-      const cLevel = LEVELS[window.currentLevelIndex];
+      const cLevel = LEVELS[window.currentLevelIndex - 1]; // Offset because Level 1 = Index 1 here
       if (cLevel && window.mpSdk && !window.isTeleporting) {
+          document.querySelectorAll('audio, video').forEach(media => media.pause());
           window.globalSfx.pause();
           window.globalSfx.currentTime = 0;
           window.activeOpenPopups.clear();
@@ -319,17 +311,18 @@ function startMechanics() {
   });
 
   document.getElementById('es-btn-prev').addEventListener('click', () => {
-      // Prevents returning to Sweep 30. Level 1 starts at array index 0. 
-      // If we are at index 0, we are at Sweep 28/27. We cannot go back further.
-      if (window.currentLevelIndex <= 0 || window.isTeleporting) return;
+      // Prevents returning to Sweep 30. (Level 1 is currentLevelIndex 1)
+      if (window.currentLevelIndex <= 1 || window.isTeleporting) return;
       
+      document.querySelectorAll('audio, video').forEach(media => media.pause());
       window.globalSfx.pause();
       window.globalSfx.currentTime = 0;
       window.activeOpenPopups.clear();
 
       window.isTeleporting = true;
-      window.currentLevelIndex--;
-      const pLevel = LEVELS[window.currentLevelIndex];
+      window.currentLevelIndex--; // Drop back one level
+      
+      const pLevel = LEVELS[window.currentLevelIndex - 1];
 
       window.mpSdk.Sweep.enable(...pLevel.startSweeps).then(() => {
           window.mpSdk.Sweep.moveTo(pLevel.startSweeps[0], { transition: window.mpSdk.Sweep.Transition.INSTANT }).then(() => {
@@ -342,7 +335,7 @@ function startMechanics() {
 
   function setupLevelTracking() {
     window.foundImages = {};
-    const currentLevel = LEVELS[window.currentLevelIndex];
+    const currentLevel = LEVELS[window.currentLevelIndex > 0 ? window.currentLevelIndex - 1 : 0];
     if (currentLevel) currentLevel.imagesToFind.forEach(image => window.foundImages[image] = false);
     window.isTeleporting = false;
     window.pathsPreloaded = false;
@@ -382,8 +375,8 @@ function startMechanics() {
 
   // --- TRIPWIRE ---
   const observer = new MutationObserver((mutations) => {
-    const currentLevel = LEVELS[window.currentLevelIndex];
-    if (!currentLevel) return; 
+    const currentLevel = LEVELS[window.currentLevelIndex > 0 ? window.currentLevelIndex - 1 : 0];
+    if (!currentLevel || window.currentLevelIndex === 0) return; 
 
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
@@ -469,36 +462,27 @@ function startMechanics() {
     const welcomeBlock = document.getElementById('eye-spy-welcome-block');
     if (welcomeBlock) welcomeBlock.style.display = "flex";
 
-    // Ambient Audio Reset and Unlocks
+    // Track physical walking to trigger UI
     mpSdk.on(mpSdk.Sweep.Event.ENTER, function(sweepId) {
-        if (sweepId === '28') window.hasReached28 = true;
-        if (sweepId === '27') window.hasReached27 = true;
-        updatePanelVisibility();
-
-        setTimeout(() => {
-            document.querySelectorAll('audio, video').forEach(media => {
-                media.currentTime = 0;
-                media.play().catch(()=>{});
-            });
-        }, 500); 
+        // If user naturally walks into Level 1 for the first time
+        if (sweepId === LEVELS[0].startSweeps[0] && window.currentLevelIndex === 0) {
+            window.currentLevelIndex = 1; // Officially on Level 1
+            mpSdk.Sweep.disable(INTRO_SWEEP).catch(()=>{}); // Lock the intro door
+            updatePanelVisibility();
+        }
     });
 
     mpSdk.on(mpSdk.Sweep.Event.EXIT, function(fromSweep) {
-      document.querySelectorAll('audio, video').forEach(media => {
-          media.pause();
-          media.currentTime = 0;
-      });
-        
-      const cLevel = LEVELS[window.currentLevelIndex];
+      const cLevel = LEVELS[window.currentLevelIndex > 0 ? window.currentLevelIndex - 1 : 0];
       if (cLevel && cLevel.startSweeps.includes(fromSweep)) { mpSdk.Sweep.disable(fromSweep).catch(() => {}); }
     });
   }
 
   function lockMapForCurrentLevel(mpSdk) {
-    const currentLevel = LEVELS[window.currentLevelIndex];
+    const currentLevel = LEVELS[window.currentLevelIndex > 0 ? window.currentLevelIndex - 1 : 0];
     if (!currentLevel) return;
     const sweepsToDisable = window.allModelSweeps.filter(id => !currentLevel.startSweeps.includes(id));
-    if (sweepsToDisable.length > 0) mpSdk.Sweep.disable(...sweepsToDisable).catch(() => {});
+    if (sweepsToDisable.length > 0 && window.currentLevelIndex > 0) mpSdk.Sweep.disable(...sweepsToDisable).catch(() => {});
   }
 
   async function executeFastTeleport(mpSdk, levelData) {
@@ -512,7 +496,7 @@ function startMechanics() {
 
       window.currentLevelIndex++; 
       
-      if (LEVELS[window.currentLevelIndex]) {
+      if (LEVELS[window.currentLevelIndex - 1]) {
           setupLevelTracking(); 
           updatePanelVisibility();
       } else {
