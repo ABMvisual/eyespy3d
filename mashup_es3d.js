@@ -90,7 +90,6 @@ customStyles.innerHTML = `
     position: fixed !important; 
     top: 0 !important; left: 0 !important; 
     width: 100vw !important; height: 100vh !important;
-    /* UPDATED TO THE NEW 'OMNI' IMAGE URL */
     background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/ES3D_load%20screen%20omni.png') !important; 
     background-size: cover !important;
     background-position: center !important;
@@ -156,18 +155,25 @@ customStyles.innerHTML = `
 `;
 document.head.appendChild(customStyles);
 
-// Inject HTML structure
-document.body.insertAdjacentHTML('beforeend', `
-  <div id="eye-spy-dark-overlay"></div>
-  <div id="eye-spy-image-cover"></div>
-  <div id="eye-spy-start-ui">
-    <div id="eye-spy-welcome-text">
-      <h1 style="margin: 0 0 15px 0; text-align: center; font-size: 42px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); color: white;">Welcome to Eye Spy 3D</h1>
-      <p style="margin: 0 0 20px 0; font-size: 20px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Audio is required - please enjoy this experience.</p>
-    </div>
-    <button id="eye-spy-start-btn">Loading 3D Experience...</button>
+// Inject HTML structure using safe DOM methods
+const darkOverlay = document.createElement('div');
+darkOverlay.id = 'eye-spy-dark-overlay';
+document.body.appendChild(darkOverlay);
+
+const imageCover = document.createElement('div');
+imageCover.id = 'eye-spy-image-cover';
+document.body.appendChild(imageCover);
+
+const startUI = document.createElement('div');
+startUI.id = 'eye-spy-start-ui';
+startUI.innerHTML = `
+  <div id="eye-spy-welcome-text">
+    <h1 style="margin: 0 0 15px 0; text-align: center; font-size: 42px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); color: white;">Welcome to Eye Spy 3D</h1>
+    <p style="margin: 0 0 20px 0; font-size: 20px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Audio is required - please enjoy this experience.</p>
   </div>
-`);
+  <button id="eye-spy-start-btn">Loading 3D Experience...</button>
+`;
+document.body.appendChild(startUI);
 
 // Bulletproof Click Event
 const startBtn = document.getElementById('eye-spy-start-btn');
