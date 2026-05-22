@@ -1,7 +1,12 @@
-// --- 0. START SCREEN, AUDIO UI NUKE & GLOBAL CSS ---
+// --- 0. AUDIO SETUP ---
+window.audioSuccess = new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3');
+window.audioUnlock = new Audio('https://cdn.pixabay.com/download/audio/2021/08/09/audio_24e370a563.mp3');
+
+
+// --- 1. START SCREEN, AUDIO UI NUKE & GLOBAL CSS ---
 const customStyles = document.createElement('style');
 customStyles.innerHTML = `
-  /* 1. AGGRESSIVELY NUKE MPEMBED AUDIO UI */
+  /* AGGRESSIVELY NUKE MPEMBED AUDIO UI */
   * {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
@@ -14,15 +19,15 @@ customStyles.innerHTML = `
     background-color: transparent !important;
   }
   
-  /* TARGETED ASSASSINATION: The White Circle image, Billboards, and Audio UI */
-  [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, img[src*="loader.svg"] {
+  /* TARGETED ASSASSINATION: The White Circle image & Custom Billboard */
+  [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] {
     display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
     pointer-events: none !important;
   }
 
-  /* PREVENT THE AUDIO 'X' FLASH (Kills audio UI instantly via CSS) */
+  /* PREVENT THE AUDIO 'X' FLASH */
   audio, video, #mpe-audio-player, .mpe-audio-player, div[style*="bottom: 0"][style*="right: 0"] > [class*="close"] {
     display: none !important;
     opacity: 0 !important;
@@ -31,9 +36,9 @@ customStyles.innerHTML = `
     pointer-events: none !important;
   }
 
-  /* 2. SCALE UP *ONLY* THE POPUP 'X' BUTTON */
+  /* SCALE UP *ONLY* THE POPUP 'X' BUTTON */
   #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close {
-    transform: scale(3.5) !important; /* Bumped from 2.5 to 3.5 */
+    transform: scale(3.5) !important; 
     right: 35px !important; 
     top: 35px !important; 
     opacity: 1 !important;
@@ -42,8 +47,7 @@ customStyles.innerHTML = `
     pointer-events: auto !important;
   }
 
-  /* 3. DUAL-LAYER START SCREEN STYLING */
-  /* Layer 1: The solid image cover while loading */
+  /* DUAL-LAYER START SCREEN STYLING */
   #eye-spy-image-cover {
     position: fixed !important; 
     top: 0 !important; 
@@ -58,7 +62,6 @@ customStyles.innerHTML = `
     z-index: 2147483647 !important; 
   }
 
-  /* Layer 2: The transparent UI layer that holds the start button over the dollhouse */
   #eye-spy-start-ui {
     position: fixed !important; 
     top: 0 !important; 
@@ -67,9 +70,9 @@ customStyles.innerHTML = `
     height: 100vh !important;
     background: transparent !important; 
     z-index: 2147483646 !important; 
-    display: none; /* Hidden until loaded */
+    display: none; 
     flex-direction: column !important; 
-    justify-content: flex-end !important; /* Pushes button to bottom */
+    justify-content: flex-end !important; 
     align-items: center !important;
     padding-bottom: 10vh !important;
   }
@@ -82,12 +85,20 @@ customStyles.innerHTML = `
     color: #000 !important; 
     border: none !important; 
     border-radius: 8px !important;
-    cursor: pointer !important; 
-    transition: transform 0.2s ease !important;
+    cursor: wait !important; 
+    transition: transform 0.2s ease, opacity 0.2s ease !important;
+    opacity: 0.5 !important;
+    pointer-events: none !important; 
     box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
   }
   
-  #eye-spy-start-btn:hover { 
+  #eye-spy-start-btn.ready { 
+    opacity: 1 !important;
+    pointer-events: auto !important; 
+    cursor: pointer !important;
+  }
+
+  #eye-spy-start-btn.ready:hover { 
     transform: scale(1.05) !important; 
   }
 `;
@@ -100,16 +111,23 @@ document.body.appendChild(imageCover);
 
 const startUI = document.createElement('div');
 startUI.id = 'eye-spy-start-ui';
-startUI.innerHTML = `<button id="eye-spy-start-btn">Start Experience</button>`;
+startUI.innerHTML = `<button id="eye-spy-start-btn">Loading 3D Experience...</button>`;
 document.body.appendChild(startUI);
 
 document.getElementById('eye-spy-start-btn').addEventListener('click', () => {
+  // THE AUDIO WARM-UP: Silently play and pause to unlock browser audio restrictions
+  window.audioSuccess.volume = 0;
+  window.audioSuccess.play().then(() => { window.audioSuccess.pause(); window.audioSuccess.volume = 1; window.audioSuccess.currentTime = 0; }).catch(()=>{});
+  
+  window.audioUnlock.volume = 0;
+  window.audioUnlock.play().then(() => { window.audioUnlock.pause(); window.audioUnlock.volume = 1; window.audioUnlock.currentTime = 0; }).catch(()=>{});
+
   startUI.style.transition = "opacity 0.5s ease";
   startUI.style.opacity = "0";
   setTimeout(() => startUI.remove(), 500);
 });
 
-// --- 1. LEVEL CONFIGURATION ---
+// --- 2. LEVEL CONFIGURATION ---
 const LEVELS = [
   {
     level: 1,
@@ -155,7 +173,7 @@ const LEVELS = [
   }
 ];
 
-// --- 1.5. THE VISUAL HUNTER ---
+// --- 3. THE VISUAL HUNTER ---
 const targetMatchStrings = [];
 LEVELS.forEach(level => {
   level.imagesToFind.forEach(img => {
@@ -164,7 +182,6 @@ LEVELS.forEach(level => {
 });
 
 setInterval(() => {
-  // 1A. DYNAMIC AUDIO UI SNIPER
   document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
     const rect = btn.getBoundingClientRect();
     if (rect.bottom > window.innerHeight - 100) {
@@ -172,7 +189,6 @@ setInterval(() => {
     }
   });
 
-  // 1B. THE BLUR STRIPPER
   document.querySelectorAll('.mpe-media-overlay, .mpe-overlay').forEach(el => {
       el.style.setProperty('filter', 'none', 'important');
       el.style.setProperty('-webkit-filter', 'none', 'important');
@@ -181,7 +197,6 @@ setInterval(() => {
       el.style.setProperty('background', 'transparent', 'important'); 
   });
 
-  // 1C. TEXT BANNER FORMATTER (+20% Font Size)
   const textElements = document.querySelectorAll('div, span, p, h1, h2, h3');
   textElements.forEach(el => {
     if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
@@ -192,7 +207,7 @@ setInterval(() => {
         el.style.setProperty('left', '50%', 'important');
         el.style.setProperty('top', '50%', 'important'); 
         el.style.setProperty('transform', 'translate(-50%, -50%)', 'important'); 
-        el.style.setProperty('font-size', '240%', 'important'); /* Increased from 200% */
+        el.style.setProperty('font-size', '240%', 'important'); 
         el.style.setProperty('color', 'white', 'important');
         el.style.setProperty('margin', '0', 'important');
         el.style.setProperty('white-space', 'nowrap', 'important');
@@ -213,7 +228,7 @@ setInterval(() => {
 }, 250); 
 
 
-// --- 2. GLOBAL STATE TRACKING ---
+// --- 4. GLOBAL STATE TRACKING ---
 window.currentLevelIndex = 0;
 window.allModelSweeps = [];
 window.foundImages = {};
@@ -239,7 +254,7 @@ function checkAllFound() {
 }
 
 
-// --- 3. THE TRIPWIRE LISTENER (WITH AUDIO INJECTION) ---
+// --- 5. THE TRIPWIRE LISTENER (WITH UNLOCKED AUDIO) ---
 const observer = new MutationObserver((mutations) => {
   const currentLevel = LEVELS[window.currentLevelIndex];
   if (!currentLevel) return; 
@@ -258,10 +273,9 @@ const observer = new MutationObserver((mutations) => {
             if (!window.foundImages[filename]) {
               console.log(`🎯 [Escape Room] Found: ${filename}`);
               
-              // ---> PLAY 'ITEM FOUND' AUDIO HERE <---
-              // Replace this URL with your custom MP3
-              let successPing = new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3');
-              successPing.play().catch(e => console.log("Audio play blocked", e));
+              // FIRE AUDIO
+              window.audioSuccess.currentTime = 0; 
+              window.audioSuccess.play().catch(e => console.log("Audio blocked:", e));
             }
             
             window.activeOpenPopups.add(filename); 
@@ -271,9 +285,9 @@ const observer = new MutationObserver((mutations) => {
               window.pathsPreloaded = true;
               console.log(`🔓 [Escape Room] All items found! Unlocking map for flight...`);
               
-              // ---> PLAY 'LEVEL COMPLETE / UNLOCK' AUDIO HERE <---
-              let levelCompleteChime = new Audio('https://cdn.pixabay.com/download/audio/2021/08/09/audio_24e370a563.mp3');
-              levelCompleteChime.play().catch(e => console.log("Audio play blocked", e));
+              // FIRE UNLOCK AUDIO
+              window.audioUnlock.currentTime = 0;
+              window.audioUnlock.play().catch(e => console.log("Audio blocked:", e));
 
               if (window.mpSdk) {
                 window.mpSdk.Sweep.enable(...window.allModelSweeps).catch(() => {});
@@ -310,7 +324,7 @@ const observer = new MutationObserver((mutations) => {
 observer.observe(document.body, { childList: true, subtree: true });
 
 
-// --- 4. INITIALIZATION & DOOR LOCKS ---
+// --- 6. INITIALIZATION & DOOR LOCKS ---
 async function initMashupLogic(mpSdk) {
   window.mpSdk = mpSdk;
   setupLevelTracking();
@@ -329,15 +343,19 @@ async function initMashupLogic(mpSdk) {
   window.allModelSweeps = Object.keys(sweepCollection);
   lockMapForCurrentLevel(mpSdk);
 
-  // CRITICAL: Sweeps are loaded! 
-  // 1. Hide the Image Cover
+  // CRITICAL: Sweeps are loaded! Unlock UI.
   const cover = document.getElementById('eye-spy-image-cover');
   if (cover) {
     cover.style.transition = "opacity 0.5s ease";
     cover.style.opacity = "0";
     setTimeout(() => cover.remove(), 500);
   }
-  // 2. Show the Start Button over the Dollhouse
+  
+  const startBtn = document.getElementById('eye-spy-start-btn');
+  if (startBtn) {
+      startBtn.innerText = "Start Experience";
+      startBtn.classList.add('ready');
+  }
   const startUI = document.getElementById('eye-spy-start-ui');
   if (startUI) {
       startUI.style.display = "flex";
@@ -364,7 +382,7 @@ function lockMapForCurrentLevel(mpSdk) {
   }
 }
 
-// --- 5. THE NATURAL TELEPORT SEQUENCE ---
+// --- 7. THE NATURAL TELEPORT SEQUENCE ---
 async function executeFastTeleport(mpSdk, levelData) {
   window.isTeleporting = true;
   
