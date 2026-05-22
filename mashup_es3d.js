@@ -1,6 +1,6 @@
-// --- 0. AUDIO SETUP (Using reliable Google CDN links to bypass 403 Forbidden errors) ---
-window.audioSuccess = new Audio('https://actions.google.com/sounds/v1/cartoon/clown_change_slip.ogg');
-window.audioUnlock = new Audio('https://actions.google.com/sounds/v1/cartoon/magic_chime_scifi.ogg');
+// --- 0. PROTECTED AUDIO SETUP (Isolated from MPEmbed collisions) ---
+const sfxPing = new Audio('https://actions.google.com/sounds/v1/cartoon/clown_change_slip.ogg');
+const sfxChime = new Audio('https://actions.google.com/sounds/v1/cartoon/magic_chime_scifi.ogg');
 
 
 // --- 1. START SCREEN, AUDIO UI NUKE & GLOBAL CSS ---
@@ -51,6 +51,7 @@ customStyles.innerHTML = `
   }
 
   /* DUAL-LAYER START SCREEN STYLING */
+  /* Layer 1: The solid image cover */
   #eye-spy-image-cover {
     position: fixed !important; 
     top: 0 !important; 
@@ -62,22 +63,22 @@ customStyles.innerHTML = `
     background-size: cover !important;
     background-position: center !important;
     background-color: #111 !important;
-    z-index: 2147483647 !important; 
+    z-index: 2147483646 !important; 
   }
 
+  /* Layer 2: The transparent UI layer (Centered) */
   #eye-spy-start-ui {
     position: fixed !important; 
     top: 0 !important; 
     left: 0 !important; 
     width: 100vw !important; 
     height: 100vh !important;
-    background: rgba(0, 0, 0, 0.6) !important; /* RESTORED TRANSPARENT DARK LAYER */
-    z-index: 2147483646 !important; 
-    display: none; 
+    background: rgba(0, 0, 0, 0.6) !important; /* The transparent black overlay */
+    z-index: 2147483647 !important; 
+    display: flex !important; 
     flex-direction: column !important; 
-    justify-content: flex-end !important; 
+    justify-content: center !important; /* Puts everything perfectly in the middle */
     align-items: center !important;
-    padding-bottom: 10vh !important;
   }
   
   #eye-spy-start-btn {
@@ -116,19 +117,23 @@ const startUI = document.createElement('div');
 startUI.id = 'eye-spy-start-ui';
 startUI.innerHTML = `
   <h1 style="margin-bottom: 15px; text-align: center; font-size: 36px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); color: white;">Welcome to Eye Spy 3D</h1>
-  <p style="margin-bottom: 40px; font-size: 18px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Audio is required for this experience.</p>
+  <p id="eye-spy-status-text" style="margin-bottom: 40px; font-size: 18px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Retrieving assets...</p>
   <button id="eye-spy-start-btn">Loading 3D Experience...</button>
 `;
 document.body.appendChild(startUI);
 
-document.getElementById('eye-spy-start-btn').addEventListener('click', () => {
-  // THE AUDIO WARM-UP: Silently play and pause to unlock browser audio restrictions
-  window.audioSuccess.volume = 0;
-  window.audioSuccess.play().then(() => { window.audioSuccess.pause(); window.audioSuccess.volume = 1; window.audioSuccess.currentTime = 0; }).catch(()=>{});
-  
-  window.audioUnlock.volume = 0;
-  window.audioUnlock.play().then(() => { window.audioUnlock.pause(); window.audioUnlock.volume = 1; window.audioUnlock.currentTime = 0; }).catch(()=>{});
+// The Click Event (Fades UI and Warms Up Audio)
+document.getElementById('eye-spy-start-btn').addEventListener('click', function() {
+  if (!this.classList.contains('ready')) return; // Safety check
 
+  // Warm-up local audio files silently
+  sfxPing.volume = 0;
+  sfxPing.play().then(() => { sfxPing.pause(); sfxPing.volume = 1; sfxPing.currentTime = 0; }).catch(()=>{});
+  
+  sfxChime.volume = 0;
+  sfxChime.play().then(() => { sfxChime.pause(); sfxChime.volume = 1; sfxChime.currentTime = 0; }).catch(()=>{});
+
+  // Fade out UI
   startUI.style.transition = "opacity 0.5s ease";
   startUI.style.opacity = "0";
   setTimeout(() => startUI.remove(), 500);
@@ -262,7 +267,7 @@ function checkAllFound() {
 }
 
 
-// --- 5. THE TRIPWIRE LISTENER (WITH UNLOCKED AUDIO) ---
+// --- 5. THE TRIPWIRE LISTENER (WITH PROTECTED AUDIO) ---
 const observer = new MutationObserver((mutations) => {
   const currentLevel = LEVELS[window.currentLevelIndex];
   if (!currentLevel) return; 
@@ -282,8 +287,8 @@ const observer = new MutationObserver((mutations) => {
               console.log(`🎯 [Escape Room] Found: ${filename}`);
               
               // FIRE SUCCESS AUDIO
-              window.audioSuccess.currentTime = 0; 
-              window.audioSuccess.play().catch(e => console.log("Audio blocked:", e));
+              sfxPing.currentTime = 0; 
+              sfxPing.play().catch(e => console.log("Audio blocked:", e));
             }
             
             window.activeOpenPopups.add(filename); 
@@ -294,8 +299,8 @@ const observer = new MutationObserver((mutations) => {
               console.log(`🔓 [Escape Room] All items found! Unlocking map for flight...`);
               
               // FIRE UNLOCK AUDIO
-              window.audioUnlock.currentTime = 0;
-              window.audioUnlock.play().catch(e => console.log("Audio blocked:", e));
+              sfxChime.currentTime = 0;
+              sfxChime.play().catch(e => console.log("Audio blocked:", e));
 
               if (window.mpSdk) {
                 window.mpSdk.Sweep.enable(...window.allModelSweeps).catch(() => {});
@@ -360,13 +365,12 @@ async function initMashupLogic(mpSdk) {
   }
   
   const startBtn = document.getElementById('eye-spy-start-btn');
-  if (startBtn) {
+  const statusText = document.getElementById('eye-spy-status-text');
+  
+  if (startBtn && statusText) {
+      statusText.innerText = "Audio is required. Please turn up your volume!";
       startBtn.innerText = "Start Experience";
       startBtn.classList.add('ready');
-  }
-  const startUI = document.getElementById('eye-spy-start-ui');
-  if (startUI) {
-      startUI.style.display = "flex";
   }
 
   mpSdk.on(mpSdk.Sweep.Event.EXIT, function(fromSweep) {
