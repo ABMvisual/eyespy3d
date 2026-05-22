@@ -54,10 +54,12 @@ function injectCustomUI() {
     #eye-spy-start-btn:hover { transform: scale(1.05) !important; }
     #eye-spy-loading-text { position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; }
     
-    /* CUSTOM CONTROLS */
-    #eye-spy-controls { display: none !important; position: fixed !important; bottom: 20px !important; right: 20px !important; gap: 10px !important; z-index: 2147483647 !important; }
-    .es-ctrl-btn { padding: 8px 16px !important; font-size: 14px !important; font-weight: bold !important; color: #fff !important; background: rgba(0,0,0,0.6) !important; border: 2px solid #fff !important; border-radius: 6px !important; cursor: pointer !important; transition: all 0.2s ease !important; text-transform: uppercase !important; backdrop-filter: blur(5px) !important;}
-    .es-ctrl-btn:hover { background: #CCFF00 !important; color: #000 !important; border-color: #CCFF00 !important; transform: scale(1.05) !important; }
+    /* PILL CONTROL PANEL STYLES */
+    #es-control-panel { display: none !important; position: fixed !important; bottom: 20px !important; left: 20px !important; align-items: center !important; gap: 15px !important; background: #1c1c1c !important; padding: 10px 20px !important; border-radius: 50px !important; box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important; z-index: 2147483647 !important; border: 2px solid #333 !important; }
+    .es-panel-btn { background: transparent !important; border: none !important; cursor: pointer !important; display: flex !important; align-items: center !important; justify-content: center !important; padding: 5px !important; border-radius: 50% !important; transition: transform 0.2s ease, background 0.2s ease !important; }
+    .es-panel-btn:hover { transform: scale(1.15) !important; background: rgba(204, 255, 0, 0.1) !important; }
+    .es-panel-btn svg { width: 28px !important; height: 28px !important; fill: #CCFF00 !important; }
+    .es-panel-divider { width: 2px !important; height: 28px !important; background: #444 !important; border-radius: 2px !important; }
 
     @keyframes eye-spy-fade { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
   `;
@@ -77,29 +79,24 @@ function injectCustomUI() {
   `;
   document.body.appendChild(startUI);
 
-  // MUTE & SKIP PANEL
-  const controlsDiv = document.createElement('div');
-  controlsDiv.id = 'eye-spy-controls';
-  
-  const muteBtn = document.createElement('button');
-  muteBtn.id = 'es-mute-btn';
-  muteBtn.className = 'es-ctrl-btn';
-  muteBtn.innerText = '🔊 ON';
-  
-  const skipBtn = document.createElement('button');
-  skipBtn.id = 'es-skip-btn';
-  skipBtn.className = 'es-ctrl-btn';
-  const skipWords = ['CHEAT', 'SNEAK', 'PEEK', 'LEAP', 'WARP'];
-  skipBtn.innerText = skipWords[0];
-  
-  // Randomizer Hover Effect
-  skipBtn.addEventListener('mouseenter', () => {
-      skipBtn.innerText = skipWords[Math.floor(Math.random() * skipWords.length)];
-  });
-
-  controlsDiv.appendChild(muteBtn);
-  controlsDiv.appendChild(skipBtn);
-  document.body.appendChild(controlsDiv);
+  // PILL CONTROL PANEL HTML
+  const panel = document.createElement('div');
+  panel.id = 'es-control-panel';
+  panel.innerHTML = `
+    <button class="es-panel-btn" id="es-btn-prev" title="Skip Backward">
+      <svg viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
+    </button>
+    <div class="es-panel-divider"></div>
+    <button class="es-panel-btn" id="es-btn-audio" title="Mute/Unmute Audio">
+      <svg id="es-svg-unmute" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+      <svg id="es-svg-mute" style="display:none;" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+    </button>
+    <div class="es-panel-divider"></div>
+    <button class="es-panel-btn" id="es-btn-next" title="Skip Forward">
+      <svg viewBox="0 0 24 24"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+    </button>
+  `;
+  document.body.appendChild(panel);
 
   const startBtn = document.getElementById('eye-spy-start-btn');
   if(startBtn) {
@@ -132,12 +129,19 @@ function startMechanics() {
     { level: 7, startSweeps: ['r7sd2g426fhbfa2wdh5dfxy5d'], targetSweep: '20qckty5qi20t39838cq274rc', imagesToFind: ['/a pair of old jugs.jpeg', '/a third more time.jpeg', '/odd purves terms.jpeg', '/round thing.jpeg'] }
   ];
 
+  window.currentLevelIndex = 0;
+  window.allModelSweeps = [];
+  window.foundImages = {};
+  window.isTeleporting = false; 
+  window.pathsPreloaded = false; 
+  window.activeOpenPopups = new Set(); 
+
   const targetMatchStrings = [];
   LEVELS.forEach(level => {
     level.imagesToFind.forEach(img => targetMatchStrings.push(img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', '')));
   });
 
-  // --- VISUAL HUNTER (Exact v50 Baseline) ---
+  // --- VISUAL HUNTER (Optimized text scan) ---
   setInterval(() => {
     document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
       if (btn.getBoundingClientRect().bottom > window.innerHeight - 100) { btn.style.setProperty('display', 'none', 'important'); btn.style.setProperty('opacity', '0', 'important'); }
@@ -147,7 +151,8 @@ function startMechanics() {
         el.style.setProperty('filter', 'none', 'important'); el.style.setProperty('-webkit-filter', 'none', 'important'); el.style.setProperty('backdrop-filter', 'none', 'important'); el.style.setProperty('-webkit-backdrop-filter', 'none', 'important'); el.style.setProperty('background', 'transparent', 'important'); 
     });
 
-    const textElements = document.querySelectorAll('div, span, p, h1, h2, h3');
+    // CRITICAL FIX: Only query specific text tags, NEVER query all 'div' tags
+    const textElements = document.querySelectorAll('span, p, h1, h2, h3');
     textElements.forEach(el => {
       if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
         const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -164,37 +169,38 @@ function startMechanics() {
     });
   }, 250); 
 
-  window.currentLevelIndex = 0;
-  window.allModelSweeps = [];
-  window.foundImages = {};
-  window.isTeleporting = false; 
-  window.pathsPreloaded = false; 
-  window.activeOpenPopups = new Set(); 
-
   // --- BUTTON LOGIC ---
   let isMuted = false;
-  const muteBtn = document.getElementById('es-mute-btn');
-  if(muteBtn) {
-      muteBtn.addEventListener('click', () => {
-          isMuted = !isMuted;
-          window.globalSfx.muted = isMuted;
-          window.globalChime.muted = isMuted;
-          muteBtn.innerText = isMuted ? '🔇 MUTED' : '🔊 ON';
-      });
-  }
+  document.getElementById('es-btn-audio').addEventListener('click', () => {
+      isMuted = !isMuted;
+      window.globalSfx.muted = isMuted;
+      window.globalChime.muted = isMuted;
+      document.getElementById('es-svg-unmute').style.display = isMuted ? 'none' : 'block';
+      document.getElementById('es-svg-mute').style.display = isMuted ? 'block' : 'none';
+  });
 
-  const skipBtn = document.getElementById('es-skip-btn');
-  if(skipBtn) {
-      skipBtn.addEventListener('click', () => {
-          const cLevel = LEVELS[window.currentLevelIndex];
-          if (cLevel && window.mpSdk && !window.isTeleporting) {
-              console.log(`🚀 [Escape Room] CHEAT ACTIVATED!`);
-              cLevel.imagesToFind.forEach(img => window.foundImages[img] = true);
-              window.activeOpenPopups.clear();
-              executeFastTeleport(window.mpSdk, cLevel);
-          }
+  document.getElementById('es-btn-next').addEventListener('click', () => {
+      const cLevel = LEVELS[window.currentLevelIndex];
+      if (cLevel && window.mpSdk && !window.isTeleporting) {
+          cLevel.imagesToFind.forEach(img => window.foundImages[img] = true);
+          window.activeOpenPopups.clear();
+          executeFastTeleport(window.mpSdk, cLevel);
+      }
+  });
+
+  document.getElementById('es-btn-prev').addEventListener('click', () => {
+      if (window.currentLevelIndex === 0 || window.isTeleporting) return;
+      window.isTeleporting = true;
+      window.currentLevelIndex--;
+      const pLevel = LEVELS[window.currentLevelIndex];
+
+      window.mpSdk.Sweep.enable(...pLevel.startSweeps).then(() => {
+          window.mpSdk.Sweep.moveTo(pLevel.startSweeps[0], { transition: window.mpSdk.Sweep.Transition.INSTANT }).then(() => {
+              setupLevelTracking();
+              lockMapForCurrentLevel(window.mpSdk);
+          });
       });
-  }
+  });
 
   function setupLevelTracking() {
     window.foundImages = {};
@@ -209,7 +215,7 @@ function startMechanics() {
     return Object.values(window.foundImages).every(status => status === true);
   }
 
-  // --- HYPER-OPTIMIZED TRIPWIRE (Fixes Level 3 Lag) ---
+  // --- OPTIMIZED TRIPWIRE (No 'div' queries) ---
   const observer = new MutationObserver((mutations) => {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel) return; 
@@ -217,20 +223,18 @@ function startMechanics() {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === 1 || node.nodeType === 3) { 
-          // Fast read instead of freezing innerHTML
-          let foundMatchStr = (node.textContent || '').toLowerCase() + " ";
+          let searchString = (node.textContent || '').toLowerCase() + " ";
           if (node.nodeType === 1) {
-             const mediaTags = node.tagName === 'IMG' ? [node] : (node.querySelectorAll ? node.querySelectorAll('img, div') : []);
-             mediaTags.forEach(m => foundMatchStr += (m.src || m.style.backgroundImage || '').toLowerCase() + " ");
+             const mediaTags = node.tagName === 'IMG' ? [node] : (node.querySelectorAll ? node.querySelectorAll('img, [style*="background-image"]') : []);
+             mediaTags.forEach(m => searchString += (m.src || m.style.backgroundImage || '').toLowerCase() + " ");
           }
 
           currentLevel.imagesToFind.forEach((filename) => {
             const cleanName = filename.toLowerCase();
             const encodedName = encodeURI(filename).toLowerCase();
             
-            if (foundMatchStr.includes(cleanName) || foundMatchStr.includes(encodedName)) {
+            if (searchString.includes(cleanName) || searchString.includes(encodedName)) {
               if (!window.foundImages[filename]) {
-                console.log(`🎯 [Escape Room] Found: ${filename}`);
                 playItemSound(filename); 
               }
               window.activeOpenPopups.add(filename); 
@@ -238,7 +242,6 @@ function startMechanics() {
               
               if (checkAllFound() && !window.pathsPreloaded) {
                 window.pathsPreloaded = true;
-                console.log(`🔓 [Escape Room] All items found! Unlocking map...`);
                 try { window.globalChime.currentTime = 0; window.globalChime.play().catch(()=>{}); } catch(e){}
                 if (window.mpSdk) window.mpSdk.Sweep.enable(...window.allModelSweeps).catch(() => {});
               }
@@ -249,21 +252,19 @@ function startMechanics() {
 
       mutation.removedNodes.forEach((node) => {
         if (node.nodeType === 1 || node.nodeType === 3) { 
-          // Fast read instead of freezing innerHTML
-          let foundMatchStr = (node.textContent || '').toLowerCase() + " ";
+          let searchString = (node.textContent || '').toLowerCase() + " ";
           if (node.nodeType === 1) {
-             const mediaTags = node.tagName === 'IMG' ? [node] : (node.querySelectorAll ? node.querySelectorAll('img, div') : []);
-             mediaTags.forEach(m => foundMatchStr += (m.src || m.style.backgroundImage || '').toLowerCase() + " ");
+             const mediaTags = node.tagName === 'IMG' ? [node] : (node.querySelectorAll ? node.querySelectorAll('img, [style*="background-image"]') : []);
+             mediaTags.forEach(m => searchString += (m.src || m.style.backgroundImage || '').toLowerCase() + " ");
           }
 
           currentLevel.imagesToFind.forEach((filename) => {
             const cleanName = filename.toLowerCase();
             const encodedName = encodeURI(filename).toLowerCase();
 
-            if (foundMatchStr.includes(cleanName) || foundMatchStr.includes(encodedName)) {
+            if (searchString.includes(cleanName) || searchString.includes(encodedName)) {
               window.activeOpenPopups.delete(filename); 
               if (checkAllFound() && window.activeOpenPopups.size === 0 && !window.isTeleporting) {
-                console.log(`🚀 [Escape Room] Initiating Teleport sequence!`);
                 executeFastTeleport(window.mpSdk, currentLevel);
               }
             }
@@ -300,7 +301,7 @@ function startMechanics() {
     if (welcomeBlock) welcomeBlock.style.display = "flex";
 
     // Reveal UI Controls once map is loaded
-    const controls = document.getElementById('eye-spy-controls');
+    const controls = document.getElementById('es-control-panel');
     if (controls) controls.style.setProperty('display', 'flex', 'important');
 
     mpSdk.on(mpSdk.Sweep.Event.EXIT, function(fromSweep) {
@@ -328,9 +329,8 @@ function startMechanics() {
       window.currentLevelIndex++; 
       if (LEVELS[window.currentLevelIndex]) setupLevelTracking(); 
       else {
-          console.log("🏆 [Escape Room] Complete!");
-          const skipBtn = document.getElementById('es-skip-btn');
-          if (skipBtn) skipBtn.remove();
+          const controls = document.getElementById('es-control-panel');
+          if (controls) controls.remove();
       }
     } catch (error) { console.error("Teleport failed:", error); }
   }
