@@ -44,14 +44,14 @@ function injectCustomUI() {
     audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"] { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
-    /* VINTAGE SEPIA START SCREEN FILTER */
+    /* DUOCHROME SEPIA START SCREEN FILTER */
     #eye-spy-dark-overlay { 
         position: fixed !important; 
         top: 0 !important; left: 0 !important; 
         width: 100vw !important; height: 100vh !important; 
-        background: rgba(60, 40, 20, 0.4) !important; 
-        backdrop-filter: sepia(70%) contrast(110%) brightness(90%) !important;
-        -webkit-backdrop-filter: sepia(70%) contrast(110%) brightness(90%) !important;
+        background: rgba(90, 60, 30, 0.3) !important; 
+        backdrop-filter: sepia(100%) contrast(110%) brightness(85%) hue-rotate(-5deg) !important;
+        -webkit-backdrop-filter: sepia(100%) contrast(110%) brightness(85%) hue-rotate(-5deg) !important;
         z-index: 2147483645 !important; 
     }
 
@@ -64,18 +64,18 @@ function injectCustomUI() {
     #eye-spy-start-btn:hover { transform: scale(1.05) !important; }
     #eye-spy-loading-text { position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; }
     
-    /* PILL CONTROL PANEL STYLES - BULLETPROOF CSS ICONS */
+    /* PILL CONTROL PANEL STYLES - 4 BUTTONS */
     #es-control-panel { 
       display: none !important; 
       position: fixed !important; 
       bottom: 15px !important; 
       left: 15px !important; 
-      width: 250px !important; 
+      width: 320px !important; 
       height: 60px !important; 
       align-items: center !important; 
       justify-content: space-between !important;
       background: #1c1c1c !important; 
-      padding: 0 25px !important; 
+      padding: 0 20px !important; 
       border-radius: 30px !important; 
       box-shadow: 0 4px 15px rgba(0,0,0,0.8) !important; 
       z-index: 2147483647 !important; 
@@ -101,11 +101,12 @@ function injectCustomUI() {
       background: rgba(204, 255, 0, 0.1) !important; 
     }
     
-    /* BULLETPROOF SVG BACKGROUNDS TO DEFEAT MPEMBED SANITIZER */
-    .es-icon-prev { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 24px; height: 24px; }
-    .es-icon-next { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 24px; height: 24px; }
-    .es-icon-unmute { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 26px; height: 26px; }
-    .es-icon-mute { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 26px; height: 26px; display: none; }
+    /* BULLETPROOF SVG BACKGROUND ICONS */
+    .es-icon-prev { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 22px; height: 22px; }
+    .es-icon-clue { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.69l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 22px; height: 22px; }
+    .es-icon-unmute { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 24px; height: 24px; }
+    .es-icon-mute { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 24px; height: 24px; display: none; }
+    .es-icon-next { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 22px; height: 22px; }
 
     .es-panel-btn span {
       font-size: 10px !important;
@@ -139,18 +140,25 @@ function injectCustomUI() {
   `;
   document.body.appendChild(startUI);
 
-  // PILL CONTROL PANEL HTML (Bulletproof backgrounds)
+  // PILL CONTROL PANEL HTML (Panel is fully hidden on start screen)
   const panel = document.createElement('div');
   panel.id = 'es-control-panel';
   panel.innerHTML = `
-    <button class="es-panel-btn" id="es-btn-prev" title="Skip Backward">
+    <button class="es-panel-btn" id="es-btn-prev" title="Back">
       <div class="es-icon-prev"></div>
       <span>BACK</span>
+    </button>
+    
+    <div class="es-panel-divider"></div>
+
+    <button class="es-panel-btn" id="es-btn-clue" title="Replay Clue">
+      <div class="es-icon-clue"></div>
+      <span>CLUE</span>
     </button>
 
     <div class="es-panel-divider"></div>
     
-    <button class="es-panel-btn" id="es-btn-audio" title="Mute / Unmute Audio">
+    <button class="es-panel-btn" id="es-btn-audio" title="Mute / Unmute">
       <div class="es-icon-unmute" id="es-svg-unmute"></div>
       <div class="es-icon-mute" id="es-svg-mute"></div>
       <span id="es-audio-label">MUTE</span>
@@ -158,33 +166,12 @@ function injectCustomUI() {
 
     <div class="es-panel-divider"></div>
 
-    <button class="es-panel-btn" id="es-btn-next" title="Skip Forward">
+    <button class="es-panel-btn" id="es-btn-next" title="Skip">
       <div class="es-icon-next"></div>
-      <span>CHEAT</span>
+      <span>SKIP</span>
     </button>
   `;
   document.body.appendChild(panel);
-
-  const startBtn = document.getElementById('eye-spy-start-btn');
-  if(startBtn) {
-    startBtn.addEventListener('click', () => {
-      const ui = document.getElementById('eye-spy-start-ui');
-      const overlay = document.getElementById('eye-spy-dark-overlay');
-      if(ui) { ui.style.transition = "opacity 0.4s ease"; ui.style.opacity = "0"; setTimeout(() => ui.remove(), 400); }
-      if(overlay) { overlay.style.transition = "opacity 0.4s ease"; overlay.style.opacity = "0"; setTimeout(() => overlay.remove(), 400); }
-
-      // Reveal Panel ONLY after start is clicked
-      const controls = document.getElementById('es-control-panel');
-      if (controls) controls.style.setProperty('display', 'flex', 'important');
-
-      try {
-          window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; 
-          window.globalSfx.play().catch(()=>{});
-          window.globalChime.volume = 0;
-          window.globalChime.play().then(() => { window.globalChime.pause(); window.globalChime.volume = 1; window.globalChime.currentTime = 0; }).catch(()=>{});
-      } catch(e) {}
-    });
-  }
 
   startMechanics();
 }
@@ -205,8 +192,6 @@ function startMechanics() {
   window.foundImages = {};
   window.isTeleporting = false; 
   window.pathsPreloaded = false; 
-  
-  // Decoupled tracking: found status vs currently active audio status
   window.activeOpenPopups = new Set(); 
 
   const targetMatchStrings = [];
@@ -214,7 +199,34 @@ function startMechanics() {
     level.imagesToFind.forEach(img => targetMatchStrings.push(img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', '')));
   });
 
-  // --- VISUAL HUNTER (RESTORED TO GOLDEN v50) ---
+  // --- START BUTTON LOGIC (TELEPORTS DIRECTLY TO LEVEL 1) ---
+  const startBtn = document.getElementById('eye-spy-start-btn');
+  if(startBtn) {
+    startBtn.addEventListener('click', () => {
+      const ui = document.getElementById('eye-spy-start-ui');
+      const overlay = document.getElementById('eye-spy-dark-overlay');
+      if(ui) { ui.style.transition = "opacity 0.4s ease"; ui.style.opacity = "0"; setTimeout(() => ui.remove(), 400); }
+      if(overlay) { overlay.style.transition = "opacity 0.4s ease"; overlay.style.opacity = "0"; setTimeout(() => overlay.remove(), 400); }
+
+      try {
+          window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; 
+          window.globalSfx.play().catch(()=>{});
+          window.globalChime.volume = 0;
+          window.globalChime.play().then(() => { window.globalChime.pause(); window.globalChime.volume = 1; window.globalChime.currentTime = 0; }).catch(()=>{});
+      } catch(e) {}
+
+      // Teleport to Level 1 instantly
+      if (window.mpSdk) {
+          window.mpSdk.Sweep.moveTo(LEVELS[0].startSweeps[0], { transition: window.mpSdk.Sweep.Transition.FLY }).then(() => {
+              // Reveal Panel with all buttons AFTER start is clicked
+              const controls = document.getElementById('es-control-panel');
+              if (controls) controls.style.setProperty('display', 'flex', 'important');
+          });
+      }
+    });
+  }
+
+  // --- VISUAL HUNTER (RESTORED DIV CHECKER) ---
   setInterval(() => {
     document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
       if (btn.getBoundingClientRect().bottom > window.innerHeight - 100) { btn.style.setProperty('display', 'none', 'important'); btn.style.setProperty('opacity', '0', 'important'); }
@@ -224,7 +236,6 @@ function startMechanics() {
         el.style.setProperty('filter', 'none', 'important'); el.style.setProperty('-webkit-filter', 'none', 'important'); el.style.setProperty('backdrop-filter', 'none', 'important'); el.style.setProperty('-webkit-backdrop-filter', 'none', 'important'); el.style.setProperty('background', 'transparent', 'important'); 
     });
 
-    // Contains 'div' for proper popup styling
     const textElements = document.querySelectorAll('div, span, p, h1, h2, h3');
     textElements.forEach(el => {
       if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
@@ -251,26 +262,35 @@ function startMechanics() {
       document.getElementById('es-svg-unmute').style.display = isMuted ? 'none' : 'block';
       document.getElementById('es-svg-mute').style.display = isMuted ? 'block' : 'none';
       document.getElementById('es-audio-label').innerText = isMuted ? 'UNMUTE' : 'MUTE';
+      
+      // Mute hidden MPEmbed ambient player
+      document.querySelectorAll('audio, video').forEach(media => { media.muted = isMuted; });
+  });
+
+  // CLUE REPLAY BUTTON (Replays hidden MPEmbed sweep audio)
+  document.getElementById('es-btn-clue').addEventListener('click', () => {
+      document.querySelectorAll('audio, video').forEach(media => {
+          media.currentTime = 0;
+          media.play().catch(()=>{});
+      });
   });
 
   document.getElementById('es-btn-next').addEventListener('click', () => {
       const cLevel = LEVELS[window.currentLevelIndex];
       if (cLevel && window.mpSdk && !window.isTeleporting) {
-          // Kill audio and memory before jump
           window.globalSfx.pause();
           window.globalSfx.currentTime = 0;
           window.activeOpenPopups.clear();
-
+          
           cLevel.imagesToFind.forEach(img => window.foundImages[img] = true);
           executeFastTeleport(window.mpSdk, cLevel);
       }
   });
 
   document.getElementById('es-btn-prev').addEventListener('click', () => {
-      // Hard block preventing return to Sweep 30 (Anything before Index 0)
+      // Locked out of Sweep 30 (Level 1). Doing nothing if on Level 1.
       if (window.currentLevelIndex <= 0 || window.isTeleporting) return;
       
-      // Kill audio and memory before jump
       window.globalSfx.pause();
       window.globalSfx.currentTime = 0;
       window.activeOpenPopups.clear();
@@ -300,7 +320,7 @@ function startMechanics() {
     return Object.values(window.foundImages).every(status => status === true);
   }
 
-  // --- TRIPWIRE WITH DECOUPLED INFINITE AUDIO REPLAY ---
+  // --- TRIPWIRE ---
   const observer = new MutationObserver((mutations) => {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel) return; 
@@ -319,14 +339,11 @@ function startMechanics() {
             const encodedName = encodeURI(filename).toLowerCase();
             
             if (searchString.includes(cleanName) || searchString.includes(encodedName)) {
-              
-              // 1. Audio Logic: Always play if it isn't currently open
               if (!window.activeOpenPopups.has(filename)) {
                 playItemSound(filename); 
                 window.activeOpenPopups.add(filename); 
               }
 
-              // 2. Escape Room Logic: Track progress
               if (!window.foundImages[filename]) {
                  console.log(`🎯 [Escape Room] Found: ${filename}`);
                  window.foundImages[filename] = true;
@@ -355,9 +372,7 @@ function startMechanics() {
             const encodedName = encodeURI(filename).toLowerCase();
 
             if (searchString.includes(cleanName) || searchString.includes(encodedName)) {
-              // Clear from memory so it can play again next time it opens
               window.activeOpenPopups.delete(filename); 
-              
               if (checkAllFound() && window.activeOpenPopups.size === 0 && !window.isTeleporting) {
                 executeFastTeleport(window.mpSdk, currentLevel);
               }
@@ -393,6 +408,16 @@ function startMechanics() {
     
     const welcomeBlock = document.getElementById('eye-spy-welcome-block');
     if (welcomeBlock) welcomeBlock.style.display = "flex";
+
+    // GLOBAL MPEmbed Audio Override (Forces replay when entering sweeps)
+    mpSdk.on(mpSdk.Sweep.Event.ENTER, function(sweepId) {
+        setTimeout(() => {
+            document.querySelectorAll('audio, video').forEach(media => {
+                media.currentTime = 0;
+                media.play().catch(()=>{});
+            });
+        }, 800); // Give MPEmbed a fraction of a second to load the track
+    });
 
     mpSdk.on(mpSdk.Sweep.Event.EXIT, function(fromSweep) {
       const cLevel = LEVELS[window.currentLevelIndex];
