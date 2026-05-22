@@ -1,7 +1,7 @@
 // --- 0. START SCREEN, AUDIO UI NUKE & GLOBAL CSS ---
 const customStyles = document.createElement('style');
 customStyles.innerHTML = `
-  /* 1. AGGRESSIVELY NUKE MPEMBED AUDIO UI (CSS Baseline) */
+  /* 1. AGGRESSIVELY NUKE MPEMBED AUDIO UI */
   * {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
@@ -14,15 +14,17 @@ customStyles.innerHTML = `
     background-color: transparent !important;
   }
   
-  /* TARGETED ASSASSINATION: The White Circle image and Custom Billboard */
-  [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] {
+  /* TARGETED ASSASSINATION: The White Circle image, Billboards, and Audio UI */
+  [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, img[src*="loader.svg"] {
     display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
     pointer-events: none !important;
   }
 
-  audio, video, #mpe-audio-player, .mpe-audio-player {
+  /* PREVENT THE AUDIO 'X' FLASH (Kills audio UI instantly via CSS) */
+  audio, video, #mpe-audio-player, .mpe-audio-player, div[style*="bottom: 0"][style*="right: 0"] > [class*="close"] {
+    display: none !important;
     opacity: 0 !important;
     position: absolute !important;
     left: -9999px !important;
@@ -30,76 +32,81 @@ customStyles.innerHTML = `
   }
 
   /* 2. SCALE UP *ONLY* THE POPUP 'X' BUTTON */
-  .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close {
-    transform: scale(2.5) !important; 
-    right: 25px !important; 
-    top: 25px !important; 
+  #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close {
+    transform: scale(3.5) !important; /* Bumped from 2.5 to 3.5 */
+    right: 35px !important; 
+    top: 35px !important; 
     opacity: 1 !important;
     visibility: visible !important;
     z-index: 99999 !important;
+    pointer-events: auto !important;
   }
 
-  /* 3. Isolated Start Screen Styling */
-  #eye-spy-start-screen {
+  /* 3. DUAL-LAYER START SCREEN STYLING */
+  /* Layer 1: The solid image cover while loading */
+  #eye-spy-image-cover {
     position: fixed !important; 
     top: 0 !important; 
     left: 0 !important; 
     width: 100vw !important; 
     height: 100vh !important;
-    background: rgba(0, 0, 0, 0.5) !important; 
+    /* UPDATE THIS URL WITH YOUR START SCREEN IMAGE */
+    background-image: url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000&auto=format&fit=crop') !important; 
+    background-size: cover !important;
+    background-position: center !important;
+    background-color: #111 !important;
     z-index: 2147483647 !important; 
-    display: flex !important; 
+  }
+
+  /* Layer 2: The transparent UI layer that holds the start button over the dollhouse */
+  #eye-spy-start-ui {
+    position: fixed !important; 
+    top: 0 !important; 
+    left: 0 !important; 
+    width: 100vw !important; 
+    height: 100vh !important;
+    background: transparent !important; 
+    z-index: 2147483646 !important; 
+    display: none; /* Hidden until loaded */
     flex-direction: column !important; 
-    justify-content: center !important; 
+    justify-content: flex-end !important; /* Pushes button to bottom */
     align-items: center !important;
-    color: white !important; 
-    font-family: sans-serif !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    padding-bottom: 10vh !important;
   }
   
-  /* LOCKED Button State (Prevents the crash) */
   #eye-spy-start-btn {
-    padding: 16px 32px !important; 
-    font-size: 20px !important; 
+    padding: 16px 40px !important; 
+    font-size: 24px !important; 
     font-weight: bold !important;
     background: #CCFF00 !important; 
     color: #000 !important; 
     border: none !important; 
     border-radius: 8px !important;
-    cursor: wait !important; 
-    transition: transform 0.2s ease, opacity 0.2s ease !important;
-    opacity: 0.5 !important;
-    pointer-events: none !important; /* Forces mouse to ignore the button */
+    cursor: pointer !important; 
+    transition: transform 0.2s ease !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
   }
   
-  /* UNLOCKED Button State */
-  #eye-spy-start-btn.ready { 
-    opacity: 1 !important;
-    pointer-events: auto !important; /* Restores clickability */
-    cursor: pointer !important;
-  }
-
-  #eye-spy-start-btn.ready:hover { 
+  #eye-spy-start-btn:hover { 
     transform: scale(1.05) !important; 
   }
 `;
 document.head.appendChild(customStyles);
 
-// Inject Start Screen HTML
-const startScreen = document.createElement('div');
-startScreen.id = 'eye-spy-start-screen';
-startScreen.innerHTML = `
-  <h1 style="margin-bottom: 15px; text-align: center; font-size: 32px; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Welcome to Eye Spy 3D</h1>
-  <p style="margin-bottom: 40px; font-size: 18px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Audio is required for this experience.</p>
-  <button id="eye-spy-start-btn">Loading 3D Experience...</button>
-`;
-document.body.appendChild(startScreen);
+// Inject Dual-Layer Start Screen HTML
+const imageCover = document.createElement('div');
+imageCover.id = 'eye-spy-image-cover';
+document.body.appendChild(imageCover);
+
+const startUI = document.createElement('div');
+startUI.id = 'eye-spy-start-ui';
+startUI.innerHTML = `<button id="eye-spy-start-btn">Start Experience</button>`;
+document.body.appendChild(startUI);
 
 document.getElementById('eye-spy-start-btn').addEventListener('click', () => {
-  startScreen.style.transition = "opacity 0.5s ease";
-  startScreen.style.opacity = "0";
-  setTimeout(() => startScreen.remove(), 500);
+  startUI.style.transition = "opacity 0.5s ease";
+  startUI.style.opacity = "0";
+  setTimeout(() => startUI.remove(), 500);
 });
 
 // --- 1. LEVEL CONFIGURATION ---
@@ -157,13 +164,11 @@ LEVELS.forEach(level => {
 });
 
 setInterval(() => {
-  // 1A. DYNAMIC AUDIO UI SNIPER (The Bottom X)
+  // 1A. DYNAMIC AUDIO UI SNIPER
   document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
     const rect = btn.getBoundingClientRect();
     if (rect.bottom > window.innerHeight - 100) {
       btn.style.setProperty('display', 'none', 'important');
-      btn.style.setProperty('opacity', '0', 'important');
-      btn.style.setProperty('pointer-events', 'none', 'important');
     }
   });
 
@@ -176,38 +181,18 @@ setInterval(() => {
       el.style.setProperty('background', 'transparent', 'important'); 
   });
 
-  // 1C. THE SPINNER ASSASSIN
-  document.querySelectorAll('.mpe-loader, .spinner, [class*="media-loader"]').forEach(loader => {
-        loader.style.setProperty('display', 'none', 'important');
-        loader.style.setProperty('opacity', '0', 'important');
-  });
-  
-  // Specific SVG hunt
-  document.querySelectorAll('svg').forEach(svg => {
-    const parent = svg.parentElement;
-    if (parent && window.getComputedStyle(parent).position === 'absolute' && window.getComputedStyle(parent).zIndex > 1000) {
-        svg.style.setProperty('display', 'none', 'important');
-        svg.style.setProperty('opacity', '0', 'important');
-        parent.style.setProperty('display', 'none', 'important');
-        parent.style.setProperty('background', 'transparent', 'important');
-    }
-  });
-
-
-  // 2. THE TEXT BANNER FORMATTER
+  // 1C. TEXT BANNER FORMATTER (+20% Font Size)
   const textElements = document.querySelectorAll('div, span, p, h1, h2, h3');
-  
   textElements.forEach(el => {
     if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
       const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
       
       if (textClean.length > 3 && targetMatchStrings.includes(textClean)) {
-        
         el.style.setProperty('position', 'absolute', 'important');
         el.style.setProperty('left', '50%', 'important');
         el.style.setProperty('top', '50%', 'important'); 
         el.style.setProperty('transform', 'translate(-50%, -50%)', 'important'); 
-        el.style.setProperty('font-size', '200%', 'important');
+        el.style.setProperty('font-size', '240%', 'important'); /* Increased from 200% */
         el.style.setProperty('color', 'white', 'important');
         el.style.setProperty('margin', '0', 'important');
         el.style.setProperty('white-space', 'nowrap', 'important');
@@ -216,11 +201,9 @@ setInterval(() => {
         if (banner && !banner.dataset.styled) {
           banner.style.setProperty('background-color', '#1c1c1c', 'important');
           banner.style.setProperty('background', '#1c1c1c', 'important'); 
-          
           if (window.getComputedStyle(banner).position === 'static') {
             banner.style.setProperty('position', 'relative', 'important');
           }
-          
           banner.style.setProperty('min-height', '75px', 'important');
           banner.dataset.styled = "true"; 
         }
@@ -256,7 +239,7 @@ function checkAllFound() {
 }
 
 
-// --- 3. THE TRIPWIRE LISTENER ---
+// --- 3. THE TRIPWIRE LISTENER (WITH AUDIO INJECTION) ---
 const observer = new MutationObserver((mutations) => {
   const currentLevel = LEVELS[window.currentLevelIndex];
   if (!currentLevel) return; 
@@ -274,13 +257,24 @@ const observer = new MutationObserver((mutations) => {
           if (html.includes(filename) || html.includes(encodedName) || outer.includes(filename) || text.includes(filename)) {
             if (!window.foundImages[filename]) {
               console.log(`🎯 [Escape Room] Found: ${filename}`);
+              
+              // ---> PLAY 'ITEM FOUND' AUDIO HERE <---
+              // Replace this URL with your custom MP3
+              let successPing = new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3');
+              successPing.play().catch(e => console.log("Audio play blocked", e));
             }
+            
             window.activeOpenPopups.add(filename); 
             window.foundImages[filename] = true;
             
             if (checkAllFound() && !window.pathsPreloaded) {
               window.pathsPreloaded = true;
               console.log(`🔓 [Escape Room] All items found! Unlocking map for flight...`);
+              
+              // ---> PLAY 'LEVEL COMPLETE / UNLOCK' AUDIO HERE <---
+              let levelCompleteChime = new Audio('https://cdn.pixabay.com/download/audio/2021/08/09/audio_24e370a563.mp3');
+              levelCompleteChime.play().catch(e => console.log("Audio play blocked", e));
+
               if (window.mpSdk) {
                 window.mpSdk.Sweep.enable(...window.allModelSweeps).catch(() => {});
               }
@@ -324,7 +318,6 @@ async function initMashupLogic(mpSdk) {
   let sweepCollection = await new Promise((resolve) => {
     let sub = mpSdk.Sweep.data.subscribe({
       onCollectionUpdated: function (collection) {
-        // ONLY resolve when the sweeps actually exist in the data
         if (Object.keys(collection).length > 0) {
             resolve(collection);
             sub.cancel(); 
@@ -336,11 +329,18 @@ async function initMashupLogic(mpSdk) {
   window.allModelSweeps = Object.keys(sweepCollection);
   lockMapForCurrentLevel(mpSdk);
 
-  // CRITICAL: The model sweeps are loaded. Unlock the Start Button!
-  const startBtn = document.getElementById('eye-spy-start-btn');
-  if (startBtn) {
-      startBtn.innerText = "Start Experience";
-      startBtn.classList.add('ready');
+  // CRITICAL: Sweeps are loaded! 
+  // 1. Hide the Image Cover
+  const cover = document.getElementById('eye-spy-image-cover');
+  if (cover) {
+    cover.style.transition = "opacity 0.5s ease";
+    cover.style.opacity = "0";
+    setTimeout(() => cover.remove(), 500);
+  }
+  // 2. Show the Start Button over the Dollhouse
+  const startUI = document.getElementById('eye-spy-start-ui');
+  if (startUI) {
+      startUI.style.display = "flex";
   }
 
   mpSdk.on(mpSdk.Sweep.Event.EXIT, function(fromSweep) {
