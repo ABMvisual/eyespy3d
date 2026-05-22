@@ -1,6 +1,35 @@
-// --- 0. PROTECTED AUDIO SETUP (Isolated from MPEmbed collisions) ---
-const sfxPing = new Audio('https://actions.google.com/sounds/v1/cartoon/clown_change_slip.ogg');
-const sfxChime = new Audio('https://actions.google.com/sounds/v1/cartoon/magic_chime_scifi.ogg');
+// --- 0. DYNAMIC AUDIO ENGINE ---
+// Base URL for your GitHub repository
+const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
+
+// Dictionary mapping the image found to your specific voiceover MP3s
+const AUDIO_MAP = {
+  '/pink bopeep.jpeg': 'pink bo-peep.mp3',
+  '/two white cows.jpeg': 'two white cows.mp3',
+  '/yourself.jpeg': 'yourself.mp3',
+  '/decongestant cough elixir.jpeg': 'decongestant cough elixir.mp3',
+  '/plastic fruit.jpeg': 'plastic fruit.mp3',
+  '/pineapple sunday.jpeg': 'pineapple sunday.mp3'
+};
+
+// Create single global audio players to bypass browser restrictions
+window.globalSfx = new Audio();
+window.globalChime = new Audio('https://upload.wikimedia.org/wikipedia/commons/d/d7/Tada.mp3');
+
+function playItemSound(imageFilename) {
+  try {
+    let mp3Name = AUDIO_MAP[imageFilename];
+    if (mp3Name) {
+      // Plays your custom voiceover from GitHub
+      window.globalSfx.src = GITHUB_BASE + encodeURIComponent(mp3Name);
+    } else {
+      // Fallback Ping for items that don't have custom audio yet
+      window.globalSfx.src = 'https://upload.wikimedia.org/wikipedia/commons/4/42/Ping.mp3';
+    }
+    window.globalSfx.currentTime = 0;
+    window.globalSfx.play().catch(()=>{});
+  } catch(e) {}
+}
 
 
 // --- 1. START SCREEN, AUDIO UI NUKE & GLOBAL CSS ---
@@ -27,7 +56,7 @@ customStyles.innerHTML = `
     pointer-events: none !important;
   }
 
-  /* PREVENT THE AUDIO 'X' MICRO-FLASH (Kills it before it paints) */
+  /* PREVENT THE AUDIO 'X' MICRO-FLASH */
   audio, video, [id*="audio"], [class*="audio-player"], 
   div[style*="bottom: 0px"] [class*="close"], 
   div[style*="bottom: 0"] [class*="close"] {
@@ -51,34 +80,35 @@ customStyles.innerHTML = `
   }
 
   /* DUAL-LAYER START SCREEN STYLING */
-  /* Layer 1: The solid image cover */
+  /* Layer 1: Your Custom 3D Logo Cover */
   #eye-spy-image-cover {
     position: fixed !important; 
     top: 0 !important; 
     left: 0 !important; 
     width: 100vw !important; 
     height: 100vh !important;
-    /* UPDATE THIS URL WITH YOUR START SCREEN IMAGE */
-    background-image: url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000&auto=format&fit=crop') !important; 
+    background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/es3d_load%20screen.png') !important; 
     background-size: cover !important;
     background-position: center !important;
     background-color: #111 !important;
     z-index: 2147483646 !important; 
   }
 
-  /* Layer 2: The transparent UI layer (Centered) */
+  /* Layer 2: The transparent UI layer (DEAD CENTER) */
   #eye-spy-start-ui {
     position: fixed !important; 
     top: 0 !important; 
     left: 0 !important; 
     width: 100vw !important; 
     height: 100vh !important;
-    background: rgba(0, 0, 0, 0.6) !important; /* The transparent black overlay */
+    background: rgba(0, 0, 0, 0.6) !important; 
     z-index: 2147483647 !important; 
     display: flex !important; 
     flex-direction: column !important; 
-    justify-content: center !important; /* Puts everything perfectly in the middle */
+    justify-content: center !important; 
     align-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   
   #eye-spy-start-btn {
@@ -94,6 +124,7 @@ customStyles.innerHTML = `
     opacity: 0.5 !important;
     pointer-events: none !important; 
     box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+    margin-top: 20px !important;
   }
   
   #eye-spy-start-btn.ready { 
@@ -116,27 +147,29 @@ document.body.appendChild(imageCover);
 const startUI = document.createElement('div');
 startUI.id = 'eye-spy-start-ui';
 startUI.innerHTML = `
-  <h1 style="margin-bottom: 15px; text-align: center; font-size: 36px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); color: white;">Welcome to Eye Spy 3D</h1>
-  <p id="eye-spy-status-text" style="margin-bottom: 40px; font-size: 18px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Retrieving assets...</p>
+  <p id="eye-spy-status-text" style="margin: 0 0 20px 0; font-size: 20px; font-weight: bold; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Retrieving assets...</p>
   <button id="eye-spy-start-btn">Loading 3D Experience...</button>
 `;
 document.body.appendChild(startUI);
 
-// The Click Event (Fades UI and Warms Up Audio)
-document.getElementById('eye-spy-start-btn').addEventListener('click', function() {
-  if (!this.classList.contains('ready')) return; // Safety check
+// Bulletproof Click Event
+const startBtn = document.getElementById('eye-spy-start-btn');
+startBtn.addEventListener('click', () => {
+  if (!startBtn.classList.contains('ready')) return; 
 
-  // Warm-up local audio files silently
-  sfxPing.volume = 0;
-  sfxPing.play().then(() => { sfxPing.pause(); sfxPing.volume = 1; sfxPing.currentTime = 0; }).catch(()=>{});
-  
-  sfxChime.volume = 0;
-  sfxChime.play().then(() => { sfxChime.pause(); sfxChime.volume = 1; sfxChime.currentTime = 0; }).catch(()=>{});
-
-  // Fade out UI
-  startUI.style.transition = "opacity 0.5s ease";
+  // 1. IMMEDIATELY hide the UI
+  startUI.style.transition = "opacity 0.4s ease";
   startUI.style.opacity = "0";
-  setTimeout(() => startUI.remove(), 500);
+  setTimeout(() => startUI.remove(), 400);
+
+  // 2. Warm up the global audio elements to unlock them for the browser
+  try {
+      window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA........'; // Tiny dummy payload
+      window.globalSfx.play().catch(()=>{});
+      
+      window.globalChime.volume = 0;
+      window.globalChime.play().then(() => { window.globalChime.pause(); window.globalChime.volume = 1; window.globalChime.currentTime = 0; }).catch(()=>{});
+  } catch(e) {}
 });
 
 // --- 2. LEVEL CONFIGURATION ---
@@ -267,7 +300,7 @@ function checkAllFound() {
 }
 
 
-// --- 5. THE TRIPWIRE LISTENER (WITH PROTECTED AUDIO) ---
+// --- 5. THE TRIPWIRE LISTENER (DYNAMIC AUDIO) ---
 const observer = new MutationObserver((mutations) => {
   const currentLevel = LEVELS[window.currentLevelIndex];
   if (!currentLevel) return; 
@@ -285,10 +318,7 @@ const observer = new MutationObserver((mutations) => {
           if (html.includes(filename) || html.includes(encodedName) || outer.includes(filename) || text.includes(filename)) {
             if (!window.foundImages[filename]) {
               console.log(`🎯 [Escape Room] Found: ${filename}`);
-              
-              // FIRE SUCCESS AUDIO
-              sfxPing.currentTime = 0; 
-              sfxPing.play().catch(e => console.log("Audio blocked:", e));
+              playItemSound(filename); // <-- Triggers your custom GitHub MP3s!
             }
             
             window.activeOpenPopups.add(filename); 
@@ -296,11 +326,12 @@ const observer = new MutationObserver((mutations) => {
             
             if (checkAllFound() && !window.pathsPreloaded) {
               window.pathsPreloaded = true;
-              console.log(`🔓 [Escape Room] All items found! Unlocking map for flight...`);
+              console.log(`🔓 [Escape Room] All items found! Unlocking map...`);
               
-              // FIRE UNLOCK AUDIO
-              sfxChime.currentTime = 0;
-              sfxChime.play().catch(e => console.log("Audio blocked:", e));
+              try {
+                window.globalChime.currentTime = 0;
+                window.globalChime.play().catch(()=>{});
+              } catch(e){}
 
               if (window.mpSdk) {
                 window.mpSdk.Sweep.enable(...window.allModelSweeps).catch(() => {});
@@ -364,13 +395,13 @@ async function initMashupLogic(mpSdk) {
     setTimeout(() => cover.remove(), 500);
   }
   
-  const startBtn = document.getElementById('eye-spy-start-btn');
+  const finalBtn = document.getElementById('eye-spy-start-btn');
   const statusText = document.getElementById('eye-spy-status-text');
   
-  if (startBtn && statusText) {
+  if (finalBtn && statusText) {
       statusText.innerText = "Audio is required. Please turn up your volume!";
-      startBtn.innerText = "Start Experience";
-      startBtn.classList.add('ready');
+      finalBtn.innerText = "Start Experience";
+      finalBtn.classList.add('ready');
   }
 
   mpSdk.on(mpSdk.Sweep.Event.EXIT, function(fromSweep) {
