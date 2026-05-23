@@ -43,7 +43,7 @@ function injectCustomUI() {
     audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"] { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
-    /* TRUE B&W WITH SLIGHT RED TINT START SCREEN FILTER */
+    /* PERFECT B&W FILTER WITH 20% RED TINT */
     #eye-spy-dark-overlay { 
         position: fixed !important; 
         top: 0 !important; left: 0 !important; 
@@ -204,28 +204,29 @@ function injectCustomUI() {
 
 function startMechanics() {
   const SWEEP_30 = '7k4p5mu5f5eydt8h0f8cygptb'; 
-  const SWEEP_28 = 'cwckxx365uimbeqk6ngp0t5ud'; 
-  const SWEEP_27 = 'ep98q9hxumexd83q38p12k4xc'; 
+  const SWEEP_28 = 'cwckxx365uimbeqk6ngp0t5ud';
 
   const LEVELS = [
-    { level: 1, startSweeps: [SWEEP_28], targetSweep: SWEEP_27, imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
-    { level: 2, startSweeps: [SWEEP_27], targetSweep: 't3si6z3gnc6ix4qh6cgmtgnfa', imagesToFind: ['/decongestant cough elixir.jpeg', '/plastic fruit.jpeg', '/pineapple sunday.jpeg'] },
-    { level: 3, startSweeps: ['t3si6z3gnc6ix4qh6cgmtgnfa'], targetSweep: '2cngsqh5q4t1ep85y5ky0h49d', imagesToFind: ['/aztec chocolate.jpeg', '/atomic coffee.jpeg', '/royal perambulator.jpeg'] },
-    { level: 4, startSweeps: ['2cngsqh5q4t1ep85y5ky0h49d'], targetSweep: '66yna1yh5e2ig14bmzzf1sn2c', imagesToFind: ['/a crow in a bag.jpeg', '/a hand in two.jpeg', '/vitreous china.jpeg', '/musical tyre.jpeg'] },
-    { level: 5, startSweeps: ['66yna1yh5e2ig14bmzzf1sn2c'], targetSweep: '3hdk0cskxw0apbr2iw8016htb', imagesToFind: ['/Hanimexs Movielux.jpeg', '/argus previewer.jpeg', '/porcelain lobster.jpeg', '/scotts mower maker.jpeg'] },
-    { level: 6, startSweeps: ['3hdk0cskxw0apbr2iw8016htb'], targetSweep: 'r7sd2g426fhbfa2wdh5dfxy5d', imagesToFind: ['/barley.jpg', '/some flumis.jpeg', '/wall climbing baby.jpeg', '/hide and seek.jpeg'] },
-    { level: 7, startSweeps: ['r7sd2g426fhbfa2wdh5dfxy5d'], targetSweep: '20qckty5qi20t39838cq274rc', imagesToFind: ['/a pair of old jugs.jpeg', '/a third more time.jpeg', '/odd purves terms.jpeg', '/round thing.jpeg'] }
+    { level: 1, startSweeps: [SWEEP_30], targetSweep: SWEEP_28, imagesToFind: [] }, 
+    { level: 2, startSweeps: [SWEEP_28], targetSweep: 'ep98q9hxumexd83q38p12k4xc', imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
+    { level: 3, startSweeps: ['ep98q9hxumexd83q38p12k4xc'], targetSweep: 't3si6z3gnc6ix4qh6cgmtgnfa', imagesToFind: ['/decongestant cough elixir.jpeg', '/plastic fruit.jpeg', '/pineapple sunday.jpeg'] },
+    { level: 4, startSweeps: ['t3si6z3gnc6ix4qh6cgmtgnfa'], targetSweep: '2cngsqh5q4t1ep85y5ky0h49d', imagesToFind: ['/aztec chocolate.jpeg', '/atomic coffee.jpeg', '/royal perambulator.jpeg'] },
+    { level: 5, startSweeps: ['2cngsqh5q4t1ep85y5ky0h49d'], targetSweep: '66yna1yh5e2ig14bmzzf1sn2c', imagesToFind: ['/a crow in a bag.jpeg', '/a hand in two.jpeg', '/vitreous china.jpeg', '/musical tyre.jpeg'] },
+    { level: 6, startSweeps: ['66yna1yh5e2ig14bmzzf1sn2c'], targetSweep: '3hdk0cskxw0apbr2iw8016htb', imagesToFind: ['/Hanimexs Movielux.jpeg', '/argus previewer.jpeg', '/porcelain lobster.jpeg', '/scotts mower maker.jpeg'] },
+    { level: 7, startSweeps: ['3hdk0cskxw0apbr2iw8016htb'], targetSweep: 'r7sd2g426fhbfa2wdh5dfxy5d', imagesToFind: ['/barley.jpg', '/some flumis.jpeg', '/wall climbing baby.jpeg', '/hide and seek.jpeg'] },
+    { level: 8, startSweeps: ['r7sd2g426fhbfa2wdh5dfxy5d'], targetSweep: '20qckty5qi20t39838cq274rc', imagesToFind: ['/a pair of old jugs.jpeg', '/a third more time.jpeg', '/odd purves terms.jpeg', '/round thing.jpeg'] }
   ];
 
-  window.currentLevelIndex = -1; // -1 = Sweep 30 (Intro). 0 = Level 1 (Sweep 28)
+  window.currentLevelIndex = 0; // Starts at 0 (Level 1 / Sweep 30)
   window.allModelSweeps = [];
   window.foundImages = {};
   window.isTeleporting = false; 
   window.pathsPreloaded = false; 
   window.activeOpenPopups = new Set(); 
   
-  window.hasReached28 = false;
-  window.hasReached27 = false;
+  // Custom tracking for UI Unlocks based on physical movement
+  window.hasReachedLevel2 = false;
+  window.hasReachedLevel3 = false;
 
   const targetMatchStrings = [];
   LEVELS.forEach(level => {
@@ -248,18 +249,10 @@ function startMechanics() {
           window.globalChime.play().then(() => { window.globalChime.pause(); window.globalChime.volume = 1; window.globalChime.currentTime = 0; }).catch(()=>{});
       } catch(e) {}
 
-      // Teleport instantly out of Intro Room to Level 1
-      if (window.mpSdk) {
-          window.mpSdk.Sweep.moveTo(LEVELS[0].startSweeps[0], { transition: window.mpSdk.Sweep.Transition.FLY }).then(() => {
-              window.currentLevelIndex = 0;
-              window.hasReached28 = true;
-              window.mpSdk.Sweep.disable(SWEEP_30).catch(()=>{}); // Lock Sweep 30 forever
-              
-              const controls = document.getElementById('es-control-panel');
-              if (controls) controls.style.setProperty('display', 'flex', 'important');
-              updatePanelVisibility();
-          });
-      }
+      // Reveal Panel instantly. User natively remains in Sweep 30.
+      const controls = document.getElementById('es-control-panel');
+      if (controls) controls.style.setProperty('display', 'flex', 'important');
+      updatePanelVisibility();
     });
   }
 
@@ -270,8 +263,8 @@ function startMechanics() {
     const divPrev = document.getElementById('es-div-prev');
     const divNext = document.getElementById('es-div-next');
     
-    // SKIP/CHEAT BUTTON (Appears at Level 1 or if physical Sweep 28 touched)
-    if (window.currentLevelIndex >= 0 || window.hasReached28) {
+    // SKIP/CHEAT BUTTON (Appears at Level 2 / Sweep 28)
+    if (window.hasReachedLevel2 || window.currentLevelIndex >= 1) {
         if (nextBtn) { nextBtn.style.setProperty('opacity', '1', 'important'); nextBtn.style.setProperty('pointer-events', 'auto', 'important'); }
         if (divNext) divNext.style.setProperty('opacity', '1', 'important');
     } else {
@@ -279,8 +272,8 @@ function startMechanics() {
         if (divNext) divNext.style.setProperty('opacity', '0', 'important');
     }
 
-    // BACK BUTTON (Appears ONLY at Level 2+ or if physical Sweep 27 touched)
-    if (window.currentLevelIndex >= 1 || window.hasReached27) {
+    // BACK BUTTON (Appears at Level 3 / Sweep 27)
+    if (window.hasReachedLevel3 || window.currentLevelIndex >= 2) {
         if (prevBtn) { prevBtn.style.setProperty('opacity', '1', 'important'); prevBtn.style.setProperty('pointer-events', 'auto', 'important'); }
         if (divPrev) divPrev.style.setProperty('opacity', '1', 'important');
     } else {
@@ -313,7 +306,6 @@ function startMechanics() {
   document.getElementById('es-btn-next').addEventListener('click', () => {
       const cLevel = LEVELS[window.currentLevelIndex]; 
       if (cLevel && window.mpSdk && !window.isTeleporting) {
-          document.querySelectorAll('audio, video').forEach(media => media.pause());
           window.globalSfx.pause();
           window.globalSfx.currentTime = 0;
           window.activeOpenPopups.clear();
@@ -324,10 +316,9 @@ function startMechanics() {
   });
 
   document.getElementById('es-btn-prev').addEventListener('click', () => {
-      // Prevents returning to Sweep 30. If on Level 1 (Index 0), do nothing.
-      if (window.currentLevelIndex <= 0 || window.isTeleporting) return;
+      // Prevents returning to Sweep 30. (Level 2 is Index 1, which is Sweep 28).
+      if (window.currentLevelIndex <= 1 || window.isTeleporting) return;
       
-      document.querySelectorAll('audio, video').forEach(media => media.pause());
       window.globalSfx.pause();
       window.globalSfx.currentTime = 0;
       window.activeOpenPopups.clear();
@@ -348,7 +339,7 @@ function startMechanics() {
 
   function setupLevelTracking() {
     window.foundImages = {};
-    const currentLevel = LEVELS[window.currentLevelIndex >= 0 ? window.currentLevelIndex : 0];
+    const currentLevel = LEVELS[window.currentLevelIndex];
     if (currentLevel) currentLevel.imagesToFind.forEach(image => window.foundImages[image] = false);
     window.isTeleporting = false;
     window.pathsPreloaded = false;
@@ -356,6 +347,8 @@ function startMechanics() {
   }
 
   function checkAllFound() {
+    // Level 1 has no images to find.
+    if (LEVELS[window.currentLevelIndex].imagesToFind.length === 0) return true;
     return Object.values(window.foundImages).every(status => status === true);
   }
 
@@ -388,8 +381,8 @@ function startMechanics() {
 
   // --- TRIPWIRE ---
   const observer = new MutationObserver((mutations) => {
-    const currentLevel = LEVELS[window.currentLevelIndex >= 0 ? window.currentLevelIndex : 0];
-    if (!currentLevel || window.currentLevelIndex < 0) return; 
+    const currentLevel = LEVELS[window.currentLevelIndex];
+    if (!currentLevel) return; 
 
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
@@ -475,18 +468,23 @@ function startMechanics() {
     const welcomeBlock = document.getElementById('eye-spy-welcome-block');
     if (welcomeBlock) welcomeBlock.style.display = "flex";
 
-    // Track physical walking to trigger UI
+    // Track physical walking to trigger UI Unlocks
     mpSdk.on(mpSdk.Sweep.Event.ENTER, function(sweepId) {
-        if (sweepId === SWEEP_28) window.hasReached28 = true;
-        if (sweepId === SWEEP_27) window.hasReached27 = true;
-        updatePanelVisibility();
         
-        setTimeout(() => {
-            document.querySelectorAll('audio, video').forEach(media => {
-                media.currentTime = 0;
-                media.play().catch(()=>{});
-            });
-        }, 500); 
+        // If user manually walks from Sweep 30 into Sweep 28 (Level 2)
+        if (sweepId === SWEEP_28 && window.currentLevelIndex === 0) {
+            window.hasReachedLevel2 = true;
+            window.currentLevelIndex = 1;
+            mpSdk.Sweep.disable(SWEEP_30).catch(()=>{}); // Lock the door behind them
+            updatePanelVisibility();
+        }
+
+        // If user manually walks from Sweep 28 into Sweep 27 (Level 3)
+        if (sweepId === LEVELS[2].startSweeps[0] && window.currentLevelIndex === 1) {
+            window.hasReachedLevel3 = true;
+            window.currentLevelIndex = 2;
+            updatePanelVisibility();
+        }
     });
 
     mpSdk.on(mpSdk.Sweep.Event.EXIT, function(fromSweep) {
@@ -501,10 +499,10 @@ function startMechanics() {
   }
 
   function lockMapForCurrentLevel(mpSdk) {
-    const currentLevel = LEVELS[window.currentLevelIndex >= 0 ? window.currentLevelIndex : 0];
+    const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel) return;
     const sweepsToDisable = window.allModelSweeps.filter(id => !currentLevel.startSweeps.includes(id));
-    if (sweepsToDisable.length > 0 && window.currentLevelIndex >= 0) mpSdk.Sweep.disable(...sweepsToDisable).catch(() => {});
+    if (sweepsToDisable.length > 0) mpSdk.Sweep.disable(...sweepsToDisable).catch(() => {});
   }
 
   async function executeFastTeleport(mpSdk, levelData) {
