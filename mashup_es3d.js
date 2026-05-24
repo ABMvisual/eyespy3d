@@ -1,8 +1,7 @@
 // =============================================================================
-// EYE SPY 3D — V300: THE PURE BASELINE (NO CONTROL PANEL)
+// EYE SPY 3D — V400: THE TRUE GOLDEN BASELINE (EXTRACTED FROM LOG)
 // =============================================================================
 
-// --- 0. DYNAMIC AUDIO ENGINE ---
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
 const AUDIO_MAP = {
@@ -27,7 +26,7 @@ function playItemSound(imageFilename) {
   } catch(e) {}
 }
 
-// --- 1. BOOT LOADER ---
+// --- 1. BOOT LOADER & CSS INJECTION ---
 let bootInterval = setInterval(() => {
   if (document.head && document.body) {
     clearInterval(bootInterval);
@@ -39,15 +38,17 @@ function injectCustomUI() {
   const customStyles = document.createElement('style');
   customStyles.innerHTML = `
     * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+    
+    /* AGGRESSIVE UI ASSASSINATION */
     [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay { filter: none !important; -webkit-filter: none !important; background: transparent !important; background-color: transparent !important; }
     [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+    audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"], .mpe-media-close { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
     
-    /* KILL ANIMATIONS FOR INSTANT POPUPS */
-    .mpe-popup, .mp-mattertag { transition: none !important; animation: none !important; }
-
-    /* AUDIO PLAYER ASSASSIN */
-    audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"] { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
+    /* ENLARGE POPUP CLOSE BUTTON */
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
+
+    /* KILL POPUP ANIMATIONS */
+    .mpe-popup, .mp-mattertag { transition: none !important; animation: none !important; }
 
     /* START SCREEN FILTERS */
     #eye-spy-dark-overlay { 
@@ -87,29 +88,23 @@ function injectCustomUI() {
   `;
   document.body.appendChild(startUI);
 
-  const startBtn = document.getElementById('eye-spy-start-btn');
-  if(startBtn) {
-    startBtn.addEventListener('click', () => {
-      const ui = document.getElementById('eye-spy-start-ui');
-      const overlay = document.getElementById('eye-spy-dark-overlay');
-      const cover = document.getElementById('eye-spy-image-cover');
-      if(ui) { ui.style.transition = "opacity 0.4s ease"; ui.style.opacity = "0"; setTimeout(() => ui.remove(), 400); }
-      if(overlay) { overlay.style.transition = "opacity 0.4s ease"; overlay.style.opacity = "0"; setTimeout(() => overlay.remove(), 400); }
-      if(cover) { cover.style.transition = "opacity 0.4s ease"; cover.style.opacity = "0"; setTimeout(() => cover.remove(), 400); }
-
-      try {
-          window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; 
-          window.globalSfx.play().catch(()=>{});
-      } catch(e) {}
+  // SECONDARY JS AUDIO ASSASSIN
+  setInterval(() => {
+    document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
+      const rect = btn.getBoundingClientRect();
+      if (rect.bottom > window.innerHeight - 100 && rect.height > 0) {
+        btn.style.setProperty('display', 'none', 'important');
+        btn.style.setProperty('opacity', '0', 'important');
+      }
     });
-  }
+  }, 100);
 
   startMechanics();
 }
 
 function startMechanics() {
   const SWEEPS = {
-    lobby:       '7k4p5mu5f5eydt8h0f8cygptb',  // Sweep 30
+    lobby:       '7k4p5mu5f5eydt8h0f8cygptb',  // Level 0 spawn (Sweep 30)
     level1Entry: 'cwckxx365uimbeqk6ngp0t5ud',  // Sweep 28
     level2Entry: 'ep98q9hxumexd83q38p12k4xc',  // Sweep 27
   };
@@ -131,6 +126,13 @@ function startMechanics() {
   window.isTeleporting = false; 
   window.activeOpenPopups = new Set(); 
 
+  const targetMatchStrings = [];
+  LEVELS.forEach(level => {
+    level.imagesToFind.forEach(img => {
+      targetMatchStrings.push(img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', ''));
+    });
+  });
+
   function setupLevelTracking() {
     window.foundImages = {};
     const currentLevel = LEVELS[window.currentLevelIndex];
@@ -142,10 +144,12 @@ function startMechanics() {
   }
 
   function checkAllFound() {
-    return Object.values(window.foundImages).every(status => status === true);
+    const currentLevel = LEVELS[window.currentLevelIndex];
+    if (!currentLevel || !currentLevel.imagesToFind || currentLevel.imagesToFind.length === 0) return true;
+    return currentLevel.imagesToFind.every(img => window.foundImages[img] === true);
   }
 
-  // THE RELIABLE OBSERVER (Lag-free)
+  // --- THE FAST MUTATION OBSERVER ---
   const observer = new MutationObserver((mutations) => {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel || currentLevel.imagesToFind.length === 0) return; 
@@ -233,6 +237,7 @@ function startMechanics() {
 
   observer.observe(document.body, { childList: true, subtree: true });
 
+  // --- 6. INITIALIZATION & DOOR LOCKS ---
   async function initMashupLogic(mpSdk) {
     window.mpSdk = mpSdk;
     setupLevelTracking();
@@ -240,22 +245,40 @@ function startMechanics() {
     let sweepCollection = await new Promise((resolve) => {
       let sub = mpSdk.Sweep.data.subscribe({
         onCollectionUpdated: function (collection) {
-          if (Object.keys(collection).length > 0) { resolve(collection); sub.cancel(); }
+          if (Object.keys(collection).length > 0) {
+              resolve(collection);
+              sub.cancel(); 
+          }
         }
       });
     });
 
     window.allModelSweeps = Object.keys(sweepCollection);
-    lockMapForCurrentLevel();
 
-    const cover = document.getElementById('eye-spy-image-cover');
-    if (cover) { cover.style.transition = "opacity 0.5s ease"; cover.style.opacity = "0"; setTimeout(() => cover.remove(), 500); }
-    
+    // Swap loading text for Start button
     const loadingText = document.getElementById('eye-spy-loading-text');
     if (loadingText) loadingText.remove();
-    
     const welcomeBlock = document.getElementById('eye-spy-welcome-block');
     if (welcomeBlock) welcomeBlock.style.display = "flex";
+
+    // Bind Start Button to clear overlays and apply the locks
+    const startBtn = document.getElementById('eye-spy-start-btn');
+    if (startBtn) {
+        startBtn.addEventListener('click', () => {
+            const ui = document.getElementById('eye-spy-start-ui');
+            const overlay = document.getElementById('eye-spy-dark-overlay');
+            const cover = document.getElementById('eye-spy-image-cover');
+            
+            if (ui) { ui.style.transition = "opacity 0.4s ease"; ui.style.opacity = "0"; setTimeout(() => ui.remove(), 400); }
+            if (overlay) { overlay.style.transition = "opacity 0.4s ease"; overlay.style.opacity = "0"; setTimeout(() => overlay.remove(), 400); }
+            if (cover) { cover.style.transition = "opacity 0.4s ease"; cover.style.opacity = "0"; setTimeout(() => cover.remove(), 400); }
+
+            try { window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; window.globalSfx.play().catch(()=>{}); } catch(e) {}
+            
+            // Lock the map instantly upon starting
+            lockMapForCurrentLevel();
+        });
+    }
 
     window.mpSdk.on(window.mpSdk.Sweep.Event.ENTER, function(sweepId) {
       if (window.isTeleporting) return;
@@ -267,6 +290,7 @@ function startMechanics() {
           lockMapForCurrentLevel();
       }
       
+      // Clear audio on room enter
       window.globalSfx.pause();
       window.globalSfx.currentTime = 0;
       window.activeOpenPopups.clear();
@@ -284,12 +308,15 @@ function startMechanics() {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel || window.allModelSweeps.length === 0) return;
     
+    // Enable all, then surgically disable
     window.mpSdk.Sweep.enable(...window.allModelSweeps).catch(()=>{});
 
     setTimeout(() => {
+        // If past level 0, permanently lock sweep 30
         if (window.currentLevelIndex > 0) {
             window.mpSdk.Sweep.disable(SWEEPS.lobby).catch(()=>{});
         }
+        // Lock the target sweep until puzzle is solved
         if (window.currentLevelIndex > 0 && currentLevel.targetSweep) {
             window.mpSdk.Sweep.disable(currentLevel.targetSweep).catch(()=>{});
         }
@@ -315,6 +342,9 @@ function startMechanics() {
   }
 
   let checkSdkInterval = setInterval(function() {
-    if (window.mpSdk && window.mpSdk.Sweep) { clearInterval(checkSdkInterval); initMashupLogic(window.mpSdk); }
+    if (window.mpSdk && window.mpSdk.Sweep) { 
+      clearInterval(checkSdkInterval); 
+      initMashupLogic(window.mpSdk); 
+    }
   }, 500);
 }
