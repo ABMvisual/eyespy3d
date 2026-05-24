@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D — V215: UNTRAPPED NAVIGATION & INSTANT POPUP TRIGGERS
+// EYE SPY 3D — V220: SCOPE FIX & UNTRAPPED NAVIGATION
 // =============================================================================
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
@@ -150,6 +150,7 @@ function injectCustomUI() {
 }
 
 function startMechanics() {
+  // Scoped variables securely away from window object
   let currentLevelIndex = 0;  
   let allModelSweeps    = [];
   let foundImages       = {};
@@ -159,6 +160,8 @@ function startMechanics() {
   let visitedSweeps     = new Set();
   let isMuted           = false;
   let mpSdk             = null;
+  let hasReachedLevel1  = false;
+  let hasReachedLevel2  = false;
 
   function currentLevel() { return LEVELS[currentLevelIndex]; }
 
@@ -332,11 +335,8 @@ function startMechanics() {
     lvl.imagesToFind.map(img => img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg','').replace('jpg',''))
   );
 
-  let domDirty = false;
-
-  function runVisualHunter() {
-    requestAnimationFrame(runVisualHunter);
-    
+  // --- UNIFIED ENGINE ---
+  setInterval(() => {
     // 1. Rogue X Assassin (kills close buttons near UI)
     document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
       if (!btn.closest('#es-control-panel')) {
@@ -370,7 +370,7 @@ function startMechanics() {
             popup.style.setProperty('-webkit-backdrop-filter', 'none',  'important');
             popup.style.setProperty('background',        'transparent', 'important');
 
-            // 3. Scan for Popup Text (Offset/Invisibility check removed for instant firing)
+            // 3. Scan for Popup Text
             if (currentLevelData) {
                 const textElements = popup.querySelectorAll('div, span, p, h1, h2, h3');
                 textElements.forEach(el => {
@@ -412,16 +412,16 @@ function startMechanics() {
                             }
 
                             // Trigger Game Logic (Audio & Found State)
-                            if (!window.activeOpenPopups.has(matchedImg)) {
-                                window.activeOpenPopups.add(matchedImg);
+                            if (!activeOpenPopups.has(matchedImg)) {
+                                activeOpenPopups.add(matchedImg);
                                 playItemSound(matchedImg);
                                 
-                                if (!window.foundImages[matchedImg]) {
-                                    window.foundImages[matchedImg] = true;
+                                if (!foundImages[matchedImg]) {
+                                    foundImages[matchedImg] = true;
                                     console.log(`🎯 [EyeSpy3D] Found: ${matchedImg}`);
                                     
-                                    if (checkAllFound() && !window.pathsPreloaded) {
-                                        window.pathsPreloaded = true;
+                                    if (checkAllFound() && !pathsPreloaded) {
+                                        pathsPreloaded = true;
                                         playChime();
                                     }
                                 }
@@ -434,17 +434,16 @@ function startMechanics() {
     }
 
     // 4. Detect when a popup is closed to trigger teleport
-    window.activeOpenPopups.forEach(img => {
+    activeOpenPopups.forEach(img => {
         if (!currentlyVisibleThisFrame.has(img)) {
-            window.activeOpenPopups.delete(img);
-            if (checkAllFound() && window.activeOpenPopups.size === 0 && !window.isTeleporting) {
+            activeOpenPopups.delete(img);
+            if (checkAllFound() && activeOpenPopups.size === 0 && !isTeleporting) {
                 executeFastTeleport(currentLevelData);
             }
         }
     });
-  }
 
-  requestAnimationFrame(runVisualHunter);
+  }, 150); // safe heartbeat
 
   async function initMashupLogic(sdk) {
     mpSdk = sdk;
@@ -458,7 +457,7 @@ function startMechanics() {
       });
     });
 
-    window.allModelSweeps = Object.keys(sweepCollection);
+    allModelSweeps = Object.keys(sweepCollection);
     lockMapForCurrentLevel();
 
     const cover = document.getElementById('eye-spy-image-cover');
@@ -468,8 +467,9 @@ function startMechanics() {
       if (isTeleporting) return; 
 
       // If user steps OFF Sweep 30 for the first time, advance to Level 1
-      if (window.currentLevelIndex === 0 && sweepId !== SWEEPS.lobby) {
-        window.currentLevelIndex = 1; 
+      if (currentLevelIndex === 0 && sweepId !== SWEEPS.lobby) {
+        currentLevelIndex = 1; 
+        hasReachedLevel1 = true;
         setupLevelTracking();
         lockMapForCurrentLevel();
         updatePanelVisibility();
