@@ -1,4 +1,4 @@
-// --- 0. DYNAMIC AUDIO ENGINE ---
+// --- 0. DYNAMIC AUDIO ENGINE (For popups only) ---
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
 const AUDIO_MAP = {
@@ -43,7 +43,7 @@ function injectCustomUI() {
     audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"] { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
-    /* PERFECT B&W FILTER WITH 20% RED TINT SHADOW */
+    /* PERFECT B&W START SCREEN FILTER */
     #eye-spy-dark-overlay { 
         position: fixed !important; 
         top: 0 !important; left: 0 !important; 
@@ -162,7 +162,7 @@ function injectCustomUI() {
   `;
   document.body.appendChild(startUI);
 
-  // PILL CONTROL PANEL HTML 
+  // PILL CONTROL PANEL HTML (Bold '?' SVG)
   const panel = document.createElement('div');
   panel.id = 'es-control-panel';
   panel.innerHTML = `
@@ -175,7 +175,7 @@ function injectCustomUI() {
     <div class="es-panel-divider" id="es-div-prev" style="opacity: 0 !important;"></div>
 
     <button class="es-panel-btn" id="es-btn-clue">
-      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M12.01 2.01c-3.3 0-5.99 2.69-5.99 6h3.41c0-1.42 1.15-2.58 2.58-2.58 1.43 0 2.58 1.15 2.58 2.58 0 2.58-3.87 2.26-3.87 6.45h3.44c0-2.9 3.87-3.23 3.87-6.45 0-3.31-2.69-6-6.02-6zM10.29 18.99h3.44v3.44h-3.44z'/%3E%3C/svg%3E">
+      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ctext x='12' y='19' font-family='sans-serif' font-size='22' font-weight='900' text-anchor='middle' fill='%23CCFF00'%3E?%3C/text%3E%3C/svg%3E">
       <span>CLUE</span>
       <div class="es-tooltip">Replay Clue</div>
     </button>
@@ -194,7 +194,7 @@ function injectCustomUI() {
     <button class="es-panel-btn" id="es-btn-next" style="opacity: 0 !important; pointer-events: none !important; transition: opacity 0.3s ease !important;">
       <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z'/%3E%3C/svg%3E">
       <span>CHEAT</span>
-      <div class="es-tooltip">Skip</div>
+      <div class="es-tooltip">Cheat</div>
     </button>
   `;
   document.body.appendChild(panel);
@@ -206,7 +206,7 @@ function startMechanics() {
   const SWEEP_30 = '7k4p5mu5f5eydt8h0f8cygptb'; 
   const SWEEP_28 = 'cwckxx365uimbeqk6ngp0t5ud';
 
-  // Level 0 = Lobby. Level 1 = First Puzzle. Level 2 = Second Puzzle.
+  // Level 0 = Lobby. Level 1 = First Puzzle.
   const LEVELS = [
     { level: 0, startSweeps: [SWEEP_30, SWEEP_28], targetSweep: SWEEP_28, imagesToFind: [] }, 
     { level: 1, startSweeps: [SWEEP_28], targetSweep: 'ep98q9hxumexd83q38p12k4xc', imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
@@ -218,13 +218,14 @@ function startMechanics() {
     { level: 7, startSweeps: ['r7sd2g426fhbfa2wdh5dfxy5d'], targetSweep: '20qckty5qi20t39838cq274rc', imagesToFind: ['/a pair of old jugs.jpeg', '/a third more time.jpeg', '/odd purves terms.jpeg', '/round thing.jpeg'] }
   ];
 
-  window.currentLevelIndex = 0; 
+  window.currentLevelIndex = 0; // Starts in Lobby (Index 0)
   window.allModelSweeps = [];
   window.foundImages = {};
   window.isTeleporting = false; 
   window.pathsPreloaded = false; 
   window.activeOpenPopups = new Set(); 
   
+  // Custom tracking for UI
   window.hasReachedLevel1 = false;
   window.hasReachedLevel2 = false;
 
@@ -249,7 +250,7 @@ function startMechanics() {
           window.globalChime.play().then(() => { window.globalChime.pause(); window.globalChime.volume = 1; window.globalChime.currentTime = 0; }).catch(()=>{});
       } catch(e) {}
 
-      // Reveal Panel instantly. User natively remains in Sweep 30.
+      // Reveal Panel. User stays in Sweep 30.
       const controls = document.getElementById('es-control-panel');
       if (controls) controls.style.setProperty('display', 'flex', 'important');
       updatePanelVisibility();
@@ -263,7 +264,7 @@ function startMechanics() {
     const divPrev = document.getElementById('es-div-prev');
     const divNext = document.getElementById('es-div-next');
     
-    // CHEAT BUTTON (Appears at Level 1 / Sweep 28)
+    // SKIP BUTTON (Appears at Level 1 / Sweep 28)
     if (window.hasReachedLevel1 || window.currentLevelIndex >= 1) {
         if (nextBtn) { nextBtn.style.setProperty('opacity', '1', 'important'); nextBtn.style.setProperty('pointer-events', 'auto', 'important'); }
         if (divNext) divNext.style.setProperty('opacity', '1', 'important');
@@ -296,6 +297,7 @@ function startMechanics() {
       document.querySelectorAll('audio, video').forEach(media => { media.muted = isMuted; });
   });
 
+  // Replay Native Room Audio safely without fighting MPEmbed
   document.getElementById('es-btn-clue').addEventListener('click', () => {
       document.querySelectorAll('audio, video').forEach(media => {
           media.currentTime = 0;
@@ -306,25 +308,17 @@ function startMechanics() {
   document.getElementById('es-btn-next').addEventListener('click', () => {
       const cLevel = LEVELS[window.currentLevelIndex]; 
       if (cLevel && window.mpSdk && !window.isTeleporting) {
-          document.querySelectorAll('audio, video').forEach(media => media.pause());
-          window.globalSfx.pause();
-          window.globalSfx.currentTime = 0;
           window.activeOpenPopups.clear();
-          
           cLevel.imagesToFind.forEach(img => window.foundImages[img] = true);
           executeFastTeleport(window.mpSdk, cLevel);
       }
   });
 
   document.getElementById('es-btn-prev').addEventListener('click', () => {
-      // FIREWALL: Prevents returning to Sweep 30.
+      // FIREWALL: Prevents returning to Sweep 30. (Level 1 is Index 1, which is Sweep 28).
       if (window.currentLevelIndex <= 1 || window.isTeleporting) return;
       
-      document.querySelectorAll('audio, video').forEach(media => media.pause());
-      window.globalSfx.pause();
-      window.globalSfx.currentTime = 0;
       window.activeOpenPopups.clear();
-
       window.isTeleporting = true;
       window.currentLevelIndex--; 
       
@@ -354,30 +348,51 @@ function startMechanics() {
     return currentLevel.imagesToFind.every(img => window.foundImages[img] === true);
   }
 
-  // --- VISUAL HUNTER (CLEANED UP - NO MORE CPU LAG) ---
+  // --- OPTIMIZED VISUAL HUNTER (Zero CPU Lag) ---
   setInterval(() => {
-    // Hide Close Buttons near the pill UI
-    document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
-      if (btn.getBoundingClientRect().bottom > window.innerHeight - 100) { 
-          btn.style.setProperty('display', 'none', 'important'); 
-          btn.style.setProperty('opacity', '0', 'important'); 
-      }
-    });
+    // Only search INSIDE active popups, not the entire 10,000 element DOM.
+    const activePopups = document.querySelectorAll('.mpe-popup, .mp-mattertag, [class*="media-overlay"]');
+    
+    activePopups.forEach(popup => {
+      // Remove default dark filters
+      popup.style.setProperty('filter', 'none', 'important'); 
+      popup.style.setProperty('-webkit-filter', 'none', 'important'); 
+      popup.style.setProperty('backdrop-filter', 'none', 'important'); 
+      popup.style.setProperty('-webkit-backdrop-filter', 'none', 'important'); 
+      popup.style.setProperty('background', 'transparent', 'important'); 
 
-    // Remove heavy grey filters from popups
-    document.querySelectorAll('.mpe-media-overlay, .mpe-overlay').forEach(el => {
-        el.style.setProperty('filter', 'none', 'important'); 
-        el.style.setProperty('-webkit-filter', 'none', 'important'); 
-        el.style.setProperty('backdrop-filter', 'none', 'important'); 
-        el.style.setProperty('-webkit-backdrop-filter', 'none', 'important'); 
-        el.style.setProperty('background', 'transparent', 'important'); 
+      // Inject big yellow text
+      const textElements = popup.querySelectorAll('*');
+      textElements.forEach(el => {
+        if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
+          const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (textClean.length > 3 && targetMatchStrings.includes(textClean)) {
+            el.style.setProperty('position', 'absolute', 'important'); 
+            el.style.setProperty('left', '50%', 'important'); 
+            el.style.setProperty('top', '50%', 'important'); 
+            el.style.setProperty('transform', 'translate(-50%, -50%)', 'important'); 
+            el.style.setProperty('font-size', '240%', 'important'); 
+            el.style.setProperty('color', 'white', 'important'); 
+            el.style.setProperty('margin', '0', 'important'); 
+            el.style.setProperty('white-space', 'nowrap', 'important');
+            
+            const banner = el.parentElement;
+            if (banner) {
+              banner.style.setProperty('background-color', '#1c1c1c', 'important'); 
+              banner.style.setProperty('background', '#1c1c1c', 'important'); 
+              if (window.getComputedStyle(banner).position === 'static') banner.style.setProperty('position', 'relative', 'important');
+              banner.style.setProperty('min-height', '75px', 'important');  
+            }
+          }
+        }
+      });
     });
   }, 250); 
 
   // --- TRIPWIRE ---
   const observer = new MutationObserver((mutations) => {
     const currentLevel = LEVELS[window.currentLevelIndex];
-    if (!currentLevel) return; 
+    if (!currentLevel || window.currentLevelIndex === 0) return; 
 
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
@@ -463,41 +478,29 @@ function startMechanics() {
     const welcomeBlock = document.getElementById('eye-spy-welcome-block');
     if (welcomeBlock) welcomeBlock.style.display = "flex";
 
-    // Track physical walking to trigger UI Unlocks and Level Memory
+    // Track physical walking
     mpSdk.on(mpSdk.Sweep.Event.ENTER, function(sweepId) {
         
-        // Walk from Lobby (Sweep 30) into Level 1 (Sweep 28)
-        if (sweepId === SWEEP_28 && window.currentLevelIndex === 0) {
+        // If user manually steps OFF the Lobby into Level 1 (Sweep 28 or ANY other sweep)
+        if (sweepId !== SWEEP_30 && window.currentLevelIndex === 0) {
             window.hasReachedLevel1 = true;
             window.currentLevelIndex = 1;
-            setupLevelTracking(); // Load puzzle memory
-            lockMapForCurrentLevel(window.mpSdk); // Lock Sweep 30 behind user
+            setupLevelTracking(); 
+            lockMapForCurrentLevel(window.mpSdk); // Permanently locks the lobby behind them
             updatePanelVisibility();
         }
 
-        // Walk from Level 1 (Sweep 28) into Level 2 (Sweep 27)
+        // If user naturally walks into Level 2 (Sweep 27)
         if (sweepId === LEVELS[2].startSweeps[0] && window.currentLevelIndex === 1) {
             window.hasReachedLevel2 = true;
             window.currentLevelIndex = 2;
-            setupLevelTracking(); // Load puzzle memory
+            setupLevelTracking();
             lockMapForCurrentLevel(window.mpSdk); 
             updatePanelVisibility();
         }
-
-        setTimeout(() => {
-            document.querySelectorAll('audio, video').forEach(media => {
-                media.currentTime = 0;
-                media.play().catch(()=>{});
-            });
-        }, 500); 
     });
 
     mpSdk.on(mpSdk.Sweep.Event.EXIT, function(fromSweep) {
-      document.querySelectorAll('audio, video').forEach(media => {
-          media.pause();
-          media.currentTime = 0;
-      });
-        
       const cLevel = LEVELS[window.currentLevelIndex];
       if (cLevel && cLevel.startSweeps.includes(fromSweep)) { mpSdk.Sweep.disable(fromSweep).catch(() => {}); }
     });
