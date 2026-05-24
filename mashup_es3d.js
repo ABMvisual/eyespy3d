@@ -1,6 +1,5 @@
-
 // =============================================================================
-// EYE SPY 3D — V230: DECOUPLED BOOTLOADER & FLAWLESS NAVIGATION
+// EYE SPY 3D — V235: BROWSER-SAFE LOOPS & UNTRAPPED NAVIGATION
 // =============================================================================
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
@@ -177,7 +176,9 @@ function startMechanics() {
     activeOpenPopups = new Set();
     isTeleporting    = false;      
     const lvl = currentLevel();
-    if (lvl) lvl.imagesToFind.forEach(img => { foundImages[img] = false; });
+    if (lvl) {
+        Array.from(lvl.imagesToFind).forEach(img => { foundImages[img] = false; });
+    }
   }
 
   function updatePanelVisibility() {
@@ -201,22 +202,21 @@ function startMechanics() {
     applyVisibility(prevBtn, divPrev, showPrev);
   }
 
-  // RE-ENGINEERED LOCKDOWN: Protect the boundaries, let the player walk freely inside
+  // RE-ENGINEERED LOCKDOWN
   function lockMapForCurrentLevel() {
     if (!mpSdk || allModelSweeps.length === 0) return; 
     const lvl = currentLevel();
     if (!lvl) return;
 
-    // 1. Re-enable all sweeps to keep intermediate pathfinding alive
+    // Re-enable all sweeps to keep intermediate pathfinding alive
     mpSdk.Sweep.enable(...allModelSweeps).catch(()=>{});
 
     setTimeout(() => {
-        // 2. FIREWALL: Never allow return to the Lobby once Level 1 begins
+        // FIREWALL: Never allow return to the Lobby once Level 1 begins
         if (currentLevelIndex > 0) {
             mpSdk.Sweep.disable(SWEEPS.lobby).catch(()=>{});
         }
-
-        // 3. LOCK: Prevent walking forward to the next level before puzzle is solved
+        // LOCK: Prevent walking forward to the next level before puzzle is solved
         if (currentLevelIndex > 0 && lvl.targetSweep) {
             mpSdk.Sweep.disable(lvl.targetSweep).catch(()=>{});
         }
@@ -256,7 +256,8 @@ function startMechanics() {
     isMuted = !isMuted;
     window.globalSfx.muted   = isMuted;
     window.globalChime.muted = isMuted;
-    document.querySelectorAll('audio, video').forEach(m => { m.muted = isMuted; });
+    
+    Array.from(document.querySelectorAll('audio, video')).forEach(m => { m.muted = isMuted; });
 
     document.getElementById('es-img-unmute').style.setProperty('display', isMuted ? 'none'  : 'block', 'important');
     document.getElementById('es-img-mute').style.setProperty('display',   isMuted ? 'block' : 'none',  'important');
@@ -265,8 +266,9 @@ function startMechanics() {
   });
 
   document.getElementById('es-btn-clue').addEventListener('click', () => {
-    const scopedMedia = document.querySelectorAll('[data-mpe] audio, [data-mpe] video, .mpe-popup audio, .mpe-popup video');
-    const target = scopedMedia.length > 0 ? scopedMedia : document.querySelectorAll('audio, video');
+    const scopedMedia = Array.from(document.querySelectorAll('[data-mpe] audio, [data-mpe] video, .mpe-popup audio, .mpe-popup video'));
+    const allMedia = Array.from(document.querySelectorAll('audio, video'));
+    const target = scopedMedia.length > 0 ? scopedMedia : allMedia;
     target.forEach(m => { m.currentTime = 0; m.play().catch(() => {}); });
   });
 
@@ -274,7 +276,10 @@ function startMechanics() {
     const lvl = currentLevel();
     if (!lvl || isTeleporting) return;
     activeOpenPopups.clear();
-    lvl.imagesToFind.forEach(img => { foundImages[img] = true; });
+    
+    if (lvl.imagesToFind) {
+        Array.from(lvl.imagesToFind).forEach(img => { foundImages[img] = true; });
+    }
     executeFastTeleport(lvl);
   });
 
@@ -315,7 +320,6 @@ function startMechanics() {
       const overlay = document.getElementById('eye-spy-dark-overlay');
       const cover   = document.getElementById('eye-spy-image-cover');
       
-      // DECOUPLED REMOVAL: Fades out the UI and Image Cover simultaneously exactly when clicked.
       if (ui)      { ui.style.transition = 'opacity 0.4s ease'; ui.style.opacity = '0'; setTimeout(() => ui.remove(), 400); }
       if (overlay) { overlay.style.transition = 'opacity 0.4s ease'; overlay.style.opacity = '0'; setTimeout(() => overlay.remove(), 400); }
       if (cover)   { cover.style.transition = 'opacity 0.4s ease'; cover.style.opacity = '0'; setTimeout(() => cover.remove(), 400); }
@@ -337,10 +341,10 @@ function startMechanics() {
     lvl.imagesToFind.map(img => img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg','').replace('jpg',''))
   );
 
-  // --- UNIFIED ENGINE ---
+  // --- UNIFIED ENGINE (Browser-Safe Loops) ---
   setInterval(() => {
     // 1. Rogue X Assassin
-    document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
+    Array.from(document.querySelectorAll('[class*="close"], [id*="close"]')).forEach(btn => {
       if (!btn.closest('#es-control-panel')) {
         const rect = btn.getBoundingClientRect();
         if (rect.bottom > window.innerHeight - 100 && rect.height > 0) {
@@ -350,7 +354,7 @@ function startMechanics() {
       }
     });
 
-    document.querySelectorAll('[class*="close"], svg').forEach(btn => {
+    Array.from(document.querySelectorAll('[class*="close"], svg')).forEach(btn => {
       if (btn.id === 'es-btn-vol' || btn.closest('#es-control-panel')) return;
       const rect = btn.getBoundingClientRect();
       if (rect.bottom > window.innerHeight - 150 && rect.height > 0) {
@@ -359,7 +363,7 @@ function startMechanics() {
     });
 
     // 2. Locate Active Popups
-    const activePopups = document.querySelectorAll('.mpe-popup, .mp-mattertag, [class*="media-overlay"]');
+    const activePopups = Array.from(document.querySelectorAll('.mpe-popup, .mp-mattertag, [class*="media-overlay"]'));
     const currentlyVisibleThisFrame = new Set();
     const currentLevelData = currentLevel();
 
@@ -371,15 +375,14 @@ function startMechanics() {
             popup.style.setProperty('-webkit-backdrop-filter', 'none',  'important');
             popup.style.setProperty('background',        'transparent', 'important');
 
-            // 3. Instant Scan for Popup Text
-            if (currentLevelData) {
-                const textElements = popup.querySelectorAll('div, span, p, h1, h2, h3');
+            if (currentLevelData && currentLevelData.imagesToFind) {
+                const textElements = Array.from(popup.querySelectorAll('div, span, p, h1, h2, h3'));
                 textElements.forEach(el => {
                     if (el.children.length === 0 && el.textContent) {
                         const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
                         
                         let matchedImg = null;
-                        currentLevelData.imagesToFind.forEach(img => {
+                        Array.from(currentLevelData.imagesToFind).forEach(img => {
                             const cleanTarget = img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', '');
                             if (textClean.length > 3 && textClean.includes(cleanTarget)) {
                                 matchedImg = img;
@@ -433,7 +436,8 @@ function startMechanics() {
         });
     }
 
-    activeOpenPopups.forEach(img => {
+    // Detect closed popups
+    Array.from(activeOpenPopups).forEach(img => {
         if (!currentlyVisibleThisFrame.has(img)) {
             activeOpenPopups.delete(img);
             if (checkAllFound() && activeOpenPopups.size === 0 && !isTeleporting) {
@@ -448,30 +452,46 @@ function startMechanics() {
     mpSdk = sdk;
     setupLevelTracking();
 
-    // Instantly reveal Start button - decoupled from SDK sweeps loading
+    const sweepCollection = await new Promise((resolve) => {
+      let hasResolved = false;
+      const failTimer = setTimeout(() => {
+          if (!hasResolved) {
+              const loadText = document.getElementById('eye-spy-loading-text');
+              if (loadText) {
+                  loadText.innerText = "Error: MPEmbed failed to load the tour. Please refresh.";
+                  loadText.style.setProperty('color', '#ff4444', 'important');
+                  loadText.style.setProperty('animation', 'none', 'important');
+              }
+          }
+      }, 15000);
+
+      const sub = mpSdk.Sweep.data.subscribe({
+        onCollectionUpdated(collection) {
+          if (Object.keys(collection).length > 0) { 
+              hasResolved = true;
+              clearTimeout(failTimer);
+              resolve(collection); 
+              sub.cancel(); 
+          }
+        },
+      });
+    });
+
+    if (!sweepCollection) return;
+
+    window.allModelSweeps = Object.keys(sweepCollection);
+    
+    // Instantly reveal Start button and hide loading text
     const loadingText   = document.getElementById('eye-spy-loading-text');
     const welcomeBlock  = document.getElementById('eye-spy-welcome-block');
     if (loadingText)  loadingText.remove();
     if (welcomeBlock) welcomeBlock.style.setProperty('display', 'flex', 'important');
 
-    const sub = sdk.Sweep.data.subscribe({
-        onCollectionUpdated(collection) {
-            const keys = Object.keys(collection);
-            if (keys.length > 0) {
-                allModelSweeps = keys;
-                sub.cancel();
-                // If game already started, apply map locks
-                if (document.getElementById('es-control-panel')?.style.display === 'flex') {
-                    lockMapForCurrentLevel();
-                }
-            }
-        }
-    });
+    lockMapForCurrentLevel();
 
     mpSdk.on(mpSdk.Sweep.Event.ENTER, sweepId => {
       if (isTeleporting) return; 
 
-      // Level 1 Trigger: If user steps OFF Sweep 30
       if (currentLevelIndex === 0 && sweepId !== SWEEPS.lobby) {
         currentLevelIndex = 1; 
         hasReachedLevel1 = true;
@@ -480,7 +500,6 @@ function startMechanics() {
         updatePanelVisibility();
       }
 
-      // Level 2 Trigger: If user walks into Sweep 27 naturally
       if (currentLevelIndex === 1 && sweepId === SWEEPS.level2Entry) {
         currentLevelIndex = 2;
         hasReachedLevel2 = true;
@@ -493,7 +512,7 @@ function startMechanics() {
         visitedSweeps.add(sweepId);
       } else {
         setTimeout(() => {
-          document.querySelectorAll('audio, video').forEach(m => {
+          Array.from(document.querySelectorAll('audio, video')).forEach(m => {
             m.currentTime = 0;
             m.play().catch(() => {});
           });
@@ -502,7 +521,7 @@ function startMechanics() {
     });
 
     mpSdk.on(mpSdk.Sweep.Event.EXIT, fromSweep => {
-       document.querySelectorAll('audio, video').forEach(m => {
+       Array.from(document.querySelectorAll('audio, video')).forEach(m => {
           m.pause();
           m.currentTime = 0;
        });
