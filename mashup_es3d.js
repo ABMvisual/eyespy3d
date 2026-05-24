@@ -1,3 +1,7 @@
+// =============================================================================
+// EYE SPY 3D — V300: THE PURE BASELINE (NO CONTROL PANEL)
+// =============================================================================
+
 // --- 0. DYNAMIC AUDIO ENGINE ---
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
@@ -11,21 +15,17 @@ const AUDIO_MAP = {
 };
 
 window.globalSfx = new Audio();
-window.globalChime = new Audio('https://upload.wikimedia.org/wikipedia/commons/d/d7/Tada.mp3');
 
 function playItemSound(imageFilename) {
   try {
     let mp3Name = AUDIO_MAP[imageFilename];
     if (mp3Name) {
       window.globalSfx.src = GITHUB_BASE + encodeURIComponent(mp3Name);
-    } else {
-      window.globalSfx.src = 'https://upload.wikimedia.org/wikipedia/commons/4/42/Ping.mp3';
+      window.globalSfx.currentTime = 0;
+      window.globalSfx.play().catch(()=>{});
     }
-    window.globalSfx.currentTime = 0;
-    window.globalSfx.play().catch(()=>{});
   } catch(e) {}
 }
-
 
 // --- 1. BOOT LOADER ---
 let bootInterval = setInterval(() => {
@@ -41,10 +41,15 @@ function injectCustomUI() {
     * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
     [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay { filter: none !important; -webkit-filter: none !important; background: transparent !important; background-color: transparent !important; }
     [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+    
+    /* KILL ANIMATIONS FOR INSTANT POPUPS */
+    .mpe-popup, .mp-mattertag { transition: none !important; animation: none !important; }
+
+    /* AUDIO PLAYER ASSASSIN */
     audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"] { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
-    /* DUOCHROME SEPIA START SCREEN FILTER */
+    /* START SCREEN FILTERS */
     #eye-spy-dark-overlay { 
         position: fixed !important; 
         top: 0 !important; left: 0 !important; 
@@ -64,50 +69,6 @@ function injectCustomUI() {
     #eye-spy-start-btn:hover { transform: scale(1.05) !important; }
     #eye-spy-loading-text { position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; }
     
-    /* PILL CONTROL PANEL STYLES - 4 BUTTONS */
-    #es-control-panel { 
-      display: none !important; 
-      position: fixed !important; 
-      bottom: 15px !important; 
-      left: 15px !important; 
-      width: 320px !important; 
-      height: 60px !important; 
-      align-items: center !important; 
-      justify-content: space-between !important;
-      background: #1c1c1c !important; 
-      padding: 0 20px !important; 
-      border-radius: 30px !important; 
-      box-shadow: 0 4px 15px rgba(0,0,0,0.8) !important; 
-      z-index: 2147483647 !important; 
-      border: 2px solid #333 !important; 
-      box-sizing: border-box !important;
-    }
-    .es-panel-btn { 
-      background: transparent !important; 
-      border: none !important; 
-      cursor: pointer !important; 
-      display: flex !important; 
-      flex-direction: column !important;
-      align-items: center !important; 
-      justify-content: center !important; 
-      padding: 5px !important; 
-      border-radius: 8px !important; 
-      transition: transform 0.2s ease, background 0.2s ease !important; 
-      width: 60px !important;
-      gap: 3px !important;
-    }
-    .es-panel-btn:hover { transform: scale(1.1) !important; background: rgba(204, 255, 0, 0.1) !important; }
-    
-    /* BULLETPROOF SVG BACKGROUND ICONS */
-    .es-icon-prev { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 22px; height: 22px; }
-    .es-icon-clue { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.69l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 22px; height: 22px; }
-    .es-icon-unmute { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 24px; height: 24px; }
-    .es-icon-mute { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 24px; height: 24px; display: none; }
-    .es-icon-next { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 22px; height: 22px; }
-
-    .es-panel-btn span { font-size: 10px !important; font-weight: bold !important; color: #CCFF00 !important; letter-spacing: 0.5px !important; font-family: sans-serif !important; }
-    .es-panel-divider { width: 2px !important; height: 30px !important; background: #444 !important; border-radius: 2px !important; }
-
     @keyframes eye-spy-fade { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
   `;
   document.head.appendChild(customStyles);
@@ -126,47 +87,37 @@ function injectCustomUI() {
   `;
   document.body.appendChild(startUI);
 
-  // PILL CONTROL PANEL HTML (Panel is fully hidden on start screen)
-  const panel = document.createElement('div');
-  panel.id = 'es-control-panel';
-  panel.innerHTML = `
-    <button class="es-panel-btn" id="es-btn-prev" title="Back">
-      <div class="es-icon-prev"></div>
-      <span>BACK</span>
-    </button>
-    
-    <div class="es-panel-divider"></div>
+  const startBtn = document.getElementById('eye-spy-start-btn');
+  if(startBtn) {
+    startBtn.addEventListener('click', () => {
+      const ui = document.getElementById('eye-spy-start-ui');
+      const overlay = document.getElementById('eye-spy-dark-overlay');
+      const cover = document.getElementById('eye-spy-image-cover');
+      if(ui) { ui.style.transition = "opacity 0.4s ease"; ui.style.opacity = "0"; setTimeout(() => ui.remove(), 400); }
+      if(overlay) { overlay.style.transition = "opacity 0.4s ease"; overlay.style.opacity = "0"; setTimeout(() => overlay.remove(), 400); }
+      if(cover) { cover.style.transition = "opacity 0.4s ease"; cover.style.opacity = "0"; setTimeout(() => cover.remove(), 400); }
 
-    <button class="es-panel-btn" id="es-btn-clue" title="Replay Clue">
-      <div class="es-icon-clue"></div>
-      <span>CLUE</span>
-    </button>
-
-    <div class="es-panel-divider"></div>
-    
-    <button class="es-panel-btn" id="es-btn-audio" title="Mute / Unmute">
-      <div class="es-icon-unmute" id="es-svg-unmute"></div>
-      <div class="es-icon-mute" id="es-svg-mute"></div>
-      <span id="es-audio-label">MUTE</span>
-    </button>
-
-    <div class="es-panel-divider"></div>
-
-    <button class="es-panel-btn" id="es-btn-next" title="Skip">
-      <div class="es-icon-next"></div>
-      <span>SKIP</span>
-    </button>
-  `;
-  document.body.appendChild(panel);
+      try {
+          window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; 
+          window.globalSfx.play().catch(()=>{});
+      } catch(e) {}
+    });
+  }
 
   startMechanics();
 }
 
 function startMechanics() {
+  const SWEEPS = {
+    lobby:       '7k4p5mu5f5eydt8h0f8cygptb',  // Sweep 30
+    level1Entry: 'cwckxx365uimbeqk6ngp0t5ud',  // Sweep 28
+    level2Entry: 'ep98q9hxumexd83q38p12k4xc',  // Sweep 27
+  };
+
   const LEVELS = [
-    { level: 0, startSweeps: ['7k4p5mu5f5eydt8h0f8cygptb'], targetSweep: 'cwckxx365uimbeqk6ngp0t5ud', imagesToFind: [] }, // Lobby
-    { level: 1, startSweeps: ['cwckxx365uimbeqk6ngp0t5ud'], targetSweep: 'ep98q9hxumexd83q38p12k4xc', imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
-    { level: 2, startSweeps: ['ep98q9hxumexd83q38p12k4xc'], targetSweep: 't3si6z3gnc6ix4qh6cgmtgnfa', imagesToFind: ['/decongestant cough elixir.jpeg', '/plastic fruit.jpeg', '/pineapple sunday.jpeg'] },
+    { level: 0, startSweeps: [SWEEPS.lobby], targetSweep: SWEEPS.level1Entry, imagesToFind: [] }, 
+    { level: 1, startSweeps: [SWEEPS.level1Entry], targetSweep: SWEEPS.level2Entry, imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
+    { level: 2, startSweeps: [SWEEPS.level2Entry], targetSweep: 't3si6z3gnc6ix4qh6cgmtgnfa', imagesToFind: ['/decongestant cough elixir.jpeg', '/plastic fruit.jpeg', '/pineapple sunday.jpeg'] },
     { level: 3, startSweeps: ['t3si6z3gnc6ix4qh6cgmtgnfa'], targetSweep: '2cngsqh5q4t1ep85y5ky0h49d', imagesToFind: ['/aztec chocolate.jpeg', '/atomic coffee.jpeg', '/royal perambulator.jpeg'] },
     { level: 4, startSweeps: ['2cngsqh5q4t1ep85y5ky0h49d'], targetSweep: '66yna1yh5e2ig14bmzzf1sn2c', imagesToFind: ['/a crow in a bag.jpeg', '/a hand in two.jpeg', '/vitreous china.jpeg', '/musical tyre.jpeg'] },
     { level: 5, startSweeps: ['66yna1yh5e2ig14bmzzf1sn2c'], targetSweep: '3hdk0cskxw0apbr2iw8016htb', imagesToFind: ['/Hanimexs Movielux.jpeg', '/argus previewer.jpeg', '/porcelain lobster.jpeg', '/scotts mower maker.jpeg'] },
@@ -174,118 +125,35 @@ function startMechanics() {
     { level: 7, startSweeps: ['r7sd2g426fhbfa2wdh5dfxy5d'], targetSweep: '20qckty5qi20t39838cq274rc', imagesToFind: ['/a pair of old jugs.jpeg', '/a third more time.jpeg', '/odd purves terms.jpeg', '/round thing.jpeg'] }
   ];
 
-  let currentLevelIndex = 0;
-  let allModelSweeps = [];
-  let foundImages = {};
-  let isTeleporting = false; 
-  let activeOpenPopups = new Set(); 
-
-  // --- START BUTTON LOGIC (TELEPORTS TO LEVEL 1) ---
-  const startBtn = document.getElementById('eye-spy-start-btn');
-  if(startBtn) {
-    startBtn.addEventListener('click', () => {
-      const ui = document.getElementById('eye-spy-start-ui');
-      const overlay = document.getElementById('eye-spy-dark-overlay');
-      const cover = document.getElementById('eye-spy-image-cover');
-      
-      if(ui) { ui.style.transition = "opacity 0.4s ease"; ui.style.opacity = "0"; setTimeout(() => ui.remove(), 400); }
-      if(overlay) { overlay.style.transition = "opacity 0.4s ease"; overlay.style.opacity = "0"; setTimeout(() => overlay.remove(), 400); }
-      if(cover) { cover.style.transition = "opacity 0.4s ease"; cover.style.opacity = "0"; setTimeout(() => cover.remove(), 400); }
-
-      // Reveal Panel
-      const controls = document.getElementById('es-control-panel');
-      if (controls) controls.style.setProperty('display', 'flex', 'important');
-
-      // Teleport instantly out of Lobby to Level 1
-      if (window.mpSdk) {
-          isTeleporting = true;
-          window.mpSdk.Sweep.moveTo(LEVELS[1].startSweeps[0], { transition: window.mpSdk.Sweep.Transition.FLY }).then(() => {
-              currentLevelIndex = 1;
-              setupLevelTracking();
-              lockMapForCurrentLevel();
-              isTeleporting = false;
-          }).catch(() => { isTeleporting = false; });
-      }
-    });
-  }
-
-  // --- BUTTON LOGIC ---
-  let isMuted = false;
-  document.getElementById('es-btn-audio').addEventListener('click', () => {
-      isMuted = !isMuted;
-      window.globalSfx.muted = isMuted;
-      document.getElementById('es-svg-unmute').style.display = isMuted ? 'none' : 'block';
-      document.getElementById('es-svg-mute').style.display = isMuted ? 'block' : 'none';
-      document.getElementById('es-audio-label').innerText = isMuted ? 'UNMUTE' : 'MUTE';
-      
-      document.querySelectorAll('audio, video').forEach(media => {
-          media.muted = isMuted;
-      });
-  });
-
-  document.getElementById('es-btn-clue').addEventListener('click', () => {
-      document.querySelectorAll('audio, video').forEach(media => {
-          media.currentTime = 0;
-          media.play().catch(()=>{});
-      });
-  });
-
-  document.getElementById('es-btn-next').addEventListener('click', () => {
-      const cLevel = LEVELS[currentLevelIndex];
-      if (cLevel && window.mpSdk && !isTeleporting) {
-          window.globalSfx.pause();
-          window.globalSfx.currentTime = 0;
-          activeOpenPopups.clear();
-          cLevel.imagesToFind.forEach(img => foundImages[img] = true);
-          executeFastTeleport(cLevel);
-      }
-  });
-
-  document.getElementById('es-btn-prev').addEventListener('click', () => {
-      // Hard block preventing return to Lobby (Index 0)
-      if (currentLevelIndex <= 1 || isTeleporting) return;
-      
-      window.globalSfx.pause();
-      window.globalSfx.currentTime = 0;
-      activeOpenPopups.clear();
-
-      isTeleporting = true;
-      currentLevelIndex--;
-      const pLevel = LEVELS[currentLevelIndex];
-
-      window.mpSdk.Sweep.enable(...pLevel.startSweeps).then(() => {
-          window.mpSdk.Sweep.moveTo(pLevel.startSweeps[0], { transition: window.mpSdk.Sweep.Transition.INSTANT }).then(() => {
-              setupLevelTracking();
-              lockMapForCurrentLevel();
-              isTeleporting = false;
-          });
-      });
-  });
+  window.currentLevelIndex = 0;
+  window.allModelSweeps = [];
+  window.foundImages = {};
+  window.isTeleporting = false; 
+  window.activeOpenPopups = new Set(); 
 
   function setupLevelTracking() {
-    foundImages = {};
-    const currentLevel = LEVELS[currentLevelIndex];
+    window.foundImages = {};
+    const currentLevel = LEVELS[window.currentLevelIndex];
     if (currentLevel && currentLevel.imagesToFind) {
-        currentLevel.imagesToFind.forEach(image => foundImages[image] = false);
+      currentLevel.imagesToFind.forEach(image => { window.foundImages[image] = false; });
     }
-    activeOpenPopups.clear();
+    window.isTeleporting = false;
+    window.activeOpenPopups.clear();
   }
 
   function checkAllFound() {
-    const currentLevel = LEVELS[currentLevelIndex];
-    if (!currentLevel || !currentLevel.imagesToFind || currentLevel.imagesToFind.length === 0) return true;
-    return currentLevel.imagesToFind.every(img => foundImages[img] === true);
+    return Object.values(window.foundImages).every(status => status === true);
   }
 
-  // --- THE HIGHLY RELIABLE MUTATION OBSERVER (V120 ERA) ---
+  // THE RELIABLE OBSERVER (Lag-free)
   const observer = new MutationObserver((mutations) => {
-    const currentLevel = LEVELS[currentLevelIndex];
+    const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel || currentLevel.imagesToFind.length === 0) return; 
 
     mutations.forEach((mutation) => {
-      // HANDLE OPENING
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === 1 || node.nodeType === 3) { 
+          
           let searchString = (node.textContent || '').toLowerCase() + " ";
           if (node.nodeType === 1) {
              const mediaTags = node.tagName === 'IMG' ? [node] : (node.querySelectorAll ? node.querySelectorAll('img, [style*="background-image"]') : []);
@@ -298,7 +166,7 @@ function startMechanics() {
             
             if (searchString.includes(cleanName) || searchString.includes(encodedName)) {
               
-              // Apply styling to text node
+              // Apply CSS
               if (node.nodeType === 1) {
                   const textEls = Array.from(node.querySelectorAll('div, span, p, h1, h2, h3'));
                   if (['DIV','SPAN','P','H1','H2','H3'].includes(node.tagName)) textEls.push(node);
@@ -325,23 +193,19 @@ function startMechanics() {
                   });
               }
 
-              // Audio Replay Logic
-              if (!activeOpenPopups.has(filename)) {
+              if (!window.activeOpenPopups.has(filename)) {
                 playItemSound(filename); 
-                activeOpenPopups.add(filename); 
+                window.activeOpenPopups.add(filename); 
               }
 
-              // Found Logic
-              if (!foundImages[filename]) {
-                 console.log(`🎯 [Escape Room] Found: ${filename}`);
-                 foundImages[filename] = true;
+              if (!window.foundImages[filename]) {
+                 window.foundImages[filename] = true;
               }
             }
           });
         }
       });
 
-      // HANDLE CLOSING
       mutation.removedNodes.forEach((node) => {
         if (node.nodeType === 1 || node.nodeType === 3) { 
           let searchString = (node.textContent || '').toLowerCase() + " ";
@@ -355,9 +219,9 @@ function startMechanics() {
             const encodedName = encodeURI(filename).toLowerCase();
 
             if (searchString.includes(cleanName) || searchString.includes(encodedName)) {
-              activeOpenPopups.delete(filename); 
+              window.activeOpenPopups.delete(filename); 
               
-              if (checkAllFound() && activeOpenPopups.size === 0 && !isTeleporting) {
+              if (checkAllFound() && window.activeOpenPopups.size === 0 && !window.isTeleporting) {
                 executeFastTeleport(currentLevel);
               }
             }
@@ -369,19 +233,19 @@ function startMechanics() {
 
   observer.observe(document.body, { childList: true, subtree: true });
 
-  async function initMashupLogic(sdk) {
-    window.mpSdk = sdk;
+  async function initMashupLogic(mpSdk) {
+    window.mpSdk = mpSdk;
     setupLevelTracking();
 
     let sweepCollection = await new Promise((resolve) => {
-      let sub = window.mpSdk.Sweep.data.subscribe({
+      let sub = mpSdk.Sweep.data.subscribe({
         onCollectionUpdated: function (collection) {
           if (Object.keys(collection).length > 0) { resolve(collection); sub.cancel(); }
         }
       });
     });
 
-    allModelSweeps = Object.keys(sweepCollection);
+    window.allModelSweeps = Object.keys(sweepCollection);
     lockMapForCurrentLevel();
 
     const cover = document.getElementById('eye-spy-image-cover');
@@ -393,11 +257,19 @@ function startMechanics() {
     const welcomeBlock = document.getElementById('eye-spy-welcome-block');
     if (welcomeBlock) welcomeBlock.style.display = "flex";
 
-    // GLOBAL AUDIO RESET ON ROOM ENTER
     window.mpSdk.on(window.mpSdk.Sweep.Event.ENTER, function(sweepId) {
+      if (window.isTeleporting) return;
+      
+      // Step off Sweep 30 -> Upgrade to Level 1
+      if (window.currentLevelIndex === 0 && sweepId !== SWEEPS.lobby) {
+          window.currentLevelIndex = 1;
+          setupLevelTracking();
+          lockMapForCurrentLevel();
+      }
+      
       window.globalSfx.pause();
       window.globalSfx.currentTime = 0;
-      activeOpenPopups.clear();
+      window.activeOpenPopups.clear();
       
       setTimeout(() => {
           document.querySelectorAll('audio, video').forEach(media => {
@@ -409,31 +281,37 @@ function startMechanics() {
   }
 
   function lockMapForCurrentLevel() {
-    const currentLevel = LEVELS[currentLevelIndex];
-    if (!currentLevel || allModelSweeps.length === 0) return;
-    const sweepsToDisable = allModelSweeps.filter(id => !currentLevel.startSweeps.includes(id));
-    if (sweepsToDisable.length > 0) window.mpSdk.Sweep.disable(...sweepsToDisable).catch(() => {});
+    const currentLevel = LEVELS[window.currentLevelIndex];
+    if (!currentLevel || window.allModelSweeps.length === 0) return;
+    
+    window.mpSdk.Sweep.enable(...window.allModelSweeps).catch(()=>{});
+
+    setTimeout(() => {
+        if (window.currentLevelIndex > 0) {
+            window.mpSdk.Sweep.disable(SWEEPS.lobby).catch(()=>{});
+        }
+        if (window.currentLevelIndex > 0 && currentLevel.targetSweep) {
+            window.mpSdk.Sweep.disable(currentLevel.targetSweep).catch(()=>{});
+        }
+    }, 150); 
   }
 
   async function executeFastTeleport(levelData) {
-    isTeleporting = true;
+    window.isTeleporting = true;
     try {
+      await window.mpSdk.Sweep.enable(levelData.targetSweep).catch(() => {});
+
       try { await window.mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: window.mpSdk.Sweep.Transition.FLY });
       } catch (flyError) { await window.mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: window.mpSdk.Sweep.Transition.INSTANT }); }
 
-      const sweepsToLock = allModelSweeps.filter(id => id !== levelData.targetSweep);
-      await window.mpSdk.Sweep.disable(...sweepsToLock).catch(() => {});
-
-      currentLevelIndex++; 
+      window.currentLevelIndex++; 
       
-      if (LEVELS[currentLevelIndex]) {
+      if (LEVELS[window.currentLevelIndex]) {
           setupLevelTracking(); 
-      } else {
-          const controls = document.getElementById('es-control-panel');
-          if (controls) controls.remove();
+          lockMapForCurrentLevel();
       }
-    } catch (error) { console.error("Teleport failed:", error); }
-    isTeleporting = false;
+    } catch (error) {}
+    window.isTeleporting = false;
   }
 
   let checkSdkInterval = setInterval(function() {
