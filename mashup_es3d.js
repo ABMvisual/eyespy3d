@@ -1,108 +1,116 @@
-// =============================================================================
-// EYE SPY 3D — V250: THE GOLDEN BLUEPRINT (OBSERVER RESTORED)
-// =============================================================================
-
+// --- 0. DYNAMIC AUDIO ENGINE ---
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
-const SWEEPS = {
-  lobby:       '7k4p5mu5f5eydt8h0f8cygptb',  // Level 0 spawn (Sweep 30)
-  level1Entry: 'cwckxx365uimbeqk6ngp0t5ud',  // Sweep 28
-  level2Entry: 'ep98q9hxumexd83q38p12k4xc',  // Sweep 27
-};
-
 const AUDIO_MAP = {
-  '/pink bopeep.jpeg':               'pink bo-peep.mp3',
-  '/two white cows.jpeg':            'two white cows.mp3',
-  '/yourself.jpeg':                  'yourself.mp3',
+  '/pink bopeep.jpeg': 'pink bo-peep.mp3',
+  '/two white cows.jpeg': 'two white cows.mp3',
+  '/yourself.jpeg': 'yourself.mp3',
   '/decongestant cough elixir.jpeg': 'decongestant cough elixir.mp3',
-  '/plastic fruit.jpeg':             'plastic fruit.mp3',
-  '/pineapple sunday.jpeg':          'pineapple sunday.mp3',
+  '/plastic fruit.jpeg': 'plastic fruit.mp3',
+  '/pineapple sunday.jpeg': 'pineapple sunday.mp3'
 };
-
-// Level Definitions
-const LEVELS = [
-  { level: 0, startSweeps: [SWEEPS.lobby], targetSweep: SWEEPS.level1Entry, imagesToFind: [] }, 
-  { level: 1, startSweeps: [SWEEPS.level1Entry], targetSweep: SWEEPS.level2Entry, imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
-  { level: 2, startSweeps: [SWEEPS.level2Entry], targetSweep: 't3si6z3gnc6ix4qh6cgmtgnfa', imagesToFind: ['/decongestant cough elixir.jpeg', '/plastic fruit.jpeg', '/pineapple sunday.jpeg'] },
-  { level: 3, startSweeps: ['t3si6z3gnc6ix4qh6cgmtgnfa'], targetSweep: '2cngsqh5q4t1ep85y5ky0h49d', imagesToFind: ['/aztec chocolate.jpeg', '/atomic coffee.jpeg', '/royal perambulator.jpeg'] },
-  { level: 4, startSweeps: ['2cngsqh5q4t1ep85y5ky0h49d'], targetSweep: '66yna1yh5e2ig14bmzzf1sn2c', imagesToFind: ['/a crow in a bag.jpeg', '/a hand in two.jpeg', '/vitreous china.jpeg', '/musical tyre.jpeg'] },
-  { level: 5, startSweeps: ['66yna1yh5e2ig14bmzzf1sn2c'], targetSweep: '3hdk0cskxw0apbr2iw8016htb', imagesToFind: ['/Hanimexs Movielux.jpeg', '/argus previewer.jpeg', '/porcelain lobster.jpeg', '/scotts mower maker.jpeg'] },
-  { level: 6, startSweeps: ['3hdk0cskxw0apbr2iw8016htb'], targetSweep: 'r7sd2g426fhbfa2wdh5dfxy5d', imagesToFind: ['/barley.jpg', '/some flumis.jpeg', '/wall climbing baby.jpeg', '/hide and seek.jpeg'] },
-  { level: 7, startSweeps: ['r7sd2g426fhbfa2wdh5dfxy5d'], targetSweep: '20qckty5qi20t39838cq274rc', imagesToFind: ['/a pair of old jugs.jpeg', '/a third more time.jpeg', '/odd purves terms.jpeg', '/round thing.jpeg'] }
-];
 
 window.globalSfx = new Audio();
+window.globalChime = new Audio('https://upload.wikimedia.org/wikipedia/commons/d/d7/Tada.mp3');
 
 function playItemSound(imageFilename) {
   try {
-    const mp3Name = AUDIO_MAP[imageFilename];
+    let mp3Name = AUDIO_MAP[imageFilename];
     if (mp3Name) {
-        window.globalSfx.src = GITHUB_BASE + encodeURIComponent(mp3Name);
-        window.globalSfx.currentTime = 0;
-        window.globalSfx.play().catch(() => {});
+      window.globalSfx.src = GITHUB_BASE + encodeURIComponent(mp3Name);
+    } else {
+      window.globalSfx.src = 'https://upload.wikimedia.org/wikipedia/commons/4/42/Ping.mp3';
     }
-  } catch (e) {}
+    window.globalSfx.currentTime = 0;
+    window.globalSfx.play().catch(()=>{});
+  } catch(e) {}
 }
 
-let _bootInterval = setInterval(() => {
+
+// --- 1. BOOT LOADER ---
+let bootInterval = setInterval(() => {
   if (document.head && document.body) {
-    clearInterval(_bootInterval);
+    clearInterval(bootInterval);
     injectCustomUI();
   }
 }, 50);
 
 function injectCustomUI() {
-  const style = document.createElement('style');
-  style.innerHTML = `
+  const customStyles = document.createElement('style');
+  customStyles.innerHTML = `
     * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
-    
-    /* KILL ANIMATIONS FOR INSTANT SNAPPING */
-    .mpe-popup, .mp-mattertag, .mpe-media-overlay, .mpe-overlay {
-        transition: none !important;
-        animation: none !important;
-        filter: none !important;
-        background: transparent !important;
-    }
-
     [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay { filter: none !important; -webkit-filter: none !important; background: transparent !important; background-color: transparent !important; }
     [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
-    
-    /* AUDIO PLAYER & NATIVE X ASSASSIN */
-    audio, video, [id*="audio"]:not(#es-btn-vol):not(#es-vol-label):not(#es-vol-tooltip), [class*="audio-player"], [class*="audio-controls"], [class*="audio-close"], .mpe-media-close { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
+    audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"] { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
-    /* PERFECT B&W FILTER WITH 20% RED TINT SHADOW */
+    /* DUOCHROME SEPIA START SCREEN FILTER */
     #eye-spy-dark-overlay { 
-        position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(20, 5, 5, 0.2) !important; 
-        backdrop-filter: grayscale(100%) contrast(110%) brightness(95%) !important; -webkit-backdrop-filter: grayscale(100%) contrast(110%) brightness(95%) !important; z-index: 2147483645 !important; 
+        position: fixed !important; 
+        top: 0 !important; left: 0 !important; 
+        width: 100vw !important; height: 100vh !important; 
+        background: rgba(90, 60, 30, 0.3) !important; 
+        backdrop-filter: sepia(100%) contrast(110%) brightness(85%) hue-rotate(-5deg) !important;
+        -webkit-backdrop-filter: sepia(100%) contrast(110%) brightness(85%) hue-rotate(-5deg) !important;
+        z-index: 2147483645 !important; 
     }
 
     #eye-spy-image-cover { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/ES3D_load%20screen%20omni.png') !important; background-size: cover !important; background-position: center !important; z-index: 2147483646 !important; }
     #eye-spy-image-cover::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: inherit; background-size: contain !important; background-repeat: no-repeat !important; background-position: center !important; backdrop-filter: blur(15px); background-color: rgba(0,0,0,0.4); }
-    
     #eye-spy-start-ui { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483647 !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; }
+    #eye-spy-welcome-block { display: none; flex-direction: column; align-items: center; }
     
     #eye-spy-start-btn { padding: 16px 40px !important; font-size: 24px !important; font-weight: bold !important; background: #CCFF00 !important; color: #000 !important; border: none !important; border-radius: 8px !important; cursor: pointer !important; transition: transform 0.2s ease !important; box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important; pointer-events: auto !important; }
     #eye-spy-start-btn:hover { transform: scale(1.05) !important; }
-
-    /* LOADING TEXT FIXED TO TOP CENTER */
-    #eye-spy-loading-text { position: absolute !important; top: 40px !important; left: 50% !important; transform: translateX(-50%) !important; color: white !important; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; text-align: center; }
+    #eye-spy-loading-text { position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; }
     
-    /* PILL CONTROL PANEL STYLES */
-    #es-control-panel { display: none !important; position: fixed !important; bottom: 15px !important; left: 15px !important; width: 320px !important; height: 60px !important; align-items: center !important; justify-content: space-between !important; background: #1c1c1c !important; padding: 0 20px !important; border-radius: 30px !important; box-shadow: 0 4px 15px rgba(0,0,0,0.8) !important; z-index: 2147483647 !important; border: 2px solid #333 !important; box-sizing: border-box !important; }
-    .es-panel-btn { background: transparent !important; border: none !important; cursor: pointer !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; padding: 5px !important; border-radius: 8px !important; transition: transform 0.2s ease, background 0.2s ease !important; width: 60px !important; gap: 3px !important; position: relative !important; }
+    /* PILL CONTROL PANEL STYLES - 4 BUTTONS */
+    #es-control-panel { 
+      display: none !important; 
+      position: fixed !important; 
+      bottom: 15px !important; 
+      left: 15px !important; 
+      width: 320px !important; 
+      height: 60px !important; 
+      align-items: center !important; 
+      justify-content: space-between !important;
+      background: #1c1c1c !important; 
+      padding: 0 20px !important; 
+      border-radius: 30px !important; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.8) !important; 
+      z-index: 2147483647 !important; 
+      border: 2px solid #333 !important; 
+      box-sizing: border-box !important;
+    }
+    .es-panel-btn { 
+      background: transparent !important; 
+      border: none !important; 
+      cursor: pointer !important; 
+      display: flex !important; 
+      flex-direction: column !important;
+      align-items: center !important; 
+      justify-content: center !important; 
+      padding: 5px !important; 
+      border-radius: 8px !important; 
+      transition: transform 0.2s ease, background 0.2s ease !important; 
+      width: 60px !important;
+      gap: 3px !important;
+    }
     .es-panel-btn:hover { transform: scale(1.1) !important; background: rgba(204, 255, 0, 0.1) !important; }
-    .es-panel-btn img { width: 24px !important; height: 24px !important; pointer-events: none !important; }
-    .es-panel-btn span { font-size: 10px !important; font-weight: bold !important; color: #CCFF00 !important; letter-spacing: 0.5px !important; font-family: sans-serif !important; pointer-events: none !important; }
-    .es-panel-divider { width: 2px !important; height: 30px !important; background: #444 !important; border-radius: 2px !important; transition: opacity 0.3s ease !important; }
+    
+    /* BULLETPROOF SVG BACKGROUND ICONS */
+    .es-icon-prev { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 22px; height: 22px; }
+    .es-icon-clue { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.69l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 22px; height: 22px; }
+    .es-icon-unmute { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 24px; height: 24px; }
+    .es-icon-mute { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 24px; height: 24px; display: none; }
+    .es-icon-next { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z'/%3E%3C/svg%3E") center center / contain no-repeat; width: 22px; height: 22px; }
 
-    /* CUSTOM CSS TOOLTIPS */
-    .es-tooltip { position: absolute !important; top: -35px !important; background: rgba(0,0,0,0.9) !important; color: #fff !important; padding: 6px 10px !important; border-radius: 4px !important; font-size: 12px !important; font-weight: bold !important; font-family: sans-serif !important; white-space: nowrap !important; opacity: 0 !important; pointer-events: none !important; transition: opacity 0.2s ease !important; z-index: 999999 !important; border: 1px solid #444 !important; box-shadow: 0 2px 8px rgba(0,0,0,0.8) !important; }
-    .es-panel-btn:hover .es-tooltip { opacity: 1 !important; }
+    .es-panel-btn span { font-size: 10px !important; font-weight: bold !important; color: #CCFF00 !important; letter-spacing: 0.5px !important; font-family: sans-serif !important; }
+    .es-panel-divider { width: 2px !important; height: 30px !important; background: #444 !important; border-radius: 2px !important; }
 
-    @keyframes eye-spy-fade { 0%{opacity:0.2} 50%{opacity:1} 100%{opacity:0.2} }
+    @keyframes eye-spy-fade { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
   `;
-  document.head.appendChild(style);
+  document.head.appendChild(customStyles);
 
   const darkOverlay = document.createElement('div'); darkOverlay.id = 'eye-spy-dark-overlay'; document.body.appendChild(darkOverlay);
   const imageCover = document.createElement('div'); imageCover.id = 'eye-spy-image-cover'; document.body.appendChild(imageCover);
@@ -110,39 +118,43 @@ function injectCustomUI() {
   const startUI = document.createElement('div'); startUI.id = 'eye-spy-start-ui';
   startUI.innerHTML = `
     <div id="eye-spy-loading-text">Loading 3D experience...</div>
-    <div id="eye-spy-welcome-block" style="display: none; flex-direction: column; align-items: center;">
-      <h1 style="margin:0 0 15px 0;text-align:center;font-size:42px;text-shadow:0 2px 4px rgba(0,0,0,0.8);color:white;">Welcome to Eye Spy 3D</h1>
-      <p style="margin:0 0 30px 0;font-size:20px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.8);">Please enjoy this experience with your audio on</p>
+    <div id="eye-spy-welcome-block">
+      <h1 style="margin: 0 0 15px 0; text-align: center; font-size: 42px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); color: white;">Welcome to Eye Spy 3D</h1>
+      <p style="margin: 0 0 30px 0; font-size: 20px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Please enjoy this experience with your audio on</p>
       <button id="eye-spy-start-btn">Start now!</button>
     </div>
   `;
   document.body.appendChild(startUI);
 
+  // PILL CONTROL PANEL HTML (Panel is fully hidden on start screen)
   const panel = document.createElement('div');
   panel.id = 'es-control-panel';
   panel.innerHTML = `
-    <button class="es-panel-btn" id="es-btn-prev" style="opacity:0 !important;pointer-events:none !important;transition:opacity 0.3s ease !important;">
-      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z'/%3E%3C/svg%3E">
-      <span>BACK</span><div class="es-tooltip">Back</div>
+    <button class="es-panel-btn" id="es-btn-prev" title="Back">
+      <div class="es-icon-prev"></div>
+      <span>BACK</span>
     </button>
-    <div class="es-panel-divider" id="es-div-prev" style="opacity:0 !important;"></div>
-
-    <button class="es-panel-btn" id="es-btn-clue">
-      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M12.01 2.01c-3.3 0-5.99 2.69-5.99 6h3.41c0-1.42 1.15-2.58 2.58-2.58 1.43 0 2.58 1.15 2.58 2.58 0 2.58-3.87 2.26-3.87 6.45h3.44c0-2.9 3.87-3.23 3.87-6.45 0-3.31-2.69-6-6.02-6zM10.29 18.99h3.44v3.44h-3.44z'/%3E%3C/svg%3E">
-      <span>CLUE</span><div class="es-tooltip">Replay Clue</div>
-    </button>
+    
     <div class="es-panel-divider"></div>
 
-    <button class="es-panel-btn" id="es-btn-vol">
-      <img id="es-img-unmute" src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E">
-      <img id="es-img-mute" style="display:none !important;" src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E">
-      <span id="es-vol-label">MUTE</span><div class="es-tooltip" id="es-vol-tooltip">Mute / Un-Mute</div>
+    <button class="es-panel-btn" id="es-btn-clue" title="Replay Clue">
+      <div class="es-icon-clue"></div>
+      <span>CLUE</span>
     </button>
-    <div class="es-panel-divider" id="es-div-next" style="opacity:0 !important;"></div>
 
-    <button class="es-panel-btn" id="es-btn-next" style="opacity:0 !important;pointer-events:none !important;transition:opacity 0.3s ease !important;">
-      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z'/%3E%3C/svg%3E">
-      <span>CHEAT</span><div class="es-tooltip">Cheat</div>
+    <div class="es-panel-divider"></div>
+    
+    <button class="es-panel-btn" id="es-btn-audio" title="Mute / Unmute">
+      <div class="es-icon-unmute" id="es-svg-unmute"></div>
+      <div class="es-icon-mute" id="es-svg-mute"></div>
+      <span id="es-audio-label">MUTE</span>
+    </button>
+
+    <div class="es-panel-divider"></div>
+
+    <button class="es-panel-btn" id="es-btn-next" title="Skip">
+      <div class="es-icon-next"></div>
+      <span>SKIP</span>
     </button>
   `;
   document.body.appendChild(panel);
@@ -151,264 +163,205 @@ function injectCustomUI() {
 }
 
 function startMechanics() {
-  let currentLevelIndex = 0;  
-  let allModelSweeps    = [];
-  let foundImages       = {};
-  let isTeleporting     = false;
-  let activeOpenPopups  = new Set();
-  let visitedSweeps     = new Set();
-  let isMuted           = false;
-  let mpSdk             = null;
-  let isFirstSpawn      = true; // Ignores the boot-up ENTER event
+  const LEVELS = [
+    { level: 0, startSweeps: ['7k4p5mu5f5eydt8h0f8cygptb'], targetSweep: 'cwckxx365uimbeqk6ngp0t5ud', imagesToFind: [] }, // Lobby
+    { level: 1, startSweeps: ['cwckxx365uimbeqk6ngp0t5ud'], targetSweep: 'ep98q9hxumexd83q38p12k4xc', imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
+    { level: 2, startSweeps: ['ep98q9hxumexd83q38p12k4xc'], targetSweep: 't3si6z3gnc6ix4qh6cgmtgnfa', imagesToFind: ['/decongestant cough elixir.jpeg', '/plastic fruit.jpeg', '/pineapple sunday.jpeg'] },
+    { level: 3, startSweeps: ['t3si6z3gnc6ix4qh6cgmtgnfa'], targetSweep: '2cngsqh5q4t1ep85y5ky0h49d', imagesToFind: ['/aztec chocolate.jpeg', '/atomic coffee.jpeg', '/royal perambulator.jpeg'] },
+    { level: 4, startSweeps: ['2cngsqh5q4t1ep85y5ky0h49d'], targetSweep: '66yna1yh5e2ig14bmzzf1sn2c', imagesToFind: ['/a crow in a bag.jpeg', '/a hand in two.jpeg', '/vitreous china.jpeg', '/musical tyre.jpeg'] },
+    { level: 5, startSweeps: ['66yna1yh5e2ig14bmzzf1sn2c'], targetSweep: '3hdk0cskxw0apbr2iw8016htb', imagesToFind: ['/Hanimexs Movielux.jpeg', '/argus previewer.jpeg', '/porcelain lobster.jpeg', '/scotts mower maker.jpeg'] },
+    { level: 6, startSweeps: ['3hdk0cskxw0apbr2iw8016htb'], targetSweep: 'r7sd2g426fhbfa2wdh5dfxy5d', imagesToFind: ['/barley.jpg', '/some flumis.jpeg', '/wall climbing baby.jpeg', '/hide and seek.jpeg'] },
+    { level: 7, startSweeps: ['r7sd2g426fhbfa2wdh5dfxy5d'], targetSweep: '20qckty5qi20t39838cq274rc', imagesToFind: ['/a pair of old jugs.jpeg', '/a third more time.jpeg', '/odd purves terms.jpeg', '/round thing.jpeg'] }
+  ];
 
-  function currentLevel() { return LEVELS[currentLevelIndex]; }
+  let currentLevelIndex = 0;
+  let allModelSweeps = [];
+  let foundImages = {};
+  let isTeleporting = false; 
+  let activeOpenPopups = new Set(); 
 
-  function checkAllFound() {
-    const lvl = currentLevel();
-    if (!lvl || lvl.imagesToFind.length === 0) return true;
-    return lvl.imagesToFind.every(img => foundImages[img] === true);
-  }
+  // --- START BUTTON LOGIC (TELEPORTS TO LEVEL 1) ---
+  const startBtn = document.getElementById('eye-spy-start-btn');
+  if(startBtn) {
+    startBtn.addEventListener('click', () => {
+      const ui = document.getElementById('eye-spy-start-ui');
+      const overlay = document.getElementById('eye-spy-dark-overlay');
+      const cover = document.getElementById('eye-spy-image-cover');
+      
+      if(ui) { ui.style.transition = "opacity 0.4s ease"; ui.style.opacity = "0"; setTimeout(() => ui.remove(), 400); }
+      if(overlay) { overlay.style.transition = "opacity 0.4s ease"; overlay.style.opacity = "0"; setTimeout(() => overlay.remove(), 400); }
+      if(cover) { cover.style.transition = "opacity 0.4s ease"; cover.style.opacity = "0"; setTimeout(() => cover.remove(), 400); }
 
-  function setupLevelTracking() {
-    foundImages      = {};
-    activeOpenPopups = new Set();
-    isTeleporting    = false;      
-    const lvl = currentLevel();
-    if (lvl && lvl.imagesToFind) {
-        Array.from(lvl.imagesToFind).forEach(img => { foundImages[img] = false; });
-    }
-  }
+      // Reveal Panel
+      const controls = document.getElementById('es-control-panel');
+      if (controls) controls.style.setProperty('display', 'flex', 'important');
 
-  function updatePanelVisibility() {
-    const prevBtn  = document.getElementById('es-btn-prev');
-    const nextBtn  = document.getElementById('es-btn-next');
-    const divPrev  = document.getElementById('es-div-prev');
-    const divNext  = document.getElementById('es-div-next');
-
-    // CHEAT shows on Level 1+
-    const showNext = currentLevelIndex >= 1;
-    // BACK shows on Level 2+
-    const showPrev = currentLevelIndex >= 2;
-
-    const applyVisibility = (btn, divider, visible) => {
-      if (btn) {
-        btn.style.setProperty('opacity',        visible ? '1' : '0',    'important');
-        btn.style.setProperty('pointer-events', visible ? 'auto' : 'none', 'important');
+      // Teleport instantly out of Lobby to Level 1
+      if (window.mpSdk) {
+          isTeleporting = true;
+          window.mpSdk.Sweep.moveTo(LEVELS[1].startSweeps[0], { transition: window.mpSdk.Sweep.Transition.FLY }).then(() => {
+              currentLevelIndex = 1;
+              setupLevelTracking();
+              lockMapForCurrentLevel();
+              isTeleporting = false;
+          }).catch(() => { isTeleporting = false; });
       }
-      if (divider) divider.style.setProperty('opacity', visible ? '1' : '0', 'important');
-    };
-
-    applyVisibility(nextBtn, divNext, showNext);
-    applyVisibility(prevBtn, divPrev, showPrev);
+    });
   }
 
-  // SMART LOCKDOWN: Re-enable the floor so they can walk, but block target paths
-  function lockMapForCurrentLevel() {
-    if (!mpSdk || allModelSweeps.length === 0) return; 
-    const lvl = currentLevel();
-    if (!lvl) return;
-
-    // Ensure all sweeps are open for floor pathfinding
-    mpSdk.Sweep.enable(...allModelSweeps).catch(()=>{});
-
-    setTimeout(() => {
-        // Firewall: Never return to Lobby once Level 1 starts
-        if (currentLevelIndex > 0) {
-            mpSdk.Sweep.disable(SWEEPS.lobby).catch(()=>{});
-        }
-        // Puzzle Lock: Prevent walking to the next target room until solved
-        if (currentLevelIndex > 0 && lvl.targetSweep) {
-            mpSdk.Sweep.disable(lvl.targetSweep).catch(()=>{});
-        }
-    }, 150); 
-  }
-
-  async function executeFastTeleport(levelData) {
-    if (!mpSdk || isTeleporting) return;
-    isTeleporting = true; 
-
-    try {
-      await mpSdk.Sweep.enable(levelData.targetSweep).catch(() => {});
-
-      try {
-        await mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: mpSdk.Sweep.Transition.FLY });
-      } catch {
-        await mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: mpSdk.Sweep.Transition.INSTANT });
-      }
-
-      currentLevelIndex++;
-      setupLevelTracking();
-      lockMapForCurrentLevel();
-      updatePanelVisibility();
-    } catch (error) {
-      console.error('[EyeSpy3D] Teleport failed:', error);
-      isTeleporting = false; 
-    }
-  }
-
-  // --- BUTTON WIRING ---
-  document.getElementById('es-btn-vol').addEventListener('click', () => {
-    isMuted = !isMuted;
-    window.globalSfx.muted = isMuted;
-    
-    Array.from(document.querySelectorAll('audio, video')).forEach(m => { m.muted = isMuted; });
-
-    document.getElementById('es-img-unmute').style.setProperty('display', isMuted ? 'none'  : 'block', 'important');
-    document.getElementById('es-img-mute').style.setProperty('display',   isMuted ? 'block' : 'none',  'important');
-    document.getElementById('es-vol-label').innerText    = isMuted ? 'UN-MUTE' : 'MUTE';
+  // --- BUTTON LOGIC ---
+  let isMuted = false;
+  document.getElementById('es-btn-audio').addEventListener('click', () => {
+      isMuted = !isMuted;
+      window.globalSfx.muted = isMuted;
+      document.getElementById('es-svg-unmute').style.display = isMuted ? 'none' : 'block';
+      document.getElementById('es-svg-mute').style.display = isMuted ? 'block' : 'none';
+      document.getElementById('es-audio-label').innerText = isMuted ? 'UNMUTE' : 'MUTE';
+      
+      document.querySelectorAll('audio, video').forEach(media => {
+          media.muted = isMuted;
+      });
   });
 
   document.getElementById('es-btn-clue').addEventListener('click', () => {
-    const scopedMedia = Array.from(document.querySelectorAll('[data-mpe] audio, [data-mpe] video, .mpe-popup audio, .mpe-popup video'));
-    const allMedia = Array.from(document.querySelectorAll('audio, video'));
-    const target = scopedMedia.length > 0 ? scopedMedia : allMedia;
-    target.forEach(m => { m.currentTime = 0; m.play().catch(() => {}); });
+      document.querySelectorAll('audio, video').forEach(media => {
+          media.currentTime = 0;
+          media.play().catch(()=>{});
+      });
   });
 
   document.getElementById('es-btn-next').addEventListener('click', () => {
-    const lvl = currentLevel();
-    if (!lvl || isTeleporting) return;
-    activeOpenPopups.clear();
-    
-    if (lvl.imagesToFind) {
-        Array.from(lvl.imagesToFind).forEach(img => { foundImages[img] = true; });
-    }
-    executeFastTeleport(lvl);
-  });
-
-  document.getElementById('es-btn-prev').addEventListener('click', async () => {
-    if (currentLevelIndex <= 1 || isTeleporting) return; 
-    if (!mpSdk) return;
-
-    isTeleporting = true; 
-
-    const targetIndex = currentLevelIndex - 1;
-    const prevLvl     = LEVELS[targetIndex];
-
-    try {
-      await mpSdk.Sweep.enable(prevLvl.startSweeps[0]).catch(() => {});
-
-      try {
-        await mpSdk.Sweep.moveTo(prevLvl.startSweeps[0], { transition: mpSdk.Sweep.Transition.FLY });
-      } catch {
-        await mpSdk.Sweep.moveTo(prevLvl.startSweeps[0], { transition: mpSdk.Sweep.Transition.INSTANT });
+      const cLevel = LEVELS[currentLevelIndex];
+      if (cLevel && window.mpSdk && !isTeleporting) {
+          window.globalSfx.pause();
+          window.globalSfx.currentTime = 0;
+          activeOpenPopups.clear();
+          cLevel.imagesToFind.forEach(img => foundImages[img] = true);
+          executeFastTeleport(cLevel);
       }
+  });
 
-      currentLevelIndex = targetIndex;
-      setupLevelTracking();
-      lockMapForCurrentLevel();
-      updatePanelVisibility();
+  document.getElementById('es-btn-prev').addEventListener('click', () => {
+      // Hard block preventing return to Lobby (Index 0)
+      if (currentLevelIndex <= 1 || isTeleporting) return;
+      
+      window.globalSfx.pause();
+      window.globalSfx.currentTime = 0;
+      activeOpenPopups.clear();
 
-    } catch (error) {
-      console.error('[EyeSpy3D] Back navigation failed:', error);
-      isTeleporting = false; 
+      isTeleporting = true;
+      currentLevelIndex--;
+      const pLevel = LEVELS[currentLevelIndex];
+
+      window.mpSdk.Sweep.enable(...pLevel.startSweeps).then(() => {
+          window.mpSdk.Sweep.moveTo(pLevel.startSweeps[0], { transition: window.mpSdk.Sweep.Transition.INSTANT }).then(() => {
+              setupLevelTracking();
+              lockMapForCurrentLevel();
+              isTeleporting = false;
+          });
+      });
+  });
+
+  function setupLevelTracking() {
+    foundImages = {};
+    const currentLevel = LEVELS[currentLevelIndex];
+    if (currentLevel && currentLevel.imagesToFind) {
+        currentLevel.imagesToFind.forEach(image => foundImages[image] = false);
     }
-  });
+    activeOpenPopups.clear();
+  }
 
-  document.getElementById('eye-spy-start-btn').addEventListener('click', () => {
-    const ui      = document.getElementById('eye-spy-start-ui');
-    const overlay = document.getElementById('eye-spy-dark-overlay');
-    const cover   = document.getElementById('eye-spy-image-cover');
-    
-    if (ui)      { ui.style.transition = 'opacity 0.4s ease'; ui.style.opacity = '0'; setTimeout(() => ui.remove(), 400); }
-    if (overlay) { overlay.style.transition = 'opacity 0.4s ease'; overlay.style.opacity = '0'; setTimeout(() => overlay.remove(), 400); }
-    if (cover)   { cover.style.transition = 'opacity 0.4s ease'; cover.style.opacity = '0'; setTimeout(() => cover.remove(), 400); }
+  function checkAllFound() {
+    const currentLevel = LEVELS[currentLevelIndex];
+    if (!currentLevel || !currentLevel.imagesToFind || currentLevel.imagesToFind.length === 0) return true;
+    return currentLevel.imagesToFind.every(img => foundImages[img] === true);
+  }
 
-    try { // iOS Unlock
-      window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA';
-      window.globalSfx.play().catch(() => {});
-    } catch (e) {}
-
-    const controls = document.getElementById('es-control-panel');
-    if (controls) controls.style.setProperty('display', 'flex', 'important');
-    updatePanelVisibility();
-  });
-
-  // --- THE RESTORED MUTATION OBSERVER (THE V120 METHOD) ---
+  // --- THE HIGHLY RELIABLE MUTATION OBSERVER (V120 ERA) ---
   const observer = new MutationObserver((mutations) => {
-    const lvl = currentLevel();
-    if (!lvl || isTeleporting) return;
+    const currentLevel = LEVELS[currentLevelIndex];
+    if (!currentLevel || currentLevel.imagesToFind.length === 0) return; 
 
-    mutations.forEach(mutation => {
-      // HANDLE OPENING POPUPS
-      Array.from(mutation.addedNodes).forEach(node => {
-        if (node.nodeType === 1 || node.nodeType === 3) {
-            const textContent = (node.textContent || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-            if (textContent.length < 3) return;
+    mutations.forEach((mutation) => {
+      // HANDLE OPENING
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1 || node.nodeType === 3) { 
+          let searchString = (node.textContent || '').toLowerCase() + " ";
+          if (node.nodeType === 1) {
+             const mediaTags = node.tagName === 'IMG' ? [node] : (node.querySelectorAll ? node.querySelectorAll('img, [style*="background-image"]') : []);
+             mediaTags.forEach(m => searchString += (m.src || m.style.backgroundImage || '').toLowerCase() + " ");
+          }
 
-            // Kill rogue MPEmbed close buttons as they spawn
-            if (node.nodeType === 1 && node.querySelectorAll) {
-                Array.from(node.querySelectorAll('.mpe-media-close, [class*="audio-close"]')).forEach(btn => {
-                    btn.style.setProperty('display', 'none', 'important');
-                });
+          currentLevel.imagesToFind.forEach((filename) => {
+            const cleanName = filename.toLowerCase();
+            const encodedName = encodeURI(filename).toLowerCase();
+            
+            if (searchString.includes(cleanName) || searchString.includes(encodedName)) {
+              
+              // Apply styling to text node
+              if (node.nodeType === 1) {
+                  const textEls = Array.from(node.querySelectorAll('div, span, p, h1, h2, h3'));
+                  if (['DIV','SPAN','P','H1','H2','H3'].includes(node.tagName)) textEls.push(node);
+                  
+                  textEls.forEach(el => {
+                      if (el.children.length === 0 && el.textContent) {
+                          const t2 = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
+                          if (t2.includes(cleanName.replace(/[^a-z0-9]/g, '')) && !el.dataset.styled) {
+                              el.dataset.styled = "true";
+                              el.style.setProperty('position', 'absolute', 'important');
+                              el.style.setProperty('left', '50%', 'important');
+                              el.style.setProperty('top', '50%', 'important');
+                              el.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+                              el.style.setProperty('font-size', '240%', 'important');
+                              el.style.setProperty('color', 'white', 'important');
+                              el.style.setProperty('margin', '0', 'important');
+                              el.style.setProperty('white-space', 'nowrap', 'important');
+                              if (el.parentElement) {
+                                  el.parentElement.style.setProperty('background-color', '#1c1c1c', 'important');
+                                  el.parentElement.style.setProperty('min-height', '75px', 'important');
+                              }
+                          }
+                      }
+                  });
+              }
+
+              // Audio Replay Logic
+              if (!activeOpenPopups.has(filename)) {
+                playItemSound(filename); 
+                activeOpenPopups.add(filename); 
+              }
+
+              // Found Logic
+              if (!foundImages[filename]) {
+                 console.log(`🎯 [Escape Room] Found: ${filename}`);
+                 foundImages[filename] = true;
+              }
             }
-
-            if (lvl.imagesToFind) {
-                Array.from(lvl.imagesToFind).forEach(img => {
-                    const cleanTarget = img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg','').replace('jpg','');
-                    
-                    if (textContent.includes(cleanTarget)) {
-                        // Apply CSS Instantly to the specific text wrapper
-                        if (node.nodeType === 1) {
-                            const textEls = Array.from(node.querySelectorAll('div, span, p, h1, h2, h3'));
-                            if (['DIV','SPAN','P','H1','H2','H3'].includes(node.tagName)) textEls.push(node);
-                            
-                            textEls.forEach(el => {
-                                if (el.children.length === 0 && el.textContent) {
-                                    const t2 = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
-                                    if (t2.includes(cleanTarget) && !el.dataset.styled) {
-                                        el.dataset.styled = "true";
-                                        el.style.setProperty('position', 'absolute', 'important');
-                                        el.style.setProperty('left', '50%', 'important');
-                                        el.style.setProperty('top', '50%', 'important');
-                                        el.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
-                                        el.style.setProperty('font-size', '240%', 'important');
-                                        el.style.setProperty('color', 'white', 'important');
-                                        el.style.setProperty('margin', '0', 'important');
-                                        el.style.setProperty('white-space', 'nowrap', 'important');
-                                        if (el.parentElement) {
-                                            el.parentElement.style.setProperty('background-color', '#1c1c1c', 'important');
-                                            el.parentElement.style.setProperty('min-height', '75px', 'important');
-                                        }
-                                    }
-                                }
-                            });
-                        }
-
-                        // Trigger Audio & Found Logic
-                        if (!activeOpenPopups.has(img)) {
-                            activeOpenPopups.add(img);
-                            playItemSound(img);
-                            if (!foundImages[img]) {
-                                foundImages[img] = true;
-                                console.log(`🎯 [EyeSpy3D] Found: ${img}`);
-                            }
-                        }
-                    }
-                });
-            }
+          });
         }
       });
 
-      // HANDLE CLOSING POPUPS
-      Array.from(mutation.removedNodes).forEach(node => {
-        if (node.nodeType === 1 || node.nodeType === 3) {
-            const textContent = (node.textContent || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-            if (textContent.length < 3) return;
+      // HANDLE CLOSING
+      mutation.removedNodes.forEach((node) => {
+        if (node.nodeType === 1 || node.nodeType === 3) { 
+          let searchString = (node.textContent || '').toLowerCase() + " ";
+          if (node.nodeType === 1) {
+             const mediaTags = node.tagName === 'IMG' ? [node] : (node.querySelectorAll ? node.querySelectorAll('img, [style*="background-image"]') : []);
+             mediaTags.forEach(m => searchString += (m.src || m.style.backgroundImage || '').toLowerCase() + " ");
+          }
 
-            if (lvl.imagesToFind) {
-                Array.from(lvl.imagesToFind).forEach(img => {
-                    const cleanTarget = img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg','').replace('jpg','');
-                    if (textContent.includes(cleanTarget)) {
-                        activeOpenPopups.delete(img);
-                        
-                        // If all found and popups closed, teleport silently!
-                        if (checkAllFound() && activeOpenPopups.size === 0 && !isTeleporting) {
-                            executeFastTeleport(lvl);
-                        }
-                    }
-                });
+          currentLevel.imagesToFind.forEach((filename) => {
+            const cleanName = filename.toLowerCase();
+            const encodedName = encodeURI(filename).toLowerCase();
+
+            if (searchString.includes(cleanName) || searchString.includes(encodedName)) {
+              activeOpenPopups.delete(filename); 
+              
+              if (checkAllFound() && activeOpenPopups.size === 0 && !isTeleporting) {
+                executeFastTeleport(currentLevel);
+              }
             }
+          });
         }
       });
     });
@@ -417,88 +370,73 @@ function startMechanics() {
   observer.observe(document.body, { childList: true, subtree: true });
 
   async function initMashupLogic(sdk) {
-    mpSdk = sdk;
+    window.mpSdk = sdk;
     setupLevelTracking();
 
-    const sweepCollection = await new Promise((resolve) => {
-      let hasResolved = false;
-      const failTimer = setTimeout(() => {
-          if (!hasResolved) {
-              const loadText = document.getElementById('eye-spy-loading-text');
-              if (loadText) {
-                  loadText.innerText = "Error: MPEmbed failed to load the tour. Please refresh.";
-                  loadText.style.setProperty('color', '#ff4444', 'important');
-                  loadText.style.setProperty('animation', 'none', 'important');
-              }
-          }
-      }, 15000);
-
-      const sub = mpSdk.Sweep.data.subscribe({
-        onCollectionUpdated(collection) {
-          if (Object.keys(collection).length > 0) { 
-              hasResolved = true;
-              clearTimeout(failTimer);
-              resolve(collection); 
-              sub.cancel(); 
-          }
-        },
+    let sweepCollection = await new Promise((resolve) => {
+      let sub = window.mpSdk.Sweep.data.subscribe({
+        onCollectionUpdated: function (collection) {
+          if (Object.keys(collection).length > 0) { resolve(collection); sub.cancel(); }
+        }
       });
     });
 
-    if (!sweepCollection) return;
-
-    window.allModelSweeps = Object.keys(sweepCollection);
-    
-    // Instantly reveal Start button once map data is loaded
-    const loadingText   = document.getElementById('eye-spy-loading-text');
-    const welcomeBlock  = document.getElementById('eye-spy-welcome-block');
-    if (loadingText)  loadingText.remove();
-    if (welcomeBlock) welcomeBlock.style.setProperty('display', 'flex', 'important');
-
+    allModelSweeps = Object.keys(sweepCollection);
     lockMapForCurrentLevel();
 
-    // STRICT LEVEL ADVANCEMENT
-    mpSdk.on(mpSdk.Sweep.Event.ENTER, sweepId => {
-      if (isFirstSpawn) {
-          isFirstSpawn = false;
-          return; // Ignore the initial camera drop-in
-      }
-        
-      if (isTeleporting) return; 
+    const cover = document.getElementById('eye-spy-image-cover');
+    if (cover) { cover.style.transition = "opacity 0.5s ease"; cover.style.opacity = "0"; setTimeout(() => cover.remove(), 500); }
+    
+    const loadingText = document.getElementById('eye-spy-loading-text');
+    if (loadingText) loadingText.remove();
+    
+    const welcomeBlock = document.getElementById('eye-spy-welcome-block');
+    if (welcomeBlock) welcomeBlock.style.display = "flex";
 
-      // Level 1 Trigger: If at Level 0, and user leaves Sweep 30 -> Upgrade to Level 1
-      if (currentLevelIndex === 0 && sweepId !== SWEEPS.lobby) {
-          currentLevelIndex = 1;
-          setupLevelTracking();
-          lockMapForCurrentLevel();
-          updatePanelVisibility();
-      }
-
-      // Audio Memory Tracker
-      if (!visitedSweeps.has(sweepId)) {
-        visitedSweeps.add(sweepId);
-      } else {
-        setTimeout(() => {
-          Array.from(document.querySelectorAll('audio, video')).forEach(m => {
-            m.currentTime = 0;
-            m.play().catch(() => {});
+    // GLOBAL AUDIO RESET ON ROOM ENTER
+    window.mpSdk.on(window.mpSdk.Sweep.Event.ENTER, function(sweepId) {
+      window.globalSfx.pause();
+      window.globalSfx.currentTime = 0;
+      activeOpenPopups.clear();
+      
+      setTimeout(() => {
+          document.querySelectorAll('audio, video').forEach(media => {
+              media.currentTime = 0;
+              media.play().catch(()=>{});
           });
-        }, 300);
-      }
-    });
-
-    mpSdk.on(mpSdk.Sweep.Event.EXIT, fromSweep => {
-       Array.from(document.querySelectorAll('audio, video')).forEach(m => {
-          m.pause();
-          m.currentTime = 0;
-       });
+      }, 300);
     });
   }
 
-  const sdkPollInterval = setInterval(() => {
-    if (window.mpSdk && window.mpSdk.Sweep) {
-      clearInterval(sdkPollInterval);
-      initMashupLogic(window.mpSdk);
-    }
+  function lockMapForCurrentLevel() {
+    const currentLevel = LEVELS[currentLevelIndex];
+    if (!currentLevel || allModelSweeps.length === 0) return;
+    const sweepsToDisable = allModelSweeps.filter(id => !currentLevel.startSweeps.includes(id));
+    if (sweepsToDisable.length > 0) window.mpSdk.Sweep.disable(...sweepsToDisable).catch(() => {});
+  }
+
+  async function executeFastTeleport(levelData) {
+    isTeleporting = true;
+    try {
+      try { await window.mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: window.mpSdk.Sweep.Transition.FLY });
+      } catch (flyError) { await window.mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: window.mpSdk.Sweep.Transition.INSTANT }); }
+
+      const sweepsToLock = allModelSweeps.filter(id => id !== levelData.targetSweep);
+      await window.mpSdk.Sweep.disable(...sweepsToLock).catch(() => {});
+
+      currentLevelIndex++; 
+      
+      if (LEVELS[currentLevelIndex]) {
+          setupLevelTracking(); 
+      } else {
+          const controls = document.getElementById('es-control-panel');
+          if (controls) controls.remove();
+      }
+    } catch (error) { console.error("Teleport failed:", error); }
+    isTeleporting = false;
+  }
+
+  let checkSdkInterval = setInterval(function() {
+    if (window.mpSdk && window.mpSdk.Sweep) { clearInterval(checkSdkInterval); initMashupLogic(window.mpSdk); }
   }, 500);
 }
