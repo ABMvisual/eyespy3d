@@ -1,42 +1,64 @@
-// --- 0. DYNAMIC AUDIO ENGINE ---
+// =============================================================================
+// EYE SPY 3D — V215: UNTRAPPED NAVIGATION & INSTANT POPUP TRIGGERS
+// =============================================================================
+
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
-const AUDIO_MAP = {
-  '/pink bopeep.jpeg': 'pink bo-peep.mp3',
-  '/two white cows.jpeg': 'two white cows.mp3',
-  '/yourself.jpeg': 'yourself.mp3',
-  '/decongestant cough elixir.jpeg': 'decongestant cough elixir.mp3',
-  '/plastic fruit.jpeg': 'plastic fruit.mp3',
-  '/pineapple sunday.jpeg': 'pineapple sunday.mp3'
+const SWEEPS = {
+  lobby:       '7k4p5mu5f5eydt8h0f8cygptb',  // Level 0 spawn (Sweep 30)
+  level1Entry: 'cwckxx365uimbeqk6ngp0t5ud',  // Sweep 28
+  level2Entry: 'ep98q9hxumexd83q38p12k4xc',  // Sweep 27
 };
 
-window.globalSfx = new Audio();
-window.globalChime = new Audio('https://upload.wikimedia.org/wikipedia/commons/d/d7/Tada.mp3');
+const CHIME_URL  = GITHUB_BASE + 'chime.mp3';
+const CHIME_FALLBACK = 'https://upload.wikimedia.org/wikipedia/commons/d/d7/Tada.mp3';
+const PING_URL   = 'https://upload.wikimedia.org/wikipedia/commons/4/42/Ping.mp3';
+
+const AUDIO_MAP = {
+  '/pink bopeep.jpeg':               'pink bo-peep.mp3',
+  '/two white cows.jpeg':            'two white cows.mp3',
+  '/yourself.jpeg':                  'yourself.mp3',
+  '/decongestant cough elixir.jpeg': 'decongestant cough elixir.mp3',
+  '/plastic fruit.jpeg':             'plastic fruit.mp3',
+  '/pineapple sunday.jpeg':          'pineapple sunday.mp3',
+};
+
+// Level Definitions
+const LEVELS = [
+  { level: 0, startSweeps: [SWEEPS.lobby], targetSweep: SWEEPS.level1Entry, imagesToFind: [] }, 
+  { level: 1, startSweeps: [SWEEPS.level1Entry], targetSweep: SWEEPS.level2Entry, imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
+  { level: 2, startSweeps: [SWEEPS.level2Entry], targetSweep: 't3si6z3gnc6ix4qh6cgmtgnfa', imagesToFind: ['/decongestant cough elixir.jpeg', '/plastic fruit.jpeg', '/pineapple sunday.jpeg'] },
+  { level: 3, startSweeps: ['t3si6z3gnc6ix4qh6cgmtgnfa'], targetSweep: '2cngsqh5q4t1ep85y5ky0h49d', imagesToFind: ['/aztec chocolate.jpeg', '/atomic coffee.jpeg', '/royal perambulator.jpeg'] },
+  { level: 4, startSweeps: ['2cngsqh5q4t1ep85y5ky0h49d'], targetSweep: '66yna1yh5e2ig14bmzzf1sn2c', imagesToFind: ['/a crow in a bag.jpeg', '/a hand in two.jpeg', '/vitreous china.jpeg', '/musical tyre.jpeg'] },
+  { level: 5, startSweeps: ['66yna1yh5e2ig14bmzzf1sn2c'], targetSweep: '3hdk0cskxw0apbr2iw8016htb', imagesToFind: ['/Hanimexs Movielux.jpeg', '/argus previewer.jpeg', '/porcelain lobster.jpeg', '/scotts mower maker.jpeg'] },
+  { level: 6, startSweeps: ['3hdk0cskxw0apbr2iw8016htb'], targetSweep: 'r7sd2g426fhbfa2wdh5dfxy5d', imagesToFind: ['/barley.jpg', '/some flumis.jpeg', '/wall climbing baby.jpeg', '/hide and seek.jpeg'] },
+  { level: 7, startSweeps: ['r7sd2g426fhbfa2wdh5dfxy5d'], targetSweep: '20qckty5qi20t39838cq274rc', imagesToFind: ['/a pair of old jugs.jpeg', '/a third more time.jpeg', '/odd purves terms.jpeg', '/round thing.jpeg'] }
+];
+
+window.globalSfx   = new Audio();
+window.globalChime = new Audio();
+window.globalChime.src = CHIME_URL;
+window.globalChime.onerror = () => { window.globalChime.src = CHIME_FALLBACK; };
 
 function playItemSound(imageFilename) {
   try {
-    let mp3Name = AUDIO_MAP[imageFilename];
-    if (mp3Name) {
-      window.globalSfx.src = GITHUB_BASE + encodeURIComponent(mp3Name);
-    } else {
-      window.globalSfx.src = 'https://upload.wikimedia.org/wikipedia/commons/4/42/Ping.mp3';
-    }
+    const mp3Name = AUDIO_MAP[imageFilename];
+    window.globalSfx.src = mp3Name ? GITHUB_BASE + encodeURIComponent(mp3Name) : PING_URL;
     window.globalSfx.currentTime = 0;
-    window.globalSfx.play().catch(()=>{});
-  } catch(e) {}
+    window.globalSfx.play().catch(() => {});
+  } catch (e) {}
 }
 
-// --- 1. BOOT LOADER ---
-let bootInterval = setInterval(() => {
+let _bootInterval = setInterval(() => {
   if (document.head && document.body) {
-    clearInterval(bootInterval);
+    clearInterval(_bootInterval);
     injectCustomUI();
   }
 }, 50);
 
 function injectCustomUI() {
-  const customStyles = document.createElement('style');
-  customStyles.innerHTML = `
+  const style = document.createElement('style');
+  style.innerHTML = `
     * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
     [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay { filter: none !important; -webkit-filter: none !important; background: transparent !important; background-color: transparent !important; }
     [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
@@ -59,7 +81,7 @@ function injectCustomUI() {
     #eye-spy-start-btn { padding: 16px 40px !important; font-size: 24px !important; font-weight: bold !important; background: #CCFF00 !important; color: #000 !important; border: none !important; border-radius: 8px !important; cursor: pointer !important; transition: transform 0.2s ease !important; box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important; pointer-events: auto !important; }
     #eye-spy-start-btn:hover { transform: scale(1.05) !important; }
 
-    /* LOADING TEXT POSITION FIX - WHITE & FLASHING */
+    /* LOADING TEXT FIXED TO TOP CENTER */
     #eye-spy-loading-text { position: absolute !important; top: 40px !important; left: 50% !important; transform: translateX(-50%) !important; color: white !important; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; }
     
     /* PILL CONTROL PANEL STYLES */
@@ -76,7 +98,7 @@ function injectCustomUI() {
 
     @keyframes eye-spy-fade { 0%{opacity:0.2} 50%{opacity:1} 100%{opacity:0.2} }
   `;
-  document.head.appendChild(customStyles);
+  document.head.appendChild(style);
 
   const darkOverlay = document.createElement('div'); darkOverlay.id = 'eye-spy-dark-overlay'; document.body.appendChild(darkOverlay);
   const imageCover = document.createElement('div'); imageCover.id = 'eye-spy-image-cover'; document.body.appendChild(imageCover);
@@ -99,18 +121,24 @@ function injectCustomUI() {
       <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z'/%3E%3C/svg%3E">
       <span>BACK</span><div class="es-tooltip">Back</div>
     </button>
+    
     <div class="es-panel-divider" id="es-div-prev" style="opacity:0 !important;"></div>
+
     <button class="es-panel-btn" id="es-btn-clue">
       <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M12.01 2.01c-3.3 0-5.99 2.69-5.99 6h3.41c0-1.42 1.15-2.58 2.58-2.58 1.43 0 2.58 1.15 2.58 2.58 0 2.58-3.87 2.26-3.87 6.45h3.44c0-2.9 3.87-3.23 3.87-6.45 0-3.31-2.69-6-6.02-6zM10.29 18.99h3.44v3.44h-3.44z'/%3E%3C/svg%3E">
       <span>CLUE</span><div class="es-tooltip">Replay Clue</div>
     </button>
+
     <div class="es-panel-divider"></div>
+    
     <button class="es-panel-btn" id="es-btn-vol">
       <img id="es-img-unmute" src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E">
       <img id="es-img-mute" style="display:none !important;" src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E">
       <span id="es-vol-label">MUTE</span><div class="es-tooltip" id="es-vol-tooltip">Mute / Un-Mute</div>
     </button>
+
     <div class="es-panel-divider" id="es-div-next" style="opacity:0 !important;"></div>
+
     <button class="es-panel-btn" id="es-btn-next" style="opacity:0 !important;pointer-events:none !important;transition:opacity 0.3s ease !important;">
       <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z'/%3E%3C/svg%3E">
       <span>CHEAT</span><div class="es-tooltip">Cheat</div>
@@ -131,21 +159,6 @@ function startMechanics() {
   let visitedSweeps     = new Set();
   let isMuted           = false;
   let mpSdk             = null;
-
-  const SWEEP_30 = '7k4p5mu5f5eydt8h0f8cygptb'; 
-  const SWEEP_28 = 'cwckxx365uimbeqk6ngp0t5ud';
-  const SWEEP_27 = 'ep98q9hxumexd83q38p12k4xc';
-
-  const LEVELS = [
-    { level: 0, startSweeps: [SWEEP_30], targetSweep: SWEEP_28, imagesToFind: [] }, 
-    { level: 1, startSweeps: [SWEEP_28], targetSweep: SWEEP_27, imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
-    { level: 2, startSweeps: [SWEEP_27], targetSweep: 't3si6z3gnc6ix4qh6cgmtgnfa', imagesToFind: ['/decongestant cough elixir.jpeg', '/plastic fruit.jpeg', '/pineapple sunday.jpeg'] },
-    { level: 3, startSweeps: ['t3si6z3gnc6ix4qh6cgmtgnfa'], targetSweep: '2cngsqh5q4t1ep85y5ky0h49d', imagesToFind: ['/aztec chocolate.jpeg', '/atomic coffee.jpeg', '/royal perambulator.jpeg'] },
-    { level: 4, startSweeps: ['2cngsqh5q4t1ep85y5ky0h49d'], targetSweep: '66yna1yh5e2ig14bmzzf1sn2c', imagesToFind: ['/a crow in a bag.jpeg', '/a hand in two.jpeg', '/vitreous china.jpeg', '/musical tyre.jpeg'] },
-    { level: 5, startSweeps: ['66yna1yh5e2ig14bmzzf1sn2c'], targetSweep: '3hdk0cskxw0apbr2iw8016htb', imagesToFind: ['/Hanimexs Movielux.jpeg', '/argus previewer.jpeg', '/porcelain lobster.jpeg', '/scotts mower maker.jpeg'] },
-    { level: 6, startSweeps: ['3hdk0cskxw0apbr2iw8016htb'], targetSweep: 'r7sd2g426fhbfa2wdh5dfxy5d', imagesToFind: ['/barley.jpg', '/some flumis.jpeg', '/wall climbing baby.jpeg', '/hide and seek.jpeg'] },
-    { level: 7, startSweeps: ['r7sd2g426fhbfa2wdh5dfxy5d'], targetSweep: '20qckty5qi20t39838cq274rc', imagesToFind: ['/a pair of old jugs.jpeg', '/a third more time.jpeg', '/odd purves terms.jpeg', '/round thing.jpeg'] }
-  ];
 
   function currentLevel() { return LEVELS[currentLevelIndex]; }
 
@@ -187,28 +200,26 @@ function startMechanics() {
     applyVisibility(prevBtn, divPrev, showPrev);
   }
 
-  // STRICT ESCAPE ROOM LOCKDOWN
+  // SURGICAL LOCKDOWN: Only disable explicit boundaries, leaving intermediate sweeps alive
   function lockMapForCurrentLevel() {
     if (!mpSdk || allModelSweeps.length === 0) return; 
     const lvl = currentLevel();
     if (!lvl) return;
 
-    // By default, the user is physically locked into the current startSweeps.
-    const allowedSweeps = [...lvl.startSweeps];
+    // 1. Re-enable all sweeps to clear previous locks and keep intermediate pathfinding open
+    mpSdk.Sweep.enable(...allModelSweeps).catch(()=>{});
 
-    // Exception: If they are in the Lobby (Level 0), they must be able to physically walk to Sweep 28.
-    if (currentLevelIndex === 0) {
-        allowedSweeps.push(lvl.targetSweep);
-    }
+    setTimeout(() => {
+        // 2. FIREWALL: Never allow return to the Lobby once Level 1 begins
+        if (currentLevelIndex > 0) {
+            mpSdk.Sweep.disable(SWEEPS.lobby).catch(()=>{});
+        }
 
-    const sweepsToDisable = allModelSweeps.filter(id => !allowedSweeps.includes(id));
-    
-    if (sweepsToDisable.length > 0) {
-        mpSdk.Sweep.disable(...sweepsToDisable).catch(() => {});
-    }
-    if (allowedSweeps.length > 0) {
-        mpSdk.Sweep.enable(...allowedSweeps).catch(() => {});
-    }
+        // 3. LOCK: Prevent walking forward to the next level before puzzle is solved
+        if (currentLevelIndex > 0 && lvl.targetSweep) {
+            mpSdk.Sweep.disable(lvl.targetSweep).catch(()=>{});
+        }
+    }, 150); // slight delay to ensure enable() commands settle first
   }
 
   async function executeFastTeleport(levelData) {
@@ -268,7 +279,7 @@ function startMechanics() {
   });
 
   document.getElementById('es-btn-prev').addEventListener('click', async () => {
-    if (currentLevelIndex <= 1 || isTeleporting) return; // Cannot return to Sweep 30
+    if (currentLevelIndex <= 1 || isTeleporting) return; // Cannot return to Lobby
     if (!mpSdk) return;
 
     isTeleporting = true; 
@@ -325,9 +336,8 @@ function startMechanics() {
 
   function runVisualHunter() {
     requestAnimationFrame(runVisualHunter);
-    if (!domDirty) return;
-    domDirty = false;
-
+    
+    // 1. Rogue X Assassin (kills close buttons near UI)
     document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
       if (!btn.closest('#es-control-panel')) {
         const rect = btn.getBoundingClientRect();
@@ -346,108 +356,95 @@ function startMechanics() {
       }
     });
 
-    document.querySelectorAll('.mpe-media-overlay, .mpe-overlay').forEach(el => {
-      el.style.setProperty('filter',            'none',        'important');
-      el.style.setProperty('-webkit-filter',    'none',        'important');
-      el.style.setProperty('backdrop-filter',   'none',        'important');
-      el.style.setProperty('-webkit-backdrop-filter', 'none',  'important');
-      el.style.setProperty('background',        'transparent', 'important');
-    });
+    // 2. Locate Active Popups
+    const activePopups = document.querySelectorAll('.mpe-popup, .mp-mattertag, [class*="media-overlay"]');
+    const currentlyVisibleThisFrame = new Set();
+    const currentLevelData = currentLevel();
 
-    document.querySelectorAll('div, span, p, h1, h2, h3').forEach(el => {
-      if (el.children.length !== 0 || !el.textContent || el.offsetParent === null) return;
-      const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
-      if (textClean.length <= 3 || !TARGET_MATCH_STRINGS.includes(textClean)) return;
+    if (activePopups.length > 0) {
+        activePopups.forEach(popup => {
+            // Remove default MPEmbed grey filters
+            popup.style.setProperty('filter',            'none',        'important');
+            popup.style.setProperty('-webkit-filter',    'none',        'important');
+            popup.style.setProperty('backdrop-filter',   'none',        'important');
+            popup.style.setProperty('-webkit-backdrop-filter', 'none',  'important');
+            popup.style.setProperty('background',        'transparent', 'important');
 
-      el.style.setProperty('position',   'absolute',              'important');
-      el.style.setProperty('left',       '50%',                   'important');
-      el.style.setProperty('top',        '50%',                   'important');
-      el.style.setProperty('transform',  'translate(-50%, -50%)', 'important');
-      el.style.setProperty('font-size',  '240%',                  'important');
-      el.style.setProperty('color',      'white',                 'important');
-      el.style.setProperty('margin',     '0',                     'important');
-      el.style.setProperty('white-space','nowrap',                'important');
+            // 3. Scan for Popup Text (Offset/Invisibility check removed for instant firing)
+            if (currentLevelData) {
+                const textElements = popup.querySelectorAll('div, span, p, h1, h2, h3');
+                textElements.forEach(el => {
+                    if (el.children.length === 0 && el.textContent) {
+                        const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
+                        
+                        let matchedImg = null;
+                        currentLevelData.imagesToFind.forEach(img => {
+                            const cleanTarget = img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', '');
+                            if (textClean.length > 3 && textClean.includes(cleanTarget)) {
+                                matchedImg = img;
+                            }
+                        });
 
-      const banner = el.parentElement;
-      if (banner && !banner.dataset.styled) {
-        banner.style.setProperty('background-color', '#1c1c1c', 'important');
-        banner.style.setProperty('background',       '#1c1c1c', 'important');
-        if (window.getComputedStyle(banner).position === 'static')
-          banner.style.setProperty('position', 'relative', 'important');
-        banner.style.setProperty('min-height', '75px', 'important');
-        banner.dataset.styled = 'true';
-      }
+                        if (matchedImg) {
+                            currentlyVisibleThisFrame.add(matchedImg);
+                            
+                            // Apply CSS Instantly
+                            if (!el.dataset.styled) {
+                                el.dataset.styled = "true";
+                                el.style.setProperty('position',   'absolute',              'important');
+                                el.style.setProperty('left',       '50%',                   'important');
+                                el.style.setProperty('top',        '50%',                   'important');
+                                el.style.setProperty('transform',  'translate(-50%, -50%)', 'important');
+                                el.style.setProperty('font-size',  '240%',                  'important');
+                                el.style.setProperty('color',      'white',                 'important');
+                                el.style.setProperty('margin',     '0',                     'important');
+                                el.style.setProperty('white-space','nowrap',                'important');
+                                
+                                const banner = el.parentElement;
+                                if (banner) {
+                                    banner.style.setProperty('background-color', '#1c1c1c', 'important');
+                                    banner.style.setProperty('background',       '#1c1c1c', 'important');
+                                    if (window.getComputedStyle(banner).position === 'static') {
+                                        banner.style.setProperty('position', 'relative', 'important');
+                                    }
+                                    banner.style.setProperty('min-height', '75px', 'important');
+                                }
+                            }
+
+                            // Trigger Game Logic (Audio & Found State)
+                            if (!window.activeOpenPopups.has(matchedImg)) {
+                                window.activeOpenPopups.add(matchedImg);
+                                playItemSound(matchedImg);
+                                
+                                if (!window.foundImages[matchedImg]) {
+                                    window.foundImages[matchedImg] = true;
+                                    console.log(`🎯 [EyeSpy3D] Found: ${matchedImg}`);
+                                    
+                                    if (checkAllFound() && !window.pathsPreloaded) {
+                                        window.pathsPreloaded = true;
+                                        playChime();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    // 4. Detect when a popup is closed to trigger teleport
+    window.activeOpenPopups.forEach(img => {
+        if (!currentlyVisibleThisFrame.has(img)) {
+            window.activeOpenPopups.delete(img);
+            if (checkAllFound() && window.activeOpenPopups.size === 0 && !window.isTeleporting) {
+                executeFastTeleport(currentLevelData);
+            }
+        }
     });
   }
 
   requestAnimationFrame(runVisualHunter);
-
-  const observer = new MutationObserver((mutations) => {
-    domDirty = true; 
-
-    const lvl = currentLevel();
-    if (!lvl) return;
-
-    mutations.forEach(mutation => {
-      const extractSearchString = (node) => {
-        if (node.nodeType !== 1 && node.nodeType !== 3) return '';
-        let s = (node.textContent || '').toLowerCase() + ' ';
-        if (node.nodeType === 1) {
-          const tags = node.tagName === 'IMG'
-            ? [node]
-            : (node.querySelectorAll ? node.querySelectorAll('img, [style*="background-image"]') : []);
-          tags.forEach(m => { s += (m.src || m.style?.backgroundImage || '').toLowerCase() + ' '; });
-        }
-        return s;
-      };
-
-      mutation.addedNodes.forEach(node => {
-        const str = extractSearchString(node);
-        if (!str) return;
-
-        lvl.imagesToFind.forEach(filename => {
-          const clean   = filename.toLowerCase();
-          const encoded = encodeURI(filename).toLowerCase();
-          if (!str.includes(clean) && !str.includes(encoded)) return;
-
-          if (!activeOpenPopups.has(filename)) {
-            playItemSound(filename);
-            activeOpenPopups.add(filename);
-          }
-
-          if (!foundImages[filename]) {
-            console.log(`🎯 [EyeSpy3D] Found: ${filename}`);
-            foundImages[filename] = true;
-          }
-
-          if (checkAllFound() && !pathsPreloaded) {
-            pathsPreloaded = true;
-            playChime();
-            if (mpSdk) mpSdk.Sweep.enable(...allModelSweeps).catch(() => {});
-          }
-        });
-      });
-
-      mutation.removedNodes.forEach(node => {
-        const str = extractSearchString(node);
-        if (!str) return;
-
-        lvl.imagesToFind.forEach(filename => {
-          const clean   = filename.toLowerCase();
-          const encoded = encodeURI(filename).toLowerCase();
-          if (!str.includes(clean) && !str.includes(encoded)) return;
-
-          activeOpenPopups.delete(filename);
-
-          if (checkAllFound() && activeOpenPopups.size === 0 && !isTeleporting) {
-            executeFastTeleport(lvl);
-          }
-        });
-      });
-    });
-  });
-
-  observer.observe(document.body, { childList: true, subtree: true });
 
   async function initMashupLogic(sdk) {
     mpSdk = sdk;
@@ -461,24 +458,18 @@ function startMechanics() {
       });
     });
 
-    allModelSweeps = Object.keys(sweepCollection);
+    window.allModelSweeps = Object.keys(sweepCollection);
     lockMapForCurrentLevel();
 
     const cover = document.getElementById('eye-spy-image-cover');
     if (cover) { cover.style.transition = 'opacity 0.5s ease'; cover.style.opacity = '0'; setTimeout(() => cover.remove(), 500); }
 
-    const loadingText   = document.getElementById('eye-spy-loading-text');
-    const welcomeBlock  = document.getElementById('eye-spy-welcome-block');
-    if (loadingText)  loadingText.remove();
-    if (welcomeBlock) welcomeBlock.style.display = 'flex';
-
     mpSdk.on(mpSdk.Sweep.Event.ENTER, sweepId => {
       if (isTeleporting) return; 
 
-      // If user naturally walks to the target Sweep for Level 0 (Sweep 28)
-      const currentLvl = currentLevel();
-      if (currentLvl && sweepId === currentLvl.targetSweep && currentLevelIndex === 0) {
-        currentLevelIndex++; 
+      // If user steps OFF Sweep 30 for the first time, advance to Level 1
+      if (window.currentLevelIndex === 0 && sweepId !== SWEEPS.lobby) {
+        window.currentLevelIndex = 1; 
         setupLevelTracking();
         lockMapForCurrentLevel();
         updatePanelVisibility();
