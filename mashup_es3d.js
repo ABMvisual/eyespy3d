@@ -1,4 +1,4 @@
-// --- 0. DYNAMIC AUDIO ENGINE (For popups only) ---
+// --- 0. DYNAMIC AUDIO ENGINE ---
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
 const AUDIO_MAP = {
@@ -40,10 +40,12 @@ function injectCustomUI() {
     * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
     [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay { filter: none !important; -webkit-filter: none !important; background: transparent !important; background-color: transparent !important; }
     [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
-    audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"] { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
+    
+    /* AGGRESSIVE AUDIO PLAYER & ROGUE X ASSASSIN */
+    audio, video, [id*="audio"]:not(#es-btn-vol):not(#es-vol-label):not(#es-vol-tooltip), [class*="audio-player"], [class*="audio-controls"], [class*="audio-close"], .mpe-media-close { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
-    /* PERFECT B&W START SCREEN FILTER */
+    /* PERFECT B&W FILTER WITH 20% RED TINT SHADOW */
     #eye-spy-dark-overlay { 
         position: fixed !important; 
         top: 0 !important; left: 0 !important; 
@@ -61,7 +63,6 @@ function injectCustomUI() {
     
     #eye-spy-start-btn { padding: 16px 40px !important; font-size: 24px !important; font-weight: bold !important; background: #CCFF00 !important; color: #000 !important; border: none !important; border-radius: 8px !important; cursor: pointer !important; transition: transform 0.2s ease !important; box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important; pointer-events: auto !important; }
     #eye-spy-start-btn:hover { transform: scale(1.05) !important; }
-    #eye-spy-loading-text { position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; }
     
     /* PILL CONTROL PANEL STYLES */
     #es-control-panel { 
@@ -162,7 +163,7 @@ function injectCustomUI() {
   `;
   document.body.appendChild(startUI);
 
-  // PILL CONTROL PANEL HTML (Bold '?' SVG)
+  // PILL CONTROL PANEL HTML 
   const panel = document.createElement('div');
   panel.id = 'es-control-panel';
   panel.innerHTML = `
@@ -175,7 +176,7 @@ function injectCustomUI() {
     <div class="es-panel-divider" id="es-div-prev" style="opacity: 0 !important;"></div>
 
     <button class="es-panel-btn" id="es-btn-clue">
-      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ctext x='12' y='19' font-family='sans-serif' font-size='22' font-weight='900' text-anchor='middle' fill='%23CCFF00'%3E?%3C/text%3E%3C/svg%3E">
+      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CCFF00'%3E%3Cpath d='M12.01 2.01c-3.3 0-5.99 2.69-5.99 6h3.41c0-1.42 1.15-2.58 2.58-2.58 1.43 0 2.58 1.15 2.58 2.58 0 2.58-3.87 2.26-3.87 6.45h3.44c0-2.9 3.87-3.23 3.87-6.45 0-3.31-2.69-6-6.02-6zM10.29 18.99h3.44v3.44h-3.44z'/%3E%3C/svg%3E">
       <span>CLUE</span>
       <div class="es-tooltip">Replay Clue</div>
     </button>
@@ -205,12 +206,13 @@ function injectCustomUI() {
 function startMechanics() {
   const SWEEP_30 = '7k4p5mu5f5eydt8h0f8cygptb'; 
   const SWEEP_28 = 'cwckxx365uimbeqk6ngp0t5ud';
+  const SWEEP_27 = 'ep98q9hxumexd83q38p12k4xc';
 
   // Level 0 = Lobby. Level 1 = First Puzzle.
   const LEVELS = [
     { level: 0, startSweeps: [SWEEP_30, SWEEP_28], targetSweep: SWEEP_28, imagesToFind: [] }, 
-    { level: 1, startSweeps: [SWEEP_28], targetSweep: 'ep98q9hxumexd83q38p12k4xc', imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
-    { level: 2, startSweeps: ['ep98q9hxumexd83q38p12k4xc'], targetSweep: 't3si6z3gnc6ix4qh6cgmtgnfa', imagesToFind: ['/decongestant cough elixir.jpeg', '/plastic fruit.jpeg', '/pineapple sunday.jpeg'] },
+    { level: 1, startSweeps: [SWEEP_28], targetSweep: SWEEP_27, imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
+    { level: 2, startSweeps: [SWEEP_27], targetSweep: 't3si6z3gnc6ix4qh6cgmtgnfa', imagesToFind: ['/decongestant cough elixir.jpeg', '/plastic fruit.jpeg', '/pineapple sunday.jpeg'] },
     { level: 3, startSweeps: ['t3si6z3gnc6ix4qh6cgmtgnfa'], targetSweep: '2cngsqh5q4t1ep85y5ky0h49d', imagesToFind: ['/aztec chocolate.jpeg', '/atomic coffee.jpeg', '/royal perambulator.jpeg'] },
     { level: 4, startSweeps: ['2cngsqh5q4t1ep85y5ky0h49d'], targetSweep: '66yna1yh5e2ig14bmzzf1sn2c', imagesToFind: ['/a crow in a bag.jpeg', '/a hand in two.jpeg', '/vitreous china.jpeg', '/musical tyre.jpeg'] },
     { level: 5, startSweeps: ['66yna1yh5e2ig14bmzzf1sn2c'], targetSweep: '3hdk0cskxw0apbr2iw8016htb', imagesToFind: ['/Hanimexs Movielux.jpeg', '/argus previewer.jpeg', '/porcelain lobster.jpeg', '/scotts mower maker.jpeg'] },
@@ -225,9 +227,8 @@ function startMechanics() {
   window.pathsPreloaded = false; 
   window.activeOpenPopups = new Set(); 
   
-  // Custom tracking for UI
-  window.hasReachedLevel1 = false;
-  window.hasReachedLevel2 = false;
+  // Custom Memory Tracker to prevent stutter on first visit but allow Replays
+  window.visitedSweeps = new Set();
 
   const targetMatchStrings = [];
   LEVELS.forEach(level => {
@@ -250,7 +251,7 @@ function startMechanics() {
           window.globalChime.play().then(() => { window.globalChime.pause(); window.globalChime.volume = 1; window.globalChime.currentTime = 0; }).catch(()=>{});
       } catch(e) {}
 
-      // Reveal Panel. User stays in Sweep 30.
+      // Reveal Panel. User stays in Sweep 30 natively.
       const controls = document.getElementById('es-control-panel');
       if (controls) controls.style.setProperty('display', 'flex', 'important');
       updatePanelVisibility();
@@ -264,8 +265,8 @@ function startMechanics() {
     const divPrev = document.getElementById('es-div-prev');
     const divNext = document.getElementById('es-div-next');
     
-    // SKIP BUTTON (Appears at Level 1 / Sweep 28)
-    if (window.hasReachedLevel1 || window.currentLevelIndex >= 1) {
+    // CHEAT BUTTON (Appears strictly at Level 1+)
+    if (window.currentLevelIndex >= 1) {
         if (nextBtn) { nextBtn.style.setProperty('opacity', '1', 'important'); nextBtn.style.setProperty('pointer-events', 'auto', 'important'); }
         if (divNext) divNext.style.setProperty('opacity', '1', 'important');
     } else {
@@ -273,8 +274,8 @@ function startMechanics() {
         if (divNext) divNext.style.setProperty('opacity', '0', 'important');
     }
 
-    // BACK BUTTON (Appears at Level 2 / Sweep 27)
-    if (window.hasReachedLevel2 || window.currentLevelIndex >= 2) {
+    // BACK BUTTON (Appears strictly at Level 2+)
+    if (window.currentLevelIndex >= 2) {
         if (prevBtn) { prevBtn.style.setProperty('opacity', '1', 'important'); prevBtn.style.setProperty('pointer-events', 'auto', 'important'); }
         if (divPrev) divPrev.style.setProperty('opacity', '1', 'important');
     } else {
@@ -315,7 +316,7 @@ function startMechanics() {
   });
 
   document.getElementById('es-btn-prev').addEventListener('click', () => {
-      // FIREWALL: Prevents returning to Sweep 30. (Level 1 is Index 1, which is Sweep 28).
+      // FIREWALL: Prevents returning to Sweep 30.
       if (window.currentLevelIndex <= 1 || window.isTeleporting) return;
       
       window.activeOpenPopups.clear();
@@ -324,8 +325,11 @@ function startMechanics() {
       
       const pLevel = LEVELS[window.currentLevelIndex];
 
-      window.mpSdk.Sweep.enable(...pLevel.startSweeps).then(() => {
-          window.mpSdk.Sweep.moveTo(pLevel.startSweeps[0], { transition: window.mpSdk.Sweep.Transition.INSTANT }).then(() => {
+      // Temporarily enable the room to allow smooth FLY transition backward
+      window.mpSdk.Sweep.enable(pLevel.startSweeps[0]).then(() => {
+          window.mpSdk.Sweep.moveTo(pLevel.startSweeps[0], { transition: window.mpSdk.Sweep.Transition.FLY }).catch(() => {
+              return window.mpSdk.Sweep.moveTo(pLevel.startSweeps[0], { transition: window.mpSdk.Sweep.Transition.INSTANT });
+          }).then(() => {
               setupLevelTracking();
               lockMapForCurrentLevel(window.mpSdk);
               updatePanelVisibility();
@@ -348,51 +352,50 @@ function startMechanics() {
     return currentLevel.imagesToFind.every(img => window.foundImages[img] === true);
   }
 
-  // --- OPTIMIZED VISUAL HUNTER (Zero CPU Lag) ---
+  // --- VISUAL HUNTER & X-ASSASSIN ---
   setInterval(() => {
-    // Only search INSIDE active popups, not the entire 10,000 element DOM.
-    const activePopups = document.querySelectorAll('.mpe-popup, .mp-mattertag, [class*="media-overlay"]');
-    
-    activePopups.forEach(popup => {
-      // Remove default dark filters
-      popup.style.setProperty('filter', 'none', 'important'); 
-      popup.style.setProperty('-webkit-filter', 'none', 'important'); 
-      popup.style.setProperty('backdrop-filter', 'none', 'important'); 
-      popup.style.setProperty('-webkit-backdrop-filter', 'none', 'important'); 
-      popup.style.setProperty('background', 'transparent', 'important'); 
+    // Top-of-screen popup close buttons (hide safely behind panel)
+    document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
+      let rect = btn.getBoundingClientRect();
+      if (rect.bottom > window.innerHeight - 100 && rect.height > 0) { 
+          btn.style.setProperty('display', 'none', 'important'); 
+          btn.style.setProperty('opacity', '0', 'important'); 
+      }
+    });
 
-      // Inject big yellow text
-      const textElements = popup.querySelectorAll('*');
-      textElements.forEach(el => {
-        if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
-          const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
-          if (textClean.length > 3 && targetMatchStrings.includes(textClean)) {
-            el.style.setProperty('position', 'absolute', 'important'); 
-            el.style.setProperty('left', '50%', 'important'); 
-            el.style.setProperty('top', '50%', 'important'); 
-            el.style.setProperty('transform', 'translate(-50%, -50%)', 'important'); 
-            el.style.setProperty('font-size', '240%', 'important'); 
-            el.style.setProperty('color', 'white', 'important'); 
-            el.style.setProperty('margin', '0', 'important'); 
-            el.style.setProperty('white-space', 'nowrap', 'important');
-            
-            const banner = el.parentElement;
-            if (banner) {
-              banner.style.setProperty('background-color', '#1c1c1c', 'important'); 
-              banner.style.setProperty('background', '#1c1c1c', 'important'); 
-              if (window.getComputedStyle(banner).position === 'static') banner.style.setProperty('position', 'relative', 'important');
-              banner.style.setProperty('min-height', '75px', 'important');  
-            }
+    // Aggressively assassinate the rogue audio X at the bottom of the screen
+    document.querySelectorAll('[class*="close"], svg').forEach(btn => {
+      let rect = btn.getBoundingClientRect();
+      if (rect.bottom > window.innerHeight - 150 && rect.height > 0 && btn.id !== 'es-btn-vol') { 
+          btn.style.setProperty('display', 'none', 'important'); 
+      }
+    });
+
+    document.querySelectorAll('.mpe-media-overlay, .mpe-overlay').forEach(el => {
+        el.style.setProperty('filter', 'none', 'important'); el.style.setProperty('-webkit-filter', 'none', 'important'); el.style.setProperty('backdrop-filter', 'none', 'important'); el.style.setProperty('-webkit-backdrop-filter', 'none', 'important'); el.style.setProperty('background', 'transparent', 'important'); 
+    });
+
+    const textElements = document.querySelectorAll('div, span, p, h1, h2, h3');
+    textElements.forEach(el => {
+      if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
+        const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (textClean.length > 3 && targetMatchStrings.includes(textClean)) {
+          el.style.setProperty('position', 'absolute', 'important'); el.style.setProperty('left', '50%', 'important'); el.style.setProperty('top', '50%', 'important'); el.style.setProperty('transform', 'translate(-50%, -50%)', 'important'); el.style.setProperty('font-size', '240%', 'important'); el.style.setProperty('color', 'white', 'important'); el.style.setProperty('margin', '0', 'important'); el.style.setProperty('white-space', 'nowrap', 'important');
+          const banner = el.parentElement;
+          if (banner && !banner.dataset.styled) {
+            banner.style.setProperty('background-color', '#1c1c1c', 'important'); banner.style.setProperty('background', '#1c1c1c', 'important'); 
+            if (window.getComputedStyle(banner).position === 'static') banner.style.setProperty('position', 'relative', 'important');
+            banner.style.setProperty('min-height', '75px', 'important'); banner.dataset.styled = "true"; 
           }
         }
-      });
+      }
     });
   }, 250); 
 
   // --- TRIPWIRE ---
   const observer = new MutationObserver((mutations) => {
     const currentLevel = LEVELS[window.currentLevelIndex];
-    if (!currentLevel || window.currentLevelIndex === 0) return; 
+    if (!currentLevel) return; 
 
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
@@ -478,25 +481,32 @@ function startMechanics() {
     const welcomeBlock = document.getElementById('eye-spy-welcome-block');
     if (welcomeBlock) welcomeBlock.style.display = "flex";
 
-    // Track physical walking
+    // Track physical walking and manage Audio Memory
     mpSdk.on(mpSdk.Sweep.Event.ENTER, function(sweepId) {
         
-        // If user manually steps OFF the Lobby into Level 1 (Sweep 28 or ANY other sweep)
-        if (sweepId !== SWEEP_30 && window.currentLevelIndex === 0) {
-            window.hasReachedLevel1 = true;
+        // Exact Level Tracking
+        if (sweepId === SWEEP_28 && window.currentLevelIndex === 0) {
             window.currentLevelIndex = 1;
             setupLevelTracking(); 
-            lockMapForCurrentLevel(window.mpSdk); // Permanently locks the lobby behind them
+            lockMapForCurrentLevel(window.mpSdk); 
             updatePanelVisibility();
-        }
-
-        // If user naturally walks into Level 2 (Sweep 27)
-        if (sweepId === LEVELS[2].startSweeps[0] && window.currentLevelIndex === 1) {
-            window.hasReachedLevel2 = true;
+        } else if (sweepId === SWEEP_27 && window.currentLevelIndex === 1) {
             window.currentLevelIndex = 2;
             setupLevelTracking();
             lockMapForCurrentLevel(window.mpSdk); 
             updatePanelVisibility();
+        }
+
+        // Memory Tracker: If it's a replay, aggressively force the audio.
+        if (!window.visitedSweeps.has(sweepId)) {
+            window.visitedSweeps.add(sweepId); // MPEmbed plays it flawlessly the first time.
+        } else {
+            setTimeout(() => {
+                document.querySelectorAll('audio, video').forEach(media => {
+                    media.currentTime = 0;
+                    media.play().catch(()=>{});
+                });
+            }, 300); // Small delay to let MPEmbed load the skip before injecting
         }
     });
 
@@ -516,8 +526,14 @@ function startMechanics() {
   async function executeFastTeleport(mpSdk, levelData) {
     window.isTeleporting = true;
     try {
-      try { await mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: mpSdk.Sweep.Transition.FLY });
-      } catch (flyError) { await mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: mpSdk.Sweep.Transition.INSTANT }); }
+      // Temporarily enable target room so we can FLY smoothly
+      await mpSdk.Sweep.enable(levelData.targetSweep).catch(()=>{});
+        
+      try { 
+          await mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: mpSdk.Sweep.Transition.FLY });
+      } catch (flyError) { 
+          await mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: mpSdk.Sweep.Transition.INSTANT }); 
+      }
 
       const sweepsToLock = window.allModelSweeps.filter(id => id !== levelData.targetSweep);
       await mpSdk.Sweep.disable(...sweepsToLock).catch(() => {});
