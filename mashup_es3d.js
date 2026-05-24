@@ -207,7 +207,7 @@ function startMechanics() {
   const SWEEP_28 = 'cwckxx365uimbeqk6ngp0t5ud';
 
   const LEVELS = [
-    { level: 1, startSweeps: [SWEEP_30], targetSweep: SWEEP_28, imagesToFind: [] }, 
+    { level: 1, startSweeps: [SWEEP_30, SWEEP_28], targetSweep: SWEEP_28, imagesToFind: [] }, // Allowed to walk from 30 to 28
     { level: 2, startSweeps: [SWEEP_28], targetSweep: 'ep98q9hxumexd83q38p12k4xc', imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
     { level: 3, startSweeps: ['ep98q9hxumexd83q38p12k4xc'], targetSweep: 't3si6z3gnc6ix4qh6cgmtgnfa', imagesToFind: ['/decongestant cough elixir.jpeg', '/plastic fruit.jpeg', '/pineapple sunday.jpeg'] },
     { level: 4, startSweeps: ['t3si6z3gnc6ix4qh6cgmtgnfa'], targetSweep: '2cngsqh5q4t1ep85y5ky0h49d', imagesToFind: ['/aztec chocolate.jpeg', '/atomic coffee.jpeg', '/royal perambulator.jpeg'] },
@@ -306,6 +306,7 @@ function startMechanics() {
   document.getElementById('es-btn-next').addEventListener('click', () => {
       const cLevel = LEVELS[window.currentLevelIndex]; 
       if (cLevel && window.mpSdk && !window.isTeleporting) {
+          document.querySelectorAll('audio, video').forEach(media => media.pause());
           window.globalSfx.pause();
           window.globalSfx.currentTime = 0;
           window.activeOpenPopups.clear();
@@ -319,6 +320,7 @@ function startMechanics() {
       // Prevents returning to Sweep 30. (Level 2 is Index 1, which is Sweep 28).
       if (window.currentLevelIndex <= 1 || window.isTeleporting) return;
       
+      document.querySelectorAll('audio, video').forEach(media => media.pause());
       window.globalSfx.pause();
       window.globalSfx.currentTime = 0;
       window.activeOpenPopups.clear();
@@ -475,7 +477,7 @@ function startMechanics() {
         if (sweepId === SWEEP_28 && window.currentLevelIndex === 0) {
             window.hasReachedLevel2 = true;
             window.currentLevelIndex = 1;
-            mpSdk.Sweep.disable(SWEEP_30).catch(()=>{}); // Lock the door behind them
+            lockMapForCurrentLevel(window.mpSdk); // Lock the door behind them natively
             updatePanelVisibility();
         }
 
