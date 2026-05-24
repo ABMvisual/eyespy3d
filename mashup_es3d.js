@@ -14,18 +14,15 @@ window.globalSfx = new Audio();
 window.globalChime = new Audio('https://upload.wikimedia.org/wikipedia/commons/d/d7/Tada.mp3');
 
 function playItemSound(imageFilename) {
-  try {
-    let mp3Name = AUDIO_MAP[imageFilename];
-    if (mp3Name) {
-      window.globalSfx.src = GITHUB_BASE + encodeURIComponent(mp3Name);
-    } else {
-      window.globalSfx.src = 'https://upload.wikimedia.org/wikipedia/commons/4/42/Ping.mp3';
-    }
-    window.globalSfx.currentTime = 0;
-    window.globalSfx.play().catch(()=>{});
-  } catch(e) {}
+  let mp3Name = AUDIO_MAP[imageFilename];
+  if (mp3Name) {
+    window.globalSfx.src = GITHUB_BASE + encodeURIComponent(mp3Name);
+  } else {
+    window.globalSfx.src = 'https://upload.wikimedia.org/wikipedia/commons/4/42/Ping.mp3';
+  }
+  window.globalSfx.currentTime = 0;
+  window.globalSfx.play().catch(() => {});
 }
-
 
 // --- 1. BOOT LOADER (Safely waits for browser to be ready) ---
 let bootInterval = setInterval(() => {
@@ -196,12 +193,14 @@ function injectCustomUI() {
       if(ui) { ui.style.transition = "opacity 0.4s ease"; ui.style.opacity = "0"; setTimeout(() => ui.remove(), 400); }
       if(overlay) { overlay.style.transition = "opacity 0.4s ease"; overlay.style.opacity = "0"; setTimeout(() => overlay.remove(), 400); }
 
-      try {
-          window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; 
-          window.globalSfx.play().catch(()=>{});
-          window.globalChime.volume = 0;
-          window.globalChime.play().then(() => { window.globalChime.pause(); window.globalChime.volume = 1; window.globalChime.currentTime = 0; }).catch(()=>{});
-      } catch(e) {}
+      window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; 
+      window.globalSfx.play().catch(() => {});
+      window.globalChime.volume = 0;
+      window.globalChime.play().then(() => { 
+        window.globalChime.pause(); 
+        window.globalChime.volume = 1; 
+        window.globalChime.currentTime = 0; 
+      }).catch(() => {});
     });
   }
 
@@ -273,13 +272,7 @@ function startMechanics() {
       }
     });
 
-    document.querySelectorAll('.mpe-media-overlay, .mpe-overlay').forEach(el => {
-        el.style.setProperty('filter', 'none', 'important');
-        el.style.setProperty('-webkit-filter', 'none', 'important');
-        el.style.setProperty('backdrop-filter', 'none', 'important');
-        el.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
-        el.style.setProperty('background', 'transparent', 'important'); 
-    });
+    // NOTE: Redundant background filter styling loop was removed here!
 
     const textElements = document.querySelectorAll('div, span, p, h1, h2, h3');
     textElements.forEach(el => {
@@ -344,14 +337,12 @@ function startMechanics() {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === 1 || node.nodeType === 3) { 
-          const html = node.innerHTML || '';
           const outer = node.outerHTML || '';
-          const text = node.textContent || '';
 
           currentLevel.imagesToFind.forEach((filename) => {
             const encodedName = encodeURI(filename);
 
-            if (html.includes(filename) || html.includes(encodedName) || outer.includes(filename) || text.includes(filename)) {
+            if (outer.includes(filename) || outer.includes(encodedName)) {
               if (!window.foundImages[filename]) {
                 console.log(`🎯 [Escape Room] Found: ${filename}`);
                 playItemSound(filename); 
@@ -364,10 +355,8 @@ function startMechanics() {
                 window.pathsPreloaded = true;
                 console.log(`🔓 [Escape Room] All items found! Unlocking map...`);
                 
-                try {
-                  window.globalChime.currentTime = 0;
-                  window.globalChime.play().catch(()=>{});
-                } catch(e){}
+                window.globalChime.currentTime = 0;
+                window.globalChime.play().catch(() => {});
 
                 if (window.mpSdk) {
                   window.mpSdk.Sweep.enable(...window.allModelSweeps).catch(() => {});
@@ -380,14 +369,12 @@ function startMechanics() {
 
       mutation.removedNodes.forEach((node) => {
         if (node.nodeType === 1 || node.nodeType === 3) { 
-          const html = node.innerHTML || '';
           const outer = node.outerHTML || '';
-          const text = node.textContent || '';
 
           currentLevel.imagesToFind.forEach((filename) => {
             const encodedName = encodeURI(filename);
 
-            if (html.includes(filename) || html.includes(encodedName) || outer.includes(filename) || text.includes(filename)) {
+            if (outer.includes(filename) || outer.includes(encodedName)) {
               window.activeOpenPopups.delete(filename); 
               
               if (checkAllFound() && window.activeOpenPopups.size === 0 && !window.isTeleporting) {
