@@ -1,8 +1,8 @@
 // =============================================================================
-// EYE SPY 3D — V1200: SNIPER OBSERVER + GIANT TEXT + HIDDEN AUDIO X
+// EYE SPY 3D — V1300: V500 RESTORED WITH CPU-THROTTLED SCANNER
 // =============================================================================
 
-console.log("=== EYE SPY V1200 LOADED: SNIPER OBSERVER ===");
+console.log("=== EYE SPY V1300 LOADED: THROTTLED SCANNER ===");
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
@@ -32,8 +32,6 @@ const AUDIO_MAP = {
   '/a third more time.jpeg': 'a third more time.mp3',
   '/odd purves terms.jpeg': 'odd purves terms.mp3',
   '/round thing.jpeg': 'round thing.mp3',
-  
-  // LEVELS 8-15
   '/cat in a turban.jpeg': 'cat in a turban.mp3',
   '/embroidered australia.jpeg': 'embroidered australia.mp3',
   '/three wooden discs.jpeg': 'three wooden discs.mp3',
@@ -78,7 +76,6 @@ function playItemSound(imageFilename) {
   window.globalSfx.play().catch(() => {});
 }
 
-// --- BOOT LOADER ---
 let bootInterval = setInterval(() => {
   if (document.head && document.body) {
     clearInterval(bootInterval);
@@ -89,81 +86,28 @@ let bootInterval = setInterval(() => {
 function injectCustomUI() {
   const customStyles = document.createElement('style');
   customStyles.innerHTML = `
-    [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay {
-      filter: none !important;
-      -webkit-filter: none !important;
-      background: transparent !important;
-      background-color: transparent !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-    }
+    [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay { filter: none !important; -webkit-filter: none !important; background: transparent !important; background-color: transparent !important; }
+    [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
     
-    [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] {
-      display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;
-    }
-
-    /* ZERO-CPU AUDIO X DESTRUCTION */
-    audio, video, [id*="audio"], [class*="audio-player"], 
-    div[style*="bottom: 0px"] [class*="close"], 
-    div[style*="bottom: 0"] [class*="close"],
-    .mpe-media-close,
-    .mpe-audio-player [class*="close"] {
-      display: none !important;
-      opacity: 0 !important;
-      position: absolute !important;
-      left: -9999px !important;
-      pointer-events: none !important;
-      visibility: hidden !important;
-    }
-
-    #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close {
-      transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important;
-    }
-
-    /* MULTI-LAYER START SCREEN */
-    #eye-spy-dark-overlay {
-      position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;
-      background: rgba(0, 0, 0, 0.75) !important; z-index: 2147483645 !important; 
-    }
-
-    #eye-spy-image-cover {
-      position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;
-      background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/ES3D_load%20screen%20omni.png') !important; 
-      background-size: cover !important; background-position: center !important; z-index: 2147483646 !important; 
-    }
+    /* V500 AUDIO CSS ASSASSIN */
+    audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"], .mpe-media-close { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
     
-    #eye-spy-image-cover::after {
-      content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background-image: inherit; background-size: contain !important; background-repeat: no-repeat !important; background-position: center !important;
-      backdrop-filter: blur(15px); background-color: rgba(0,0,0,0.4);
-    }
+    #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
-    #eye-spy-start-ui {
-      position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;
-      z-index: 2147483647 !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important;
-    }
-
+    #eye-spy-dark-overlay { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0, 0, 0, 0.75) !important; z-index: 2147483645 !important; }
+    #eye-spy-image-cover { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/ES3D_load%20screen%20omni.png') !important; background-size: cover !important; background-position: center !important; z-index: 2147483646 !important; }
+    #eye-spy-image-cover::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: inherit; background-size: contain !important; background-repeat: no-repeat !important; background-position: center !important; backdrop-filter: blur(15px); background-color: rgba(0,0,0,0.4); }
+    #eye-spy-start-ui { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483647 !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; }
     #eye-spy-welcome-block { display: none; flex-direction: column; align-items: center; }
-    
-    #eye-spy-start-btn {
-      padding: 16px 40px !important; font-size: 24px !important; font-weight: bold !important;
-      background: #CCFF00 !important; color: #000 !important; border: none !important; border-radius: 8px !important;
-      cursor: pointer !important; transition: transform 0.2s ease !important; box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important; pointer-events: auto !important;
-    }
-
+    #eye-spy-start-btn { padding: 16px 40px !important; font-size: 24px !important; font-weight: bold !important; background: #CCFF00 !important; color: #000 !important; border: none !important; border-radius: 8px !important; cursor: pointer !important; transition: transform 0.2s ease !important; box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important; pointer-events: auto !important; }
     #eye-spy-start-btn:hover { transform: scale(1.05) !important; }
-
-    #eye-spy-loading-text {
-        position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; 
-    }
-
+    #eye-spy-loading-text { position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; }
     @keyframes eye-spy-fade { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
   `;
   document.head.appendChild(customStyles);
 
   const darkOverlay = document.createElement('div'); darkOverlay.id = 'eye-spy-dark-overlay'; document.body.appendChild(darkOverlay);
   const imageCover = document.createElement('div'); imageCover.id = 'eye-spy-image-cover'; document.body.appendChild(imageCover);
-
   const startUI = document.createElement('div'); startUI.id = 'eye-spy-start-ui';
   startUI.innerHTML = `
     <div id="eye-spy-loading-text">Loading 3D experience...</div>
@@ -186,9 +130,7 @@ function injectCustomUI() {
       window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; 
       window.globalSfx.play().catch(() => {});
       window.globalChime.volume = 0;
-      window.globalChime.play().then(() => { 
-        window.globalChime.pause(); window.globalChime.volume = 1; window.globalChime.currentTime = 0; 
-      }).catch(() => {});
+      window.globalChime.play().then(() => { window.globalChime.pause(); window.globalChime.volume = 1; window.globalChime.currentTime = 0; }).catch(() => {});
     });
   }
 
@@ -221,12 +163,13 @@ function startMechanics() {
   window.pathsPreloaded = false; 
   window.activeOpenPopups = new Set(); 
 
+  const targetMatchStrings = [];
+  LEVELS.forEach(level => { level.imagesToFind.forEach(img => { targetMatchStrings.push(img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', '')); }); });
+
   function setupLevelTracking() {
     window.foundImages = {};
     const currentLevel = LEVELS[window.currentLevelIndex];
-    if (currentLevel) {
-      currentLevel.imagesToFind.forEach(image => { window.foundImages[image] = false; });
-    }
+    if (currentLevel) { currentLevel.imagesToFind.forEach(image => { window.foundImages[image] = false; }); }
     window.isTeleporting = false;
     window.pathsPreloaded = false;
     window.activeOpenPopups.clear();
@@ -236,126 +179,113 @@ function startMechanics() {
     return Object.values(window.foundImages).every(status => status === true);
   }
 
-  // --- THE SNIPER PROCESSOR ---
-  // Only runs when the observer confirms a popup is actually open
-  function processActivePopups(currentLevel) {
-    const popups = document.querySelectorAll('.mpe-popup, .mp-mattertag, .mpe-media-overlay');
-    const currentlyVisiblePopups = new Set();
+  // --- V500 TEXT FORMATTER & X-ASSASSIN (THROTTLED) ---
+  setInterval(() => {
+    // SECURITY CATCH: Only scan elements INSIDE open popups. Bypasses the Level 3 memory leak!
+    const activePopups = document.querySelectorAll('.mpe-popup, .mp-mattertag');
+    if (activePopups.length === 0) return;
 
-    popups.forEach(popup => {
-        let searchString = (popup.textContent || '').toLowerCase() + " ";
-        const imgs = popup.querySelectorAll('img, [style*="background-image"]');
-        imgs.forEach(m => searchString += ' ' + (m.src || m.style.backgroundImage || '').toLowerCase());
+    activePopups.forEach(popup => {
+        // Find and Kill the 'X' Button
+        popup.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
+            const rect = btn.getBoundingClientRect();
+            if (rect.bottom > window.innerHeight - 100) {
+                btn.style.setProperty('display', 'none', 'important');
+                btn.style.setProperty('opacity', '0', 'important');
+            }
+        });
 
-        currentLevel.imagesToFind.forEach(filename => {
-            const cleanName = filename.toLowerCase();
-            const encodedName = encodeURI(filename).toLowerCase();
-
-            if (searchString.includes(cleanName) || searchString.includes(encodedName)) {
-                currentlyVisiblePopups.add(filename);
-
-                // --- TEXT FORMATTING ---
-                const textEls = popup.querySelectorAll('div, span, p, h1, h2, h3');
-                const targetText = filename.replace('.jpeg','').replace('.jpg','').toLowerCase().replace(/[^a-z0-9]/g, '');
+        // Format the Text
+        const textElements = popup.querySelectorAll('div, span, p, h1, h2, h3');
+        textElements.forEach(el => {
+            if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
+                const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
                 
-                textEls.forEach(el => {
-                    if (el.children.length === 0 && el.textContent) {
-                        const elText = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
-                        if (elText.includes(targetText) && !el.dataset.styled) {
-                            el.dataset.styled = "true";
-                            el.style.setProperty('position', 'absolute', 'important');
-                            el.style.setProperty('left', '50%', 'important');
-                            el.style.setProperty('top', '50%', 'important');
-                            el.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
-                            el.style.setProperty('font-size', '240%', 'important');
-                            el.style.setProperty('color', 'white', 'important');
-                            el.style.setProperty('margin', '0', 'important');
-                            el.style.setProperty('white-space', 'nowrap', 'important');
-                            
-                            if (el.parentElement) {
-                                el.parentElement.style.setProperty('background-color', '#1c1c1c', 'important');
-                                el.parentElement.style.setProperty('min-height', '75px', 'important');
-                            }
-                        }
+                if (textClean.length > 3 && targetMatchStrings.includes(textClean)) {
+                    el.style.setProperty('position', 'absolute', 'important');
+                    el.style.setProperty('left', '50%', 'important');
+                    el.style.setProperty('top', '50%', 'important'); 
+                    el.style.setProperty('transform', 'translate(-50%, -50%)', 'important'); 
+                    el.style.setProperty('font-size', '240%', 'important'); 
+                    el.style.setProperty('color', 'white', 'important');
+                    el.style.setProperty('margin', '0', 'important');
+                    el.style.setProperty('white-space', 'nowrap', 'important');
+                    
+                    const banner = el.parentElement;
+                    if (banner && !banner.dataset.styled) {
+                        banner.style.setProperty('background-color', '#1c1c1c', 'important');
+                        banner.style.setProperty('background', '#1c1c1c', 'important'); 
+                        if (window.getComputedStyle(banner).position === 'static') { banner.style.setProperty('position', 'relative', 'important'); }
+                        banner.style.setProperty('min-height', '75px', 'important');
+                        banner.dataset.styled = "true"; 
                     }
-                });
-
-                // --- AUDIO & LOGIC ---
-                if (!window.activeOpenPopups.has(filename)) {
-                    playItemSound(filename);
-                    window.activeOpenPopups.add(filename);
-                }
-
-                if (!window.foundImages[filename]) {
-                    console.log(`🎯 [Escape Room] Found: ${filename}`);
-                    window.foundImages[filename] = true;
                 }
             }
         });
     });
+  }, 250);
 
-    // --- CLOSURES & WIN CONDITION ---
-    window.activeOpenPopups.forEach(filename => {
-        if (!currentlyVisiblePopups.has(filename)) {
-            window.activeOpenPopups.delete(filename);
+  // --- V500 CORE GAME LOGIC (UNTOUCHED) ---
+  const observer = new MutationObserver((mutations) => {
+    const currentLevel = LEVELS[window.currentLevelIndex];
+    if (!currentLevel) return; 
 
-            if (checkAllFound() && window.activeOpenPopups.size === 0 && !window.isTeleporting) {
-                console.log(`🚀 [Escape Room] Initiating Teleport sequence!`);
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1 || node.nodeType === 3) { 
+          const outer = node.outerHTML || node.textContent || '';
+          const searchString = outer.toLowerCase();
+
+          currentLevel.imagesToFind.forEach((filename) => {
+            const encodedName = encodeURI(filename).toLowerCase();
+
+            if (searchString.includes(filename.toLowerCase()) || searchString.includes(encodedName)) {
+              if (!window.foundImages[filename]) {
+                console.log(`🎯 [Escape Room] Found: ${filename}`);
+                playItemSound(filename); 
+              }
+              
+              window.activeOpenPopups.add(filename); 
+              window.foundImages[filename] = true;
+              
+              if (checkAllFound() && !window.pathsPreloaded) {
+                window.pathsPreloaded = true;
+                console.log(`🔓 [Escape Room] All items found! Unlocking map...`);
                 
                 window.globalChime.currentTime = 0;
                 window.globalChime.play().catch(() => {});
 
-                if (window.mpSdk) {
-                    window.mpSdk.Sweep.enable(...window.allModelSweeps).catch(() => {});
-                }
+                if (window.mpSdk) { window.mpSdk.Sweep.enable(...window.allModelSweeps).catch(() => {}); }
+              }
+            }
+          });
+        }
+      });
+
+      mutation.removedNodes.forEach((node) => {
+        if (node.nodeType === 1 || node.nodeType === 3) { 
+          const outer = node.outerHTML || node.textContent || '';
+          const searchString = outer.toLowerCase();
+
+          currentLevel.imagesToFind.forEach((filename) => {
+            const encodedName = encodeURI(filename).toLowerCase();
+
+            if (searchString.includes(filename.toLowerCase()) || searchString.includes(encodedName)) {
+              window.activeOpenPopups.delete(filename); 
+              
+              if (checkAllFound() && window.activeOpenPopups.size === 0 && !window.isTeleporting) {
+                console.log(`🚀 [Escape Room] Initiating Teleport sequence!`);
                 executeFastTeleport(window.mpSdk, currentLevel);
+              }
             }
+          });
         }
+      });
     });
-  }
-
-  // --- THE SNIPER OBSERVER ---
-  // Listens with ZERO CPU footprint until a popup class appears
-  const observer = new MutationObserver((mutations) => {
-    if (window.isTeleporting) return;
-    const currentLevel = LEVELS[window.currentLevelIndex];
-    if (!currentLevel) return;
-
-    let requiresCheck = false;
-    for (let i = 0; i < mutations.length; i++) {
-        const m = mutations[i];
-        if (m.addedNodes.length > 0 || m.removedNodes.length > 0) {
-            
-            // Fast classname check: Is MPEmbed drawing something?
-            if (m.target && m.target.className && typeof m.target.className === 'string') {
-                if (m.target.className.includes('mpe-') || m.target.className.includes('mp-')) {
-                    requiresCheck = true; 
-                    break;
-                }
-            }
-            
-            // Check added nodes directly
-            for (let j = 0; j < m.addedNodes.length; j++) {
-                let n = m.addedNodes[j];
-                if (n.nodeType === 1 && n.className && typeof n.className === 'string') {
-                    if (n.className.includes('mpe-') || n.className.includes('mp-')) {
-                        requiresCheck = true; 
-                        break;
-                    }
-                }
-            }
-        }
-        if (requiresCheck) break;
-    }
-
-    if (requiresCheck) {
-        processActivePopups(currentLevel);
-    }
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
 
-  // --- INITIALIZATION & DOOR LOCKS ---
   async function initMashupLogic(mpSdk) {
     window.mpSdk = mpSdk;
     setupLevelTracking();
@@ -392,15 +322,10 @@ function startMechanics() {
   function lockMapForCurrentLevel(mpSdk) {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel) return;
-    const sweepsToDisable = window.allModelSweeps.filter(
-      id => !currentLevel.startSweeps.includes(id)
-    );
-    if (sweepsToDisable.length > 0) {
-      mpSdk.Sweep.disable(...sweepsToDisable).catch(() => {});
-    }
+    const sweepsToDisable = window.allModelSweeps.filter( id => !currentLevel.startSweeps.includes(id) );
+    if (sweepsToDisable.length > 0) { mpSdk.Sweep.disable(...sweepsToDisable).catch(() => {}); }
   }
 
-  // --- TELEPORT SEQUENCE ---
   async function executeFastTeleport(mpSdk, levelData) {
     window.isTeleporting = true;
     try {
@@ -414,15 +339,9 @@ function startMechanics() {
       await mpSdk.Sweep.disable(...sweepsToLock).catch(() => {});
 
       window.currentLevelIndex++; 
-      
-      if (LEVELS[window.currentLevelIndex]) {
-        setupLevelTracking(); 
-      } else {
-        console.log("🏆 [Escape Room] Complete!");
-      }
-    } catch (error) {
-      console.error("Teleport failed:", error);
-    }
+      if (LEVELS[window.currentLevelIndex]) { setupLevelTracking(); } 
+      else { console.log("🏆 [Escape Room] Complete!"); }
+    } catch (error) { console.error("Teleport failed:", error); }
     window.isTeleporting = false;
   }
 
