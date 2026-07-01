@@ -1,8 +1,8 @@
 // =============================================================================
-// EYE SPY 3D — V1400: CSS CRASH FIXED + TEXT FORMATTER + LEVELS 8-15
+// EYE SPY 3D — V1500: EXACT V500 BASELINE + TARGETED LAG FIXES + LEVELS 8-15
 // =============================================================================
 
-console.log("=== EYE SPY V1400 LOADED: WEBGL CRASH FIXED ===");
+console.log("=== EYE SPY V1500 LOADED: V500 BASELINE REVERTED ===");
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
@@ -32,8 +32,6 @@ const AUDIO_MAP = {
   '/a third more time.jpeg': 'a third more time.mp3',
   '/odd purves terms.jpeg': 'odd purves terms.mp3',
   '/round thing.jpeg': 'round thing.mp3',
-  
-  // LEVELS 8-15
   '/cat in a turban.jpeg': 'cat in a turban.mp3',
   '/embroidered australia.jpeg': 'embroidered australia.mp3',
   '/three wooden discs.jpeg': 'three wooden discs.mp3',
@@ -78,6 +76,7 @@ function playItemSound(imageFilename) {
   window.globalSfx.play().catch(() => {});
 }
 
+// --- BOOT LOADER ---
 let bootInterval = setInterval(() => {
   if (document.head && document.body) {
     clearInterval(bootInterval);
@@ -88,10 +87,17 @@ let bootInterval = setInterval(() => {
 function injectCustomUI() {
   const customStyles = document.createElement('style');
   customStyles.innerHTML = `
-    /* ONLY SAFE CSS INCLUDED. NO WILDCARDS OR ENGINE-CRASHING OVERRIDES */
+    /* EXACT V500 CSS BASELINE */
+    * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+    
+    [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay { filter: none !important; -webkit-filter: none !important; background: transparent !important; background-color: transparent !important; }
+    [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+    
+    audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"], .mpe-media-close { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
+    
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
-    #eye-spy-dark-overlay { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0, 0, 0, 0.75) !important; z-index: 2147483645 !important; }
+    #eye-spy-dark-overlay { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(90, 60, 30, 0.3) !important; backdrop-filter: sepia(100%) contrast(110%) brightness(85%) hue-rotate(-5deg) !important; -webkit-backdrop-filter: sepia(100%) contrast(110%) brightness(85%) hue-rotate(-5deg) !important; z-index: 2147483645 !important; }
     #eye-spy-image-cover { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/ES3D_load%20screen%20omni.png') !important; background-size: cover !important; background-position: center !important; z-index: 2147483646 !important; }
     #eye-spy-image-cover::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: inherit; background-size: contain !important; background-repeat: no-repeat !important; background-position: center !important; backdrop-filter: blur(15px); background-color: rgba(0,0,0,0.4); }
     #eye-spy-start-ui { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483647 !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; }
@@ -121,8 +127,10 @@ function injectCustomUI() {
     startBtn.addEventListener('click', () => {
       const ui = document.getElementById('eye-spy-start-ui');
       const overlay = document.getElementById('eye-spy-dark-overlay');
+      const cover = document.getElementById('eye-spy-image-cover');
       if(ui) { ui.style.transition = "opacity 0.4s ease"; ui.style.opacity = "0"; setTimeout(() => ui.remove(), 400); }
       if(overlay) { overlay.style.transition = "opacity 0.4s ease"; overlay.style.opacity = "0"; setTimeout(() => overlay.remove(), 400); }
+      if(cover) { cover.style.transition = "opacity 0.4s ease"; cover.style.opacity = "0"; setTimeout(() => cover.remove(), 400); }
 
       window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; 
       window.globalSfx.play().catch(() => {});
@@ -176,14 +184,14 @@ function startMechanics() {
     return Object.values(window.foundImages).every(status => status === true);
   }
 
-  // --- THE CPU-THROTTLED VISUAL SCANNER (DOES NOT CRASH WEBGL) ---
+  // --- LAG FIX #1: SCOPED INTERVAL SCANNER ---
+  // Works exactly like v=500, but ignores the DOM unless a popup is actively open
   setInterval(() => {
-    // Only target open popups to prevent DOM-wide memory leaks
     const activePopups = document.querySelectorAll('.mpe-popup, .mp-mattertag, .mpe-media-overlay');
-    if (activePopups.length === 0) return;
+    if (activePopups.length === 0) return; // 0% CPU cost when no popups are open
 
     activePopups.forEach(popup => {
-        // Safe Audio 'X' Assassin
+        // v=500 Audio X Assassin
         popup.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
             const rect = btn.getBoundingClientRect();
             if (rect.bottom > window.innerHeight - 100 && rect.height > 0) {
@@ -192,7 +200,7 @@ function startMechanics() {
             }
         });
 
-        // Giant Text Formatter
+        // v=500 Text Formatter
         const textElements = popup.querySelectorAll('div, span, p, h1, h2, h3');
         textElements.forEach(el => {
             if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
@@ -222,7 +230,8 @@ function startMechanics() {
     });
   }, 250);
 
-  // --- CORE GAME OBSERVER (UNTOUCHED) ---
+  // --- LAG FIX #2: LIGHTWEIGHT OBSERVER ---
+  // Works exactly like v=500, but avoids massive `.outerHTML` stringification
   const observer = new MutationObserver((mutations) => {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel) return; 
@@ -230,8 +239,12 @@ function startMechanics() {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === 1 || node.nodeType === 3) { 
-          const outer = node.outerHTML || node.textContent || '';
-          const searchString = outer.toLowerCase();
+          // Uses lightweight textContent + src checks instead of crushing memory with outerHTML
+          let searchString = (node.textContent || '').toLowerCase() + " ";
+          if (node.nodeType === 1) {
+             const mediaTags = node.tagName === 'IMG' ? [node] : (node.querySelectorAll ? node.querySelectorAll('img, [style*="background-image"]') : []);
+             mediaTags.forEach(m => searchString += (m.src || m.style.backgroundImage || '').toLowerCase() + " ");
+          }
 
           currentLevel.imagesToFind.forEach((filename) => {
             const encodedName = encodeURI(filename).toLowerCase();
@@ -261,8 +274,11 @@ function startMechanics() {
 
       mutation.removedNodes.forEach((node) => {
         if (node.nodeType === 1 || node.nodeType === 3) { 
-          const outer = node.outerHTML || node.textContent || '';
-          const searchString = outer.toLowerCase();
+          let searchString = (node.textContent || '').toLowerCase() + " ";
+          if (node.nodeType === 1) {
+             const mediaTags = node.tagName === 'IMG' ? [node] : (node.querySelectorAll ? node.querySelectorAll('img, [style*="background-image"]') : []);
+             mediaTags.forEach(m => searchString += (m.src || m.style.backgroundImage || '').toLowerCase() + " ");
+          }
 
           currentLevel.imagesToFind.forEach((filename) => {
             const encodedName = encodeURI(filename).toLowerCase();
@@ -283,6 +299,7 @@ function startMechanics() {
 
   observer.observe(document.body, { childList: true, subtree: true });
 
+  // --- INITIALIZATION & DOOR LOCKS ---
   async function initMashupLogic(mpSdk) {
     window.mpSdk = mpSdk;
     setupLevelTracking();
