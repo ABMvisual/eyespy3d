@@ -1,8 +1,8 @@
 // =============================================================================
-// EYE SPY 3D — V1300: V500 RESTORED WITH CPU-THROTTLED SCANNER
+// EYE SPY 3D — V1400: CSS CRASH FIXED + TEXT FORMATTER + LEVELS 8-15
 // =============================================================================
 
-console.log("=== EYE SPY V1300 LOADED: THROTTLED SCANNER ===");
+console.log("=== EYE SPY V1400 LOADED: WEBGL CRASH FIXED ===");
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
@@ -32,6 +32,8 @@ const AUDIO_MAP = {
   '/a third more time.jpeg': 'a third more time.mp3',
   '/odd purves terms.jpeg': 'odd purves terms.mp3',
   '/round thing.jpeg': 'round thing.mp3',
+  
+  // LEVELS 8-15
   '/cat in a turban.jpeg': 'cat in a turban.mp3',
   '/embroidered australia.jpeg': 'embroidered australia.mp3',
   '/three wooden discs.jpeg': 'three wooden discs.mp3',
@@ -86,12 +88,7 @@ let bootInterval = setInterval(() => {
 function injectCustomUI() {
   const customStyles = document.createElement('style');
   customStyles.innerHTML = `
-    [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay { filter: none !important; -webkit-filter: none !important; background: transparent !important; background-color: transparent !important; }
-    [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
-    
-    /* V500 AUDIO CSS ASSASSIN */
-    audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"], .mpe-media-close { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
-    
+    /* ONLY SAFE CSS INCLUDED. NO WILDCARDS OR ENGINE-CRASHING OVERRIDES */
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
     #eye-spy-dark-overlay { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0, 0, 0, 0.75) !important; z-index: 2147483645 !important; }
@@ -179,23 +176,23 @@ function startMechanics() {
     return Object.values(window.foundImages).every(status => status === true);
   }
 
-  // --- V500 TEXT FORMATTER & X-ASSASSIN (THROTTLED) ---
+  // --- THE CPU-THROTTLED VISUAL SCANNER (DOES NOT CRASH WEBGL) ---
   setInterval(() => {
-    // SECURITY CATCH: Only scan elements INSIDE open popups. Bypasses the Level 3 memory leak!
-    const activePopups = document.querySelectorAll('.mpe-popup, .mp-mattertag');
+    // Only target open popups to prevent DOM-wide memory leaks
+    const activePopups = document.querySelectorAll('.mpe-popup, .mp-mattertag, .mpe-media-overlay');
     if (activePopups.length === 0) return;
 
     activePopups.forEach(popup => {
-        // Find and Kill the 'X' Button
+        // Safe Audio 'X' Assassin
         popup.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
             const rect = btn.getBoundingClientRect();
-            if (rect.bottom > window.innerHeight - 100) {
+            if (rect.bottom > window.innerHeight - 100 && rect.height > 0) {
                 btn.style.setProperty('display', 'none', 'important');
                 btn.style.setProperty('opacity', '0', 'important');
             }
         });
 
-        // Format the Text
+        // Giant Text Formatter
         const textElements = popup.querySelectorAll('div, span, p, h1, h2, h3');
         textElements.forEach(el => {
             if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
@@ -225,7 +222,7 @@ function startMechanics() {
     });
   }, 250);
 
-  // --- V500 CORE GAME LOGIC (UNTOUCHED) ---
+  // --- CORE GAME OBSERVER (UNTOUCHED) ---
   const observer = new MutationObserver((mutations) => {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel) return; 
