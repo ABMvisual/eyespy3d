@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D — V600: FAST SCANNER + ALL LEVELS + END GAME UI
+// EYE SPY 3D — V610: WEBGL CRASH FIX + ALL LEVELS + END GAME UI
 // =============================================================================
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
@@ -30,8 +30,6 @@ const AUDIO_MAP = {
   '/a third more time.jpeg': 'a third more time.mp3',
   '/odd purves terms.jpeg': 'odd purves terms.mp3',
   '/round thing.jpeg': 'round thing.mp3',
-  
-  // NEW LEVELS 8 - 13
   '/she disinterestedly sat.jpeg': 'she disinterestedly sat.mp3',
   '/picked pack.jpeg': 'picked pack.mp3',
   '/two little fellas.jpeg': 'two little fellas.mp3',
@@ -72,7 +70,6 @@ function playItemSound(imageFilename) {
   } catch(e) {}
 }
 
-// --- 1. BOOT LOADER ---
 let bootInterval = setInterval(() => {
   if (document.head && document.body) {
     clearInterval(bootInterval);
@@ -83,9 +80,16 @@ let bootInterval = setInterval(() => {
 function injectCustomUI() {
   const customStyles = document.createElement('style');
   customStyles.innerHTML = `
-    * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+    /* REMOVED GLOBAL WILDCARD TO PREVENT WEBGL CRASH */
+    .mpe-overlay, .mpe-popup, .mp-mattertag, [class*="media-overlay"] { 
+        backdrop-filter: none !important; 
+        -webkit-backdrop-filter: none !important; 
+        filter: none !important; 
+        -webkit-filter: none !important; 
+        background: transparent !important; 
+        background-color: transparent !important; 
+    }
     
-    [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay { filter: none !important; -webkit-filter: none !important; background: transparent !important; background-color: transparent !important; }
     [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
     audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"], .mpe-media-close { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
     
@@ -114,7 +118,6 @@ function injectCustomUI() {
     
     @keyframes eye-spy-fade { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
 
-    /* END GAME UI STYLES */
     #eye-spy-end-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 2147483648; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
     #es-end-panel { background: #1c1c1c; border: 2px solid #333; border-radius: 12px; padding: 30px; width: 400px; max-width: 90%; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.8); text-align: center; position: relative; }
     .es-form-label { display: block; text-align: left; margin-bottom: 5px; font-size: 14px; color: #aaa; }
@@ -140,7 +143,6 @@ function injectCustomUI() {
   `;
   document.body.appendChild(startUI);
 
-  // --- END GAME UI INJECTION ---
   const endUI = document.createElement('div');
   endUI.id = 'eye-spy-end-overlay';
   endUI.innerHTML = `
@@ -180,7 +182,6 @@ function injectCustomUI() {
   `;
   document.body.appendChild(endUI);
 
-  // Bind Form and Share Buttons
   setTimeout(() => {
     document.getElementById('es-close-end').onclick = () => document.getElementById('eye-spy-end-overlay').style.display = 'none';
     
@@ -197,16 +198,13 @@ function injectCustomUI() {
     document.getElementById('es-share-email').onclick = () => window.location.href = `mailto:?subject=Eye Spy 3D Experience&body=${shareText} ${shareUrl}`;
   }, 1000);
 
-  // SECONDARY JS AUDIO ASSASSIN
+  // OPTIMIZED AUDIO ASSASSIN (No layout thrashing)
   setInterval(() => {
-    document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
-      const rect = btn.getBoundingClientRect();
-      if (rect.bottom > window.innerHeight - 100 && rect.height > 0) {
-        btn.style.setProperty('display', 'none', 'important');
-        btn.style.setProperty('opacity', '0', 'important');
-      }
+    document.querySelectorAll('.mpe-media-close, .mpe-audio-player [class*="close"]').forEach(btn => {
+      btn.style.setProperty('display', 'none', 'important');
+      btn.style.setProperty('opacity', '0', 'important');
     });
-  }, 250);
+  }, 500);
 
   startMechanics();
 }
@@ -232,7 +230,8 @@ function startMechanics() {
     { level: 10, startSweeps: ['rxgziepm3g4e0fgdgnwwk6efd'], targetSweep: 'w2bre69ufwyaywn11ch032aaa', imagesToFind: ['/eagle.jpeg', '/blue hand.jpeg', '/gnome all alone.jpeg', '/beetles.jpeg'] },
     { level: 11, startSweeps: ['w2bre69ufwyaywn11ch032aaa'], targetSweep: 'dimg015tts6u2b30hh0pndaqd', imagesToFind: ['/mock ducks.jpeg', '/unarmed man.jpeg', '/wooden goanna.jpeg'] },
     { level: 12, startSweeps: ['dimg015tts6u2b30hh0pndaqd'], targetSweep: 'iwaxrd4g1gki6i64y6dk1iuhd', imagesToFind: ['/whose head.jpeg', '/runners.jpeg', '/the plugs.jpeg', '/hat.jpeg', '/the hugs.jpeg'] },
-    { level: 13, startSweeps: ['iwaxrd4g1gki6i64y6dk1iuhd'], targetSweep: 'e5ynaauc9kx9mar4r52hp1rfb', imagesToFind: ['/dimboola.jpeg', '/akubra.jpeg', '/egypt etc.jpeg', '/tiger.jpeg', '/butterfly.jpeg', '/horse head.jpeg'] }
+    { level: 13, startSweeps: ['iwaxrd4g1gki6i64y6dk1iuhd'], targetSweep: 'aty78ze3y9ddyg8702gmncdma', imagesToFind: ['/dimboola.jpeg', '/akubra.jpeg', '/egypt etc.jpeg', '/tiger.jpeg', '/butterfly.jpeg', '/horse head.jpeg'] },
+    { level: 14, startSweeps: ['aty78ze3y9ddyg8702gmncdma'], targetSweep: 'e5ynaauc9kx9mar4r52hp1rfb', imagesToFind: [] }
   ];
 
   window.currentLevelIndex = 0;
@@ -257,7 +256,6 @@ function startMechanics() {
     return currentLevel.imagesToFind.every(img => window.foundImages[img] === true);
   }
 
-  // --- THE FAST, NO-LAG SCANNER ---
   setInterval(() => {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel || currentLevel.imagesToFind.length === 0 || window.isTeleporting) return;
@@ -322,7 +320,6 @@ function startMechanics() {
     });
   }, 250); 
 
-  // --- INITIALIZATION & DOOR LOCKS ---
   async function initMashupLogic(mpSdk) {
     window.mpSdk = mpSdk;
     setupLevelTracking();
@@ -414,7 +411,7 @@ function startMechanics() {
 
       window.currentLevelIndex++; 
       
-      if (LEVELS[window.currentLevelIndex]) {
+      if (LEVELS[window.currentLevelIndex] && LEVELS[window.currentLevelIndex].imagesToFind.length > 0) {
         setupLevelTracking(); 
         lockMapForCurrentLevel();
       } else {
