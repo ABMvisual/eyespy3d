@@ -1,8 +1,8 @@
 // =============================================================================
-// EYE SPY 3D — V900: PURE BASELINE ROLLBACK + LEVELS 8-15 ONLY
+// EYE SPY 3D — V1000: LAG KILLED + TEXT FORMATTING + ALL LEVELS
 // =============================================================================
 
-console.log("=== EYE SPY V900 LOADED ===");
+console.log("=== EYE SPY V1000 LOADED ===");
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
@@ -78,6 +78,7 @@ function playItemSound(imageFilename) {
   window.globalSfx.play().catch(() => {});
 }
 
+// --- 1. BOOT LOADER ---
 let bootInterval = setInterval(() => {
   if (document.head && document.body) {
     clearInterval(bootInterval);
@@ -229,7 +230,61 @@ function startMechanics() {
     return Object.values(window.foundImages).every(status => status === true);
   }
 
-  // --- 5. THE ORIGINAL TRIPWIRE LISTENER (WITH RESTORED TEXT STYLING) ---
+  const targetMatchStrings = [];
+  LEVELS.forEach(level => {
+    level.imagesToFind.forEach(img => {
+      targetMatchStrings.push(img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', ''));
+    });
+  });
+
+  // --- THE OPTIMIZED VISUAL HUNTER (KILLS LAG) ---
+  setInterval(() => {
+    const popups = document.querySelectorAll('.mpe-popup, .mp-mattertag, .mpe-media-overlay');
+    if (popups.length === 0) return; // Completely halts CPU burn when no popup is open!
+
+    popups.forEach(popup => {
+        // Find audio X's only inside open popups
+        popup.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
+            const rect = btn.getBoundingClientRect();
+            if (rect.bottom > window.innerHeight - 100 && rect.height > 0) {
+              btn.style.setProperty('display', 'none', 'important');
+              btn.style.setProperty('opacity', '0', 'important');
+            }
+        });
+
+        // Format Giant Text only inside open popups
+        const textElements = popup.querySelectorAll('div, span, p, h1, h2, h3');
+        textElements.forEach(el => {
+            if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
+              const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
+              
+              if (textClean.length > 3 && targetMatchStrings.includes(textClean)) {
+                el.style.setProperty('position', 'absolute', 'important');
+                el.style.setProperty('left', '50%', 'important');
+                el.style.setProperty('top', '50%', 'important'); 
+                el.style.setProperty('transform', 'translate(-50%, -50%)', 'important'); 
+                el.style.setProperty('font-size', '240%', 'important'); 
+                el.style.setProperty('color', 'white', 'important');
+                el.style.setProperty('margin', '0', 'important');
+                el.style.setProperty('white-space', 'nowrap', 'important');
+                
+                const banner = el.parentElement;
+                if (banner && !banner.dataset.styled) {
+                  banner.style.setProperty('background-color', '#1c1c1c', 'important');
+                  banner.style.setProperty('background', '#1c1c1c', 'important'); 
+                  if (window.getComputedStyle(banner).position === 'static') {
+                    banner.style.setProperty('position', 'relative', 'important');
+                  }
+                  banner.style.setProperty('min-height', '75px', 'important');
+                  banner.dataset.styled = "true"; 
+                }
+              }
+            }
+        });
+    });
+  }, 250);
+
+  // --- THE OBSERVER ---
   const observer = new MutationObserver((mutations) => {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel) return; 
@@ -241,38 +296,9 @@ function startMechanics() {
           const searchString = outer.toLowerCase();
 
           currentLevel.imagesToFind.forEach((filename) => {
-            const cleanName = filename.toLowerCase().replace('.jpeg', '').replace('.jpg', '').replace('/', '');
             const encodedName = encodeURI(filename).toLowerCase();
 
             if (searchString.includes(filename.toLowerCase()) || searchString.includes(encodedName)) {
-              
-              // THE RESTORED GIANT TEXT STYLER
-              if (node.nodeType === 1) {
-                  const textEls = Array.from(node.querySelectorAll('div, span, p, h1, h2, h3'));
-                  if (['DIV','SPAN','P','H1','H2','H3'].includes(node.tagName)) textEls.push(node);
-                  
-                  textEls.forEach(el => {
-                      if (el.children.length === 0 && el.textContent) {
-                          const t2 = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
-                          if (t2.includes(cleanName.replace(/[^a-z0-9]/g, '')) && !el.dataset.styled) {
-                              el.dataset.styled = "true";
-                              el.style.setProperty('position', 'absolute', 'important');
-                              el.style.setProperty('left', '50%', 'important');
-                              el.style.setProperty('top', '50%', 'important');
-                              el.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
-                              el.style.setProperty('font-size', '240%', 'important');
-                              el.style.setProperty('color', 'white', 'important');
-                              el.style.setProperty('margin', '0', 'important');
-                              el.style.setProperty('white-space', 'nowrap', 'important');
-                              if (el.parentElement) {
-                                  el.parentElement.style.setProperty('background-color', '#1c1c1c', 'important');
-                                  el.parentElement.style.setProperty('min-height', '75px', 'important');
-                              }
-                          }
-                      }
-                  });
-              }
-
               if (!window.foundImages[filename]) {
                 console.log(`🎯 [Escape Room] Found: ${filename}`);
                 playItemSound(filename); 
