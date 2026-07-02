@@ -1,6 +1,6 @@
 // =============================================================================
-// EYE SPY 3D — LEAN MASTER ENGINE (V4000)
-// ARCHITECTURE FIX: Zero DOM scanning. Directly targets #customBillboardFullOverlay
+// EYE SPY 3D — LEAN MASTER ENGINE (V4001)
+// FIXES: Layout thrashing (Lag), Video Wrapper Cloaking, Audio X, Text Styling
 // =============================================================================
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
@@ -93,13 +93,28 @@ function injectCustomUI() {
     
     audio, [id*="audio"], [class*="audio-player"] { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
     
-    /* PRE-GAME STATE: Hides the video player completely until "Start" is clicked */
+    /* PRE-GAME STATE: Cloak the entire MPEmbed video container so there is no black box or hover shade */
+    body:not(.game-started) .mpe-media-overlay, 
+    body:not(.game-started) .pano-media,
+    body:not(.game-started) [id*="media-overlay"],
     body:not(.game-started) video, 
     body:not(.game-started) [class*="close"], 
     body:not(.game-started) .mpe-media-close {
         opacity: 0 !important;
         pointer-events: none !important;
         visibility: hidden !important;
+    }
+
+    /* Remove MPEmbed Hover Shades */
+    .mpe-media-overlay::before, .mpe-media-overlay::after, .pano-media:hover {
+        background: transparent !important; filter: none !important; box-shadow: none !important;
+    }
+
+    /* FULLSCREEN VIDEO ON START: Forces the MPEmbed video wrapper to fill the screen */
+    body.game-started .pano-media, 
+    body.game-started .mpe-media-overlay {
+        background: black !important; width: 100vw !important; height: 100vh !important;
+        top: 0 !important; left: 0 !important; transform: none !important; border-radius: 0 !important;
     }
 
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; z-index: 99999 !important; pointer-events: auto !important; }
@@ -196,29 +211,40 @@ function startMechanics() {
     return currentLevel.imagesToFind.every(img => window.foundImages[img] === true);
   }
 
+  const targetMatchStrings = [];
+  LEVELS.forEach(level => {
+    level.imagesToFind.forEach(img => {
+      targetMatchStrings.push(img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', ''));
+    });
+  });
+
   // --- THE ULTRA-LEAN ENGINE (No DOM Scanning, Direct Visibility Checks) ---
   setInterval(() => {
-    // 1. Keep unwanted audio players hidden, but leave the Intro Video untouched
-    document.querySelectorAll('audio, [class*="audio-player"]').forEach(btn => {
-      btn.style.setProperty('display', 'none', 'important');
-      btn.style.setProperty('opacity', '0', 'important');
+    
+    // 1. Audio Assassin: Hides the audio player X at the bottom of the screen
+    document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
+      const rect = btn.getBoundingClientRect();
+      // If the X is at the very bottom of the screen (where Audio player lives) and is actually injected
+      if (rect.bottom > window.innerHeight - 100 && rect.bottom !== 0) {
+        btn.style.setProperty('display', 'none', 'important');
+        btn.style.setProperty('opacity', '0', 'important');
+      }
     });
 
-    // 2. Hijack the intro video so it stays frozen until Start is clicked
+    // 2. Video Hijack: Keep video paused until Start is clicked
     if (!document.body.classList.contains('game-started')) {
       document.querySelectorAll('video').forEach(v => v.pause());
     }
 
-    // 3. Directly target the Custom Billboard boxes
+    // 3. The Visual Hunter (Lag-Free Edition)
     const openPopups = document.querySelectorAll('#customBillboardFullOverlay, .mpe-popup, .mpe-media-overlay');
     let anyOpen = false;
 
     openPopups.forEach(overlay => {
-        // If the box is actively visible on the screen
-        if (window.getComputedStyle(overlay).display !== 'none' && window.getComputedStyle(overlay).visibility !== 'hidden') {
+        // FAST VISIBILITY CHECK: Replaced the laggy getComputedStyle with offsetParent
+        if (overlay.offsetParent !== null) {
             anyOpen = true;
             
-            // Look directly inside for the text
             const textContainer = overlay.querySelector('.tag-text-content, div[class*="text"], h1, h2, h3, p');
             if (!textContainer || !textContainer.textContent) return;
 
@@ -230,29 +256,21 @@ function startMechanics() {
             currentLevel.imagesToFind.forEach((filename) => {
                 const cleanName = filename.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', '');
                 
-                // We found a match!
                 if (textClean.includes(cleanName)) {
                     
-                    // A) Format it instantly (Only applies once)
+                    // A) Format it instantly (Removed the black box, added pure neon shadow text)
                     if (!textContainer.dataset.styled) {
                         textContainer.style.setProperty('position', 'absolute', 'important');
                         textContainer.style.setProperty('left', '50%', 'important');
                         textContainer.style.setProperty('top', '50%', 'important'); 
                         textContainer.style.setProperty('transform', 'translate(-50%, -50%)', 'important'); 
-                        textContainer.style.setProperty('font-size', '240%', 'important'); 
-                        textContainer.style.setProperty('color', 'white', 'important');
+                        textContainer.style.setProperty('font-size', '280%', 'important'); 
+                        textContainer.style.setProperty('color', '#CCFF00', 'important');
+                        textContainer.style.setProperty('text-shadow', '0px 4px 20px rgba(0,0,0,0.9), 0px 0px 10px rgba(0,0,0,1)', 'important');
                         textContainer.style.setProperty('margin', '0', 'important');
                         textContainer.style.setProperty('white-space', 'nowrap', 'important');
+                        textContainer.style.setProperty('z-index', '9999', 'important');
                         
-                        const banner = textContainer.parentElement;
-                        if (banner) {
-                            banner.style.setProperty('background-color', '#1c1c1c', 'important');
-                            banner.style.setProperty('background', '#1c1c1c', 'important'); 
-                            if (window.getComputedStyle(banner).position === 'static') {
-                                banner.style.setProperty('position', 'relative', 'important');
-                            }
-                            banner.style.setProperty('min-height', '75px', 'important');
-                        }
                         textContainer.dataset.styled = "true"; 
                     }
 
@@ -268,16 +286,15 @@ function startMechanics() {
                         }
                     }
                     
-                    // Register that it is actively open right now
                     window.activeOpenPopups.add(filename);
                 }
             });
         }
     });
 
-    // 4. Teleport Trigger: If ALL popups are closed (display: none), but we have active popups in memory
+    // 4. Teleport Trigger: If NO popups are open right now, but memory has items, user closed it.
     if (!anyOpen && window.activeOpenPopups.size > 0) {
-        window.activeOpenPopups.clear(); // Clear the memory, the player closed it
+        window.activeOpenPopups.clear(); 
         
         if (checkAllFound() && !window.isTeleporting) {
             console.log(`🚀 [Escape Room] Initiating Teleport sequence!`);
@@ -285,7 +302,7 @@ function startMechanics() {
         }
     }
 
-  }, 100); // Because we aren't scanning the DOM tree, running this at 100ms is incredibly fast and lag-free.
+  }, 100);
 
   // --- INITIALIZATION & DOOR LOCKS ---
   async function initMashupLogic(mpSdk) {
@@ -342,14 +359,13 @@ function startMechanics() {
                     v.play().catch(()=>{});
                     
                     v.onended = () => {
-                        let container = v.closest('.mpe-popup, .mp-mattertag, [id*="Billboard"], [class*="billboard"]') || v.parentElement;
-                        // Scoped search inside container, fallback to page-wide if needed
+                        let container = v.closest('.mpe-popup, .mp-mattertag, [id*="Billboard"], [class*="billboard"], .mpe-media-overlay, .pano-media') || v.parentElement;
                         const closeBtn = container ? container.querySelector('[class*="close"]') : document.querySelector('[class*="close"]');
                         if (closeBtn) closeBtn.click();
                         else console.warn('[Eye Spy] Video ended but could not find the X to close it!');
                     };
                 }
-                if(attempts++ > 100) clearInterval(waitForVideo); // Give up after 10 seconds to prevent endless loop
+                if(attempts++ > 100) clearInterval(waitForVideo); 
             }, 100);
 
             try { window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; window.globalSfx.play().catch(() => {}); } catch (e) {}
