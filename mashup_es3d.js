@@ -1,6 +1,6 @@
 // =============================================================================
-// EYE SPY 3D — MASTER ENGINE (V2001)
-// Fixes: SDK Race Condition, Text Formatting Delay, Audio UI Targeting
+// EYE SPY 3D — MASTER ENGINE (V2002)
+// REVERT: Restored the original, robust 250ms Visual Hunter for Text & UI.
 // =============================================================================
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
@@ -88,40 +88,32 @@ function injectCustomUI() {
   customStyles.innerHTML = `
     * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
     
-    /* AGGRESSIVE UI ASSASSINATION */
     [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay { filter: none !important; -webkit-filter: none !important; background: transparent !important; background-color: transparent !important; }
     [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
     
-    /* ENLARGE POPUP CLOSE BUTTON */
+    audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"], .mpe-media-close { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
+    
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
-    /* KILL POPUP ANIMATIONS */
     .mpe-popup, .mp-mattertag { transition: none !important; animation: none !important; }
 
-    /* DOLLHOUSE B&W OVERLAY */
     #eye-spy-dark-overlay { 
-        position: fixed !important; 
-        top: 0 !important; left: 0 !important; 
-        width: 100vw !important; height: 100vh !important; 
+        position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; 
         background: rgba(0, 0, 0, 0.4) !important; 
         backdrop-filter: grayscale(100%) brightness(60%) !important;
         -webkit-backdrop-filter: grayscale(100%) brightness(60%) !important;
         z-index: 2147483645 !important; 
     }
 
-    /* KEY ART LOADING SCREEN */
     #eye-spy-image-cover { 
-        position: fixed !important; top: 0 !important; left: 0 !important; 
-        width: 100vw !important; height: 100vh !important; 
+        position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; 
         background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/ES3D_load%20screen%20omni.png') !important; 
         background-size: cover !important; background-position: center !important; 
-        z-index: 2147483646 !important; 
-        animation: slow-punch 12s infinite alternate ease-in-out;
+        z-index: 2147483646 !important; animation: slow-punch 12s infinite alternate ease-in-out;
     }
     #eye-spy-image-cover::after { 
         content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-        background-image: inherit; background-size: contain !important; 
-        background-repeat: no-repeat !important; background-position: center !important; 
+        background-image: inherit; background-size: contain !important; background-repeat: no-repeat !important; background-position: center !important; 
         backdrop-filter: blur(15px); background-color: rgba(0,0,0,0.4); 
     }
     
@@ -133,7 +125,6 @@ function injectCustomUI() {
     #eye-spy-start-btn { padding: 16px 40px !important; font-size: 24px !important; font-weight: bold !important; background: #CCFF00 !important; color: #000 !important; border: none !important; border-radius: 8px !important; cursor: pointer !important; transition: transform 0.2s ease !important; box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important; pointer-events: auto !important; }
     #eye-spy-start-btn:hover { transform: scale(1.05) !important; }
     #eye-spy-loading-text { position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; }
-    
     @keyframes eye-spy-fade { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
   `;
   document.head.appendChild(customStyles);
@@ -151,15 +142,6 @@ function injectCustomUI() {
     </div>
   `;
   document.body.appendChild(startUI);
-
-  // TARGETED JS ASSASSINATION FOR AUDIO UI ONLY
-  setInterval(() => {
-    document.querySelectorAll('audio, video, [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"]').forEach(el => {
-      el.style.setProperty('display', 'none', 'important');
-      el.style.setProperty('opacity', '0', 'important');
-      el.style.setProperty('pointer-events', 'none', 'important');
-    });
-  }, 250);
 
   startMechanics();
 }
@@ -183,6 +165,57 @@ function startMechanics() {
     { level: 15, startSweeps: ['20qckty5qi20t39838cq274rc'], targetSweep: 'e5ynaauc9kx9mar4r52hp1rfb', imagesToFind: [] }
   ];
 
+  // --- REVERTED: THE ORIGINAL VISUAL HUNTER LOOP ---
+  // This array helps the loop know exactly which words to make giant.
+  const targetMatchStrings = [];
+  LEVELS.forEach(level => {
+    level.imagesToFind.forEach(img => {
+      targetMatchStrings.push(img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', ''));
+    });
+  });
+
+  setInterval(() => {
+    // 1. Relentlessly hide the audio player and the tiny 'X' button
+    document.querySelectorAll('[class*="close"], [id*="close"], audio, video, [class*="audio-player"]').forEach(btn => {
+      const rect = btn.getBoundingClientRect();
+      if (rect.bottom > window.innerHeight - 100 || btn.tagName.toLowerCase() === 'audio' || btn.tagName.toLowerCase() === 'video') {
+        btn.style.setProperty('display', 'none', 'important');
+        btn.style.setProperty('opacity', '0', 'important');
+      }
+    });
+
+    // 2. Relentlessly format the text (Waits for MPEmbed to finish loading it, then strikes)
+    const textElements = document.querySelectorAll('div, span, p, h1, h2, h3');
+    textElements.forEach(el => {
+      if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
+        const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
+        
+        if (textClean.length > 3 && targetMatchStrings.includes(textClean)) {
+          el.style.setProperty('position', 'absolute', 'important');
+          el.style.setProperty('left', '50%', 'important');
+          el.style.setProperty('top', '50%', 'important'); 
+          el.style.setProperty('transform', 'translate(-50%, -50%)', 'important'); 
+          el.style.setProperty('font-size', '240%', 'important'); 
+          el.style.setProperty('color', 'white', 'important');
+          el.style.setProperty('margin', '0', 'important');
+          el.style.setProperty('white-space', 'nowrap', 'important');
+          
+          const banner = el.parentElement;
+          if (banner && !banner.dataset.styled) {
+            banner.style.setProperty('background-color', '#1c1c1c', 'important');
+            banner.style.setProperty('background', '#1c1c1c', 'important'); 
+            if (window.getComputedStyle(banner).position === 'static') {
+              banner.style.setProperty('position', 'relative', 'important');
+            }
+            banner.style.setProperty('min-height', '75px', 'important');
+            banner.dataset.styled = "true"; 
+          }
+        }
+      }
+    });
+  }, 250); 
+  // --- END OF VISUAL HUNTER REVERT ---
+
   window.currentLevelIndex = 0;
   window.allModelSweeps = [];
   window.foundImages = {};
@@ -205,13 +238,12 @@ function startMechanics() {
     return currentLevel.imagesToFind.every(img => window.foundImages[img] === true);
   }
 
-  // --- THE TRIPWIRE ---
+  // --- THE GAME LOGIC TRIPWIRE (Now handles logic ONLY, not visuals) ---
   const observer = new MutationObserver((mutations) => {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel || currentLevel.imagesToFind.length === 0 || window.isTeleporting) return;
 
     mutations.forEach((mutation) => {
-      // WHEN A POPUP OPENS
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === 1 || node.nodeType === 3) { 
           const outer = node.outerHTML || '';
@@ -227,39 +259,6 @@ function startMechanics() {
               
               window.activeOpenPopups.add(filename); 
               window.foundImages[filename] = true;
-
-              // DELAYED TEXT FORMATTING (Allows Matterport to inject text first)
-              if (node.nodeType === 1) {
-                  setTimeout(() => {
-                      const cleanName = filename.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', '');
-                      const textEls = Array.from(node.querySelectorAll('div, span, p, h1, h2, h3'));
-                      
-                      textEls.forEach(el => {
-                          if (el.children.length === 0 && el.textContent) {
-                              const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
-                              if (textClean.includes(cleanName)) {
-                                  el.style.setProperty('position', 'absolute', 'important');
-                                  el.style.setProperty('left', '50%', 'important');
-                                  el.style.setProperty('top', '50%', 'important');
-                                  el.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
-                                  el.style.setProperty('font-size', '240%', 'important');
-                                  el.style.setProperty('color', 'white', 'important');
-                                  el.style.setProperty('margin', '0', 'important');
-                                  el.style.setProperty('white-space', 'nowrap', 'important');
-                                  
-                                  if (el.parentElement) {
-                                      el.parentElement.style.setProperty('background-color', '#1c1c1c', 'important');
-                                      el.parentElement.style.setProperty('background', '#1c1c1c', 'important');
-                                      el.parentElement.style.setProperty('min-height', '75px', 'important');
-                                      if (window.getComputedStyle(el.parentElement).position === 'static') {
-                                          el.parentElement.style.setProperty('position', 'relative', 'important');
-                                      }
-                                  }
-                              }
-                          }
-                      });
-                  }, 50); // 50ms delay
-              }
               
               if (checkAllFound()) {
                 console.log(`🔓 [Escape Room] All items found! Door unlocked.`);
@@ -273,7 +272,6 @@ function startMechanics() {
         }
       });
 
-      // WHEN A POPUP CLOSES
       mutation.removedNodes.forEach((node) => {
         if (node.nodeType === 1 || node.nodeType === 3) { 
           const outer = node.outerHTML || '';
@@ -389,7 +387,7 @@ function startMechanics() {
     window.isTeleporting = false;
   }
 
-  // WAIT FOR SDK TO FULLY INITIALIZE TO PREVENT RACE CONDITIONS
+  // Waits for SDK Phase 'PLAYING' to prevent startup crashes.
   let checkSdkInterval = setInterval(function() {
     if (window.mpSdk && window.mpSdk.App) {
         window.mpSdk.App.state.subscribe(function (appState) {
