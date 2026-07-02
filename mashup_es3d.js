@@ -1,8 +1,7 @@
 // =============================================================================
-// EYE SPY 3D — V1500: EXACT V500 BASELINE + TARGETED LAG FIXES + LEVELS 8-15
+// EYE SPY 3D — MASTER ENGINE (V2000)
+// Features: MutationObserver (Tripwire), Strict Lockdown, Fullscreen Start, B&W UI
 // =============================================================================
-
-console.log("=== EYE SPY V1500 LOADED: V500 BASELINE REVERTED ===");
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
@@ -32,6 +31,8 @@ const AUDIO_MAP = {
   '/a third more time.jpeg': 'a third more time.mp3',
   '/odd purves terms.jpeg': 'odd purves terms.mp3',
   '/round thing.jpeg': 'round thing.mp3',
+  
+  // LEVELS 8 - 15
   '/cat in a turban.jpeg': 'cat in a turban.mp3',
   '/embroidered australia.jpeg': 'embroidered australia.mp3',
   '/three wooden discs.jpeg': 'three wooden discs.mp3',
@@ -67,16 +68,15 @@ window.globalChime = new Audio('https://upload.wikimedia.org/wikipedia/commons/d
 
 function playItemSound(imageFilename) {
   let mp3Name = AUDIO_MAP[imageFilename];
+  // If an MP3 exists, play it. If not, do absolutely nothing (Silent Fallback).
   if (mp3Name) {
     window.globalSfx.src = GITHUB_BASE + encodeURIComponent(mp3Name);
-  } else {
-    window.globalSfx.src = 'https://upload.wikimedia.org/wikipedia/commons/4/42/Ping.mp3';
+    window.globalSfx.currentTime = 0;
+    window.globalSfx.play().catch(()=>{});
   }
-  window.globalSfx.currentTime = 0;
-  window.globalSfx.play().catch(() => {});
 }
 
-// --- BOOT LOADER ---
+// --- 1. BOOT LOADER & CSS INJECTION ---
 let bootInterval = setInterval(() => {
   if (document.head && document.body) {
     clearInterval(bootInterval);
@@ -87,30 +87,70 @@ let bootInterval = setInterval(() => {
 function injectCustomUI() {
   const customStyles = document.createElement('style');
   customStyles.innerHTML = `
-    /* EXACT V500 CSS BASELINE */
     * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
     
+    /* AGGRESSIVE UI ASSASSINATION */
     [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay { filter: none !important; -webkit-filter: none !important; background: transparent !important; background-color: transparent !important; }
     [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
     
-    audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"], .mpe-media-close { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
+    /* ASSASSINATE AUDIO PLAYERS & X BUTTONS SAFELY VIA CSS */
+    audio, video, [id*="audio"], [class*="audio-player"], 
+    div[style*="bottom: 0px"] [class*="close"], 
+    div[style*="bottom: 0"] [class*="close"], 
+    .mpe-media-close { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
     
+    /* ENLARGE POPUP CLOSE BUTTON */
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
-    #eye-spy-dark-overlay { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(90, 60, 30, 0.3) !important; backdrop-filter: sepia(100%) contrast(110%) brightness(85%) hue-rotate(-5deg) !important; -webkit-backdrop-filter: sepia(100%) contrast(110%) brightness(85%) hue-rotate(-5deg) !important; z-index: 2147483645 !important; }
-    #eye-spy-image-cover { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/ES3D_load%20screen%20omni.png') !important; background-size: cover !important; background-position: center !important; z-index: 2147483646 !important; }
-    #eye-spy-image-cover::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: inherit; background-size: contain !important; background-repeat: no-repeat !important; background-position: center !important; backdrop-filter: blur(15px); background-color: rgba(0,0,0,0.4); }
+    /* KILL POPUP ANIMATIONS (Makes them snappy) */
+    .mpe-popup, .mp-mattertag { transition: none !important; animation: none !important; }
+
+    /* DOLLHOUSE B&W OVERLAY (Start Screen) */
+    #eye-spy-dark-overlay { 
+        position: fixed !important; 
+        top: 0 !important; left: 0 !important; 
+        width: 100vw !important; height: 100vh !important; 
+        background: rgba(0, 0, 0, 0.4) !important; 
+        backdrop-filter: grayscale(100%) brightness(60%) !important;
+        -webkit-backdrop-filter: grayscale(100%) brightness(60%) !important;
+        z-index: 2147483645 !important; 
+    }
+
+    /* KEY ART LOADING SCREEN WITH SLOW ZOOM (Punch In/Out) */
+    #eye-spy-image-cover { 
+        position: fixed !important; top: 0 !important; left: 0 !important; 
+        width: 100vw !important; height: 100vh !important; 
+        background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/ES3D_load%20screen%20omni.png') !important; 
+        background-size: cover !important; background-position: center !important; 
+        z-index: 2147483646 !important; 
+        animation: slow-punch 12s infinite alternate ease-in-out;
+    }
+    #eye-spy-image-cover::after { 
+        content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+        background-image: inherit; background-size: contain !important; 
+        background-repeat: no-repeat !important; background-position: center !important; 
+        backdrop-filter: blur(15px); background-color: rgba(0,0,0,0.4); 
+    }
+    
+    @keyframes slow-punch {
+        0% { transform: scale(1); }
+        100% { transform: scale(1.08); }
+    }
+
     #eye-spy-start-ui { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483647 !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; }
     #eye-spy-welcome-block { display: none; flex-direction: column; align-items: center; }
+    
     #eye-spy-start-btn { padding: 16px 40px !important; font-size: 24px !important; font-weight: bold !important; background: #CCFF00 !important; color: #000 !important; border: none !important; border-radius: 8px !important; cursor: pointer !important; transition: transform 0.2s ease !important; box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important; pointer-events: auto !important; }
     #eye-spy-start-btn:hover { transform: scale(1.05) !important; }
     #eye-spy-loading-text { position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; }
+    
     @keyframes eye-spy-fade { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
   `;
   document.head.appendChild(customStyles);
 
   const darkOverlay = document.createElement('div'); darkOverlay.id = 'eye-spy-dark-overlay'; document.body.appendChild(darkOverlay);
   const imageCover = document.createElement('div'); imageCover.id = 'eye-spy-image-cover'; document.body.appendChild(imageCover);
+
   const startUI = document.createElement('div'); startUI.id = 'eye-spy-start-ui';
   startUI.innerHTML = `
     <div id="eye-spy-loading-text">Loading 3D experience...</div>
@@ -121,23 +161,6 @@ function injectCustomUI() {
     </div>
   `;
   document.body.appendChild(startUI);
-
-  const startBtn = document.getElementById('eye-spy-start-btn');
-  if(startBtn) {
-    startBtn.addEventListener('click', () => {
-      const ui = document.getElementById('eye-spy-start-ui');
-      const overlay = document.getElementById('eye-spy-dark-overlay');
-      const cover = document.getElementById('eye-spy-image-cover');
-      if(ui) { ui.style.transition = "opacity 0.4s ease"; ui.style.opacity = "0"; setTimeout(() => ui.remove(), 400); }
-      if(overlay) { overlay.style.transition = "opacity 0.4s ease"; overlay.style.opacity = "0"; setTimeout(() => overlay.remove(), 400); }
-      if(cover) { cover.style.transition = "opacity 0.4s ease"; cover.style.opacity = "0"; setTimeout(() => cover.remove(), 400); }
-
-      window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; 
-      window.globalSfx.play().catch(() => {});
-      window.globalChime.volume = 0;
-      window.globalChime.play().then(() => { window.globalChime.pause(); window.globalChime.volume = 1; window.globalChime.currentTime = 0; }).catch(() => {});
-    });
-  }
 
   startMechanics();
 }
@@ -165,91 +188,39 @@ function startMechanics() {
   window.allModelSweeps = [];
   window.foundImages = {};
   window.isTeleporting = false; 
-  window.pathsPreloaded = false; 
   window.activeOpenPopups = new Set(); 
-
-  const targetMatchStrings = [];
-  LEVELS.forEach(level => { level.imagesToFind.forEach(img => { targetMatchStrings.push(img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', '')); }); });
 
   function setupLevelTracking() {
     window.foundImages = {};
     const currentLevel = LEVELS[window.currentLevelIndex];
-    if (currentLevel) { currentLevel.imagesToFind.forEach(image => { window.foundImages[image] = false; }); }
+    if (currentLevel && currentLevel.imagesToFind) {
+      currentLevel.imagesToFind.forEach(image => { window.foundImages[image] = false; });
+    }
     window.isTeleporting = false;
-    window.pathsPreloaded = false;
     window.activeOpenPopups.clear();
   }
 
   function checkAllFound() {
-    return Object.values(window.foundImages).every(status => status === true);
+    const currentLevel = LEVELS[window.currentLevelIndex];
+    if (!currentLevel || !currentLevel.imagesToFind || currentLevel.imagesToFind.length === 0) return true;
+    return currentLevel.imagesToFind.every(img => window.foundImages[img] === true);
   }
 
-  // --- LAG FIX #1: SCOPED INTERVAL SCANNER ---
-  // Works exactly like v=500, but ignores the DOM unless a popup is actively open
-  setInterval(() => {
-    const activePopups = document.querySelectorAll('.mpe-popup, .mp-mattertag, .mpe-media-overlay');
-    if (activePopups.length === 0) return; // 0% CPU cost when no popups are open
-
-    activePopups.forEach(popup => {
-        // v=500 Audio X Assassin
-        popup.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
-            const rect = btn.getBoundingClientRect();
-            if (rect.bottom > window.innerHeight - 100 && rect.height > 0) {
-                btn.style.setProperty('display', 'none', 'important');
-                btn.style.setProperty('opacity', '0', 'important');
-            }
-        });
-
-        // v=500 Text Formatter
-        const textElements = popup.querySelectorAll('div, span, p, h1, h2, h3');
-        textElements.forEach(el => {
-            if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
-                const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
-                
-                if (textClean.length > 3 && targetMatchStrings.includes(textClean)) {
-                    el.style.setProperty('position', 'absolute', 'important');
-                    el.style.setProperty('left', '50%', 'important');
-                    el.style.setProperty('top', '50%', 'important'); 
-                    el.style.setProperty('transform', 'translate(-50%, -50%)', 'important'); 
-                    el.style.setProperty('font-size', '240%', 'important'); 
-                    el.style.setProperty('color', 'white', 'important');
-                    el.style.setProperty('margin', '0', 'important');
-                    el.style.setProperty('white-space', 'nowrap', 'important');
-                    
-                    const banner = el.parentElement;
-                    if (banner && !banner.dataset.styled) {
-                        banner.style.setProperty('background-color', '#1c1c1c', 'important');
-                        banner.style.setProperty('background', '#1c1c1c', 'important'); 
-                        if (window.getComputedStyle(banner).position === 'static') { banner.style.setProperty('position', 'relative', 'important'); }
-                        banner.style.setProperty('min-height', '75px', 'important');
-                        banner.dataset.styled = "true"; 
-                    }
-                }
-            }
-        });
-    });
-  }, 250);
-
-  // --- LAG FIX #2: LIGHTWEIGHT OBSERVER ---
-  // Works exactly like v=500, but avoids massive `.outerHTML` stringification
+  // --- THE TRIPWIRE (Restored & Highly Efficient) ---
   const observer = new MutationObserver((mutations) => {
     const currentLevel = LEVELS[window.currentLevelIndex];
-    if (!currentLevel) return; 
+    if (!currentLevel || currentLevel.imagesToFind.length === 0 || window.isTeleporting) return;
 
     mutations.forEach((mutation) => {
+      // WHEN A POPUP OPENS
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === 1 || node.nodeType === 3) { 
-          // Uses lightweight textContent + src checks instead of crushing memory with outerHTML
-          let searchString = (node.textContent || '').toLowerCase() + " ";
-          if (node.nodeType === 1) {
-             const mediaTags = node.tagName === 'IMG' ? [node] : (node.querySelectorAll ? node.querySelectorAll('img, [style*="background-image"]') : []);
-             mediaTags.forEach(m => searchString += (m.src || m.style.backgroundImage || '').toLowerCase() + " ");
-          }
-
+          const outer = node.outerHTML || '';
+          
           currentLevel.imagesToFind.forEach((filename) => {
-            const encodedName = encodeURI(filename).toLowerCase();
+            const encodedName = encodeURI(filename);
 
-            if (searchString.includes(filename.toLowerCase()) || searchString.includes(encodedName)) {
+            if (outer.includes(filename) || outer.includes(encodedName)) {
               if (!window.foundImages[filename]) {
                 console.log(`🎯 [Escape Room] Found: ${filename}`);
                 playItemSound(filename); 
@@ -257,35 +228,62 @@ function startMechanics() {
               
               window.activeOpenPopups.add(filename); 
               window.foundImages[filename] = true;
-              
-              if (checkAllFound() && !window.pathsPreloaded) {
-                window.pathsPreloaded = true;
-                console.log(`🔓 [Escape Room] All items found! Unlocking map...`);
-                
-                window.globalChime.currentTime = 0;
-                window.globalChime.play().catch(() => {});
 
-                if (window.mpSdk) { window.mpSdk.Sweep.enable(...window.allModelSweeps).catch(() => {}); }
+              // Apply the custom giant text formatting ONLY to this matched popup
+              if (node.nodeType === 1) {
+                  const cleanName = filename.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', '');
+                  const textEls = Array.from(node.querySelectorAll('div, span, p, h1, h2, h3'));
+                  
+                  textEls.forEach(el => {
+                      if (el.children.length === 0 && el.textContent) {
+                          const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
+                          if (textClean.includes(cleanName)) {
+                              el.style.setProperty('position', 'absolute', 'important');
+                              el.style.setProperty('left', '50%', 'important');
+                              el.style.setProperty('top', '50%', 'important');
+                              el.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+                              el.style.setProperty('font-size', '240%', 'important');
+                              el.style.setProperty('color', 'white', 'important');
+                              el.style.setProperty('margin', '0', 'important');
+                              el.style.setProperty('white-space', 'nowrap', 'important');
+                              
+                              if (el.parentElement) {
+                                  el.parentElement.style.setProperty('background-color', '#1c1c1c', 'important');
+                                  el.parentElement.style.setProperty('background', '#1c1c1c', 'important');
+                                  el.parentElement.style.setProperty('min-height', '75px', 'important');
+                                  if (window.getComputedStyle(el.parentElement).position === 'static') {
+                                      el.parentElement.style.setProperty('position', 'relative', 'important');
+                                  }
+                              }
+                          }
+                      }
+                  });
+              }
+              
+              // Win Condition Check
+              if (checkAllFound()) {
+                console.log(`🔓 [Escape Room] All items found! Door unlocked.`);
+                try {
+                  window.globalChime.currentTime = 0;
+                  window.globalChime.play().catch(()=>{});
+                } catch(e){}
               }
             }
           });
         }
       });
 
+      // WHEN A POPUP CLOSES
       mutation.removedNodes.forEach((node) => {
         if (node.nodeType === 1 || node.nodeType === 3) { 
-          let searchString = (node.textContent || '').toLowerCase() + " ";
-          if (node.nodeType === 1) {
-             const mediaTags = node.tagName === 'IMG' ? [node] : (node.querySelectorAll ? node.querySelectorAll('img, [style*="background-image"]') : []);
-             mediaTags.forEach(m => searchString += (m.src || m.style.backgroundImage || '').toLowerCase() + " ");
-          }
+          const outer = node.outerHTML || '';
 
           currentLevel.imagesToFind.forEach((filename) => {
-            const encodedName = encodeURI(filename).toLowerCase();
-
-            if (searchString.includes(filename.toLowerCase()) || searchString.includes(encodedName)) {
+            const encodedName = encodeURI(filename);
+            if (outer.includes(filename) || outer.includes(encodedName)) {
               window.activeOpenPopups.delete(filename); 
               
+              // If all found, and user just closed the last popup, TELEPORT!
               if (checkAllFound() && window.activeOpenPopups.size === 0 && !window.isTeleporting) {
                 console.log(`🚀 [Escape Room] Initiating Teleport sequence!`);
                 executeFastTeleport(window.mpSdk, currentLevel);
@@ -316,53 +314,93 @@ function startMechanics() {
     });
 
     window.allModelSweeps = Object.keys(sweepCollection);
-    lockMapForCurrentLevel(mpSdk);
 
-    const cover = document.getElementById('eye-spy-image-cover');
-    if (cover) { cover.style.transition = "opacity 0.5s ease"; cover.style.opacity = "0"; setTimeout(() => cover.remove(), 500); }
+    // Fade out Key Art so Dollhouse is visible underneath
     const loadingText = document.getElementById('eye-spy-loading-text');
     if (loadingText) loadingText.remove();
+    
+    const cover = document.getElementById('eye-spy-image-cover');
+    if (cover) {
+        cover.style.transition = "opacity 0.6s ease";
+        cover.style.opacity = "0";
+        setTimeout(() => cover.remove(), 600);
+    }
+    
     const welcomeBlock = document.getElementById('eye-spy-welcome-block');
     if (welcomeBlock) welcomeBlock.style.display = "flex";
 
-    mpSdk.on(mpSdk.Sweep.Event.EXIT, function(fromSweep) {
-      const cLevel = LEVELS[window.currentLevelIndex];
-      if (cLevel && cLevel.startSweeps.includes(fromSweep)) {
-        mpSdk.Sweep.disable(fromSweep).catch(() => {});
-      }
-    });
+    // START BUTTON: Triggers Fullscreen, Clears Overlays, Locks Map
+    const startBtn = document.getElementById('eye-spy-start-btn');
+    if (startBtn) {
+        startBtn.addEventListener('click', () => {
+            // Fullscreen Request
+            const docEl = document.documentElement;
+            if (docEl.requestFullscreen) {
+                docEl.requestFullscreen().catch((err) => console.log("Fullscreen denied:", err));
+            } else if (docEl.webkitRequestFullscreen) {
+                docEl.webkitRequestFullscreen();
+            }
+
+            const ui = document.getElementById('eye-spy-start-ui');
+            const overlay = document.getElementById('eye-spy-dark-overlay');
+            
+            if (ui) { ui.style.transition = "opacity 0.4s ease"; ui.style.opacity = "0"; setTimeout(() => ui.remove(), 400); }
+            if (overlay) { overlay.style.transition = "opacity 0.4s ease"; overlay.style.opacity = "0"; setTimeout(() => overlay.remove(), 400); }
+
+            // Init Audio Engine
+            try { window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; window.globalSfx.play().catch(()=>{}); } catch(e) {}
+            
+            lockMapForCurrentLevel();
+        });
+    }
   }
 
-  function lockMapForCurrentLevel(mpSdk) {
+  // STRICT LOCKDOWN METHOD
+  function lockMapForCurrentLevel() {
     const currentLevel = LEVELS[window.currentLevelIndex];
-    if (!currentLevel) return;
-    const sweepsToDisable = window.allModelSweeps.filter( id => !currentLevel.startSweeps.includes(id) );
-    if (sweepsToDisable.length > 0) { mpSdk.Sweep.disable(...sweepsToDisable).catch(() => {}); }
+    if (!currentLevel || window.allModelSweeps.length === 0) return;
+
+    const sweepsToDisable = window.allModelSweeps.filter(
+      id => !currentLevel.startSweeps.includes(id)
+    );
+
+    if (sweepsToDisable.length > 0) {
+      window.mpSdk.Sweep.disable(...sweepsToDisable).catch(() => {});
+    }
   }
 
+  // TELEPORT & ADVANCE
   async function executeFastTeleport(mpSdk, levelData) {
     window.isTeleporting = true;
+    
     try {
-      try {
-        await mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: mpSdk.Sweep.Transition.FLY });
-      } catch (flyError) {
-        await mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: mpSdk.Sweep.Transition.INSTANT });
+      // Temporarily enable target so player can fly there
+      await window.mpSdk.Sweep.enable(levelData.targetSweep).catch(() => {});
+
+      try { 
+          await window.mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: window.mpSdk.Sweep.Transition.FLY });
+      } catch (flyError) { 
+          await window.mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: window.mpSdk.Sweep.Transition.INSTANT }); 
       }
 
-      const sweepsToLock = window.allModelSweeps.filter(id => id !== levelData.targetSweep);
-      await mpSdk.Sweep.disable(...sweepsToLock).catch(() => {});
-
       window.currentLevelIndex++; 
-      if (LEVELS[window.currentLevelIndex]) { setupLevelTracking(); } 
-      else { console.log("🏆 [Escape Room] Complete!"); }
-    } catch (error) { console.error("Teleport failed:", error); }
+      
+      if (LEVELS[window.currentLevelIndex]) {
+          setupLevelTracking(); 
+          lockMapForCurrentLevel(); // Instantly lock the door behind them
+      } else {
+          console.log("🏆 [Escape Room] Complete!");
+      }
+    } catch (error) {
+      console.error("Teleport failed:", error);
+    }
     window.isTeleporting = false;
   }
 
   let checkSdkInterval = setInterval(function() {
-    if (window.mpSdk && window.mpSdk.Sweep) {
+    if (window.mpSdk && window.mpSdk.Sweep) { 
       clearInterval(checkSdkInterval); 
-      initMashupLogic(window.mpSdk);
+      initMashupLogic(window.mpSdk); 
     }
   }, 500);
 }
