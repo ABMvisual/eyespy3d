@@ -1,6 +1,6 @@
 // =============================================================================
-// EYE SPY 3D — LEAN MASTER ENGINE (V4001)
-// FIXES: Layout thrashing (Lag), Video Wrapper Cloaking, Audio X, Text Styling
+// EYE SPY 3D — THE FINAL ENGINE (V5001)
+// FIXES: Updated Level 8 filename to 'australia in stitches', Image SRC Targeting, Fullscreen Video, Zero Lag
 // =============================================================================
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
@@ -34,7 +34,7 @@ const AUDIO_MAP = {
   
   // LEVELS 8 - 15
   '/cat in a turban.jpeg': 'cat in a turban.mp3',
-  '/embroidered australia.jpeg': 'embroidered australia.mp3',
+  '/australia in stitches.jpeg': 'embroidered australia.mp3', // Updated to match new image name
   '/three wooden discs.jpeg': 'three wooden discs.mp3',
   '/she disinterestedly sat.jpeg': 'she disinterestedly sat.mp3',
   '/picked pack.jpeg': 'picked pack.mp3',
@@ -88,34 +88,28 @@ function injectCustomUI() {
   customStyles.innerHTML = `
     * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
     
-    [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay { filter: none !important; -webkit-filter: none !important; background: transparent !important; background-color: transparent !important; }
     [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
     
-    audio, [id*="audio"], [class*="audio-player"] { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
+    /* AUDIO UI ASSASSIN */
+    audio, [id*="audio"], [class*="audio-player"] { display: none !important; opacity: 0 !important; pointer-events: none !important; visibility: hidden !important; }
     
-    /* PRE-GAME STATE: Cloak the entire MPEmbed video container so there is no black box or hover shade */
-    body:not(.game-started) .mpe-media-overlay, 
-    body:not(.game-started) .pano-media,
-    body:not(.game-started) [id*="media-overlay"],
-    body:not(.game-started) video, 
-    body:not(.game-started) [class*="close"], 
-    body:not(.game-started) .mpe-media-close {
-        opacity: 0 !important;
-        pointer-events: none !important;
-        visibility: hidden !important;
+    /* PRE-GAME STATE: Erase the video wrapper entirely until Start is clicked */
+    body:not(.game-started) .pano-media, 
+    body:not(.game-started) .mpe-media-overlay,
+    body:not(.game-started) video {
+        display: none !important; opacity: 0 !important; pointer-events: none !important; visibility: hidden !important;
     }
 
-    /* Remove MPEmbed Hover Shades */
-    .mpe-media-overlay::before, .mpe-media-overlay::after, .pano-media:hover {
-        background: transparent !important; filter: none !important; box-shadow: none !important;
-    }
-
-    /* FULLSCREEN VIDEO ON START: Forces the MPEmbed video wrapper to fill the screen */
+    /* FULLSCREEN VIDEO ON START: Forces true fullscreen */
     body.game-started .pano-media, 
     body.game-started .mpe-media-overlay {
-        background: black !important; width: 100vw !important; height: 100vh !important;
-        top: 0 !important; left: 0 !important; transform: none !important; border-radius: 0 !important;
+        display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important;
+        width: 100vw !important; height: 100vh !important; background: black !important;
+        z-index: 2147483640 !important; transform: none !important; border-radius: 0 !important;
     }
+
+    /* Nuke hover effects and black bars */
+    .mpe-media-overlay::before, .mpe-media-overlay::after, .pano-media:hover { background: transparent !important; filter: none !important; box-shadow: none !important; }
 
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; z-index: 99999 !important; pointer-events: auto !important; }
 
@@ -144,12 +138,10 @@ function injectCustomUI() {
     @keyframes slow-punch { 0% { transform: scale(1); } 100% { transform: scale(1.08); } }
 
     #eye-spy-start-ui { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483647 !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; }
-    #eye-spy-welcome-block { display: none; flex-direction: column; align-items: center; }
+    #eye-spy-welcome-block { display: flex; flex-direction: column; align-items: center; }
     
     #eye-spy-start-btn { padding: 16px 40px !important; font-size: 24px !important; font-weight: bold !important; background: #CCFF00 !important; color: #000 !important; border: none !important; border-radius: 8px !important; cursor: pointer !important; transition: transform 0.2s ease !important; box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important; pointer-events: auto !important; }
     #eye-spy-start-btn:hover { transform: scale(1.05) !important; }
-    #eye-spy-loading-text { position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; }
-    @keyframes eye-spy-fade { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
   `;
   document.head.appendChild(customStyles);
 
@@ -158,7 +150,6 @@ function injectCustomUI() {
 
   const startUI = document.createElement('div'); startUI.id = 'eye-spy-start-ui';
   startUI.innerHTML = `
-    <div id="eye-spy-loading-text">Loading 3D experience...</div>
     <div id="eye-spy-welcome-block">
       <h1 style="margin: 0 0 15px 0; text-align: center; font-size: 42px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); color: white;">Welcome to Eye Spy 3D</h1>
       <p style="margin: 0 0 30px 0; font-size: 20px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Please enjoy this experience with your audio on</p>
@@ -166,6 +157,16 @@ function injectCustomUI() {
     </div>
   `;
   document.body.appendChild(startUI);
+
+  // TIMED DOLLHOUSE REVEAL
+  setTimeout(() => {
+    const cover = document.getElementById('eye-spy-image-cover');
+    if (cover) {
+        cover.style.transition = "opacity 0.8s ease";
+        cover.style.opacity = "0";
+        setTimeout(() => cover.remove(), 800);
+    }
+  }, 2500);
 
   startMechanics();
 }
@@ -179,7 +180,7 @@ function startMechanics() {
     { level: 5, startSweeps: ['66yna1yh5e2ig14bmzzf1sn2c'], targetSweep: '3hdk0cskxw0apbr2iw8016htb', imagesToFind: ['/Hanimexs Movielux.jpeg', '/argus previewer.jpeg', '/porcelain lobster.jpeg', '/scotts mower maker.jpeg'] },
     { level: 6, startSweeps: ['3hdk0cskxw0apbr2iw8016htb'], targetSweep: 'r7sd2g426fhbfa2wdh5dfxy5d', imagesToFind: ['/barley.jpg', '/some flumis.jpeg', '/wall climbing baby.jpeg', '/hide and seek.jpeg'] },
     { level: 7, startSweeps: ['r7sd2g426fhbfa2wdh5dfxy5d'], targetSweep: '20qckty5qi20t39838cq274rc', imagesToFind: ['/a pair of old jugs.jpeg', '/a third more time.jpeg', '/odd purves terms.jpeg', '/round thing.jpeg'] },
-    { level: 8, startSweeps: ['20qckty5qi20t39838cq274rc'], targetSweep: 'dy113u49qt5s7y38ms7ibmd9b', imagesToFind: ['/cat in a turban.jpeg', '/embroidered australia.jpeg', '/three wooden discs.jpeg'] },
+    { level: 8, startSweeps: ['20qckty5qi20t39838cq274rc'], targetSweep: 'dy113u49qt5s7y38ms7ibmd9b', imagesToFind: ['/cat in a turban.jpeg', '/australia in stitches.jpeg', '/three wooden discs.jpeg'] }, // Updated filename here
     { level: 9, startSweeps: ['dy113u49qt5s7y38ms7ibmd9b'], targetSweep: 'rxgziepm3g4e0fgdgnwwk6efd', imagesToFind: ['/she disinterestedly sat.jpeg', '/picked pack.jpeg', '/two little fellas.jpeg'] },
     { level: 10, startSweeps: ['rxgziepm3g4e0fgdgnwwk6efd'], targetSweep: 'w2bre69ufwyaywn11ch032aaa', imagesToFind: ['/drinking urn.jpeg', '/viking preserve.jpeg', '/confetti.jpeg', '/two box of confetti.jpeg'] },
     { level: 11, startSweeps: ['w2bre69ufwyaywn11ch032aaa'], targetSweep: 'dimg015tts6u2b30hh0pndaqd', imagesToFind: ['/eagle.jpeg', '/blue hand.jpeg', '/gnome all alone.jpeg', '/beetles.jpeg'] },
@@ -211,98 +212,82 @@ function startMechanics() {
     return currentLevel.imagesToFind.every(img => window.foundImages[img] === true);
   }
 
-  const targetMatchStrings = [];
-  LEVELS.forEach(level => {
-    level.imagesToFind.forEach(img => {
-      targetMatchStrings.push(img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', ''));
-    });
-  });
+  // --- THE BULLETPROOF LOGIC (Image SRC Hunting) ---
+  const observer = new MutationObserver((mutations) => {
+    const currentLevel = LEVELS[window.currentLevelIndex];
+    if (!currentLevel || window.isTeleporting) return;
 
-  // --- THE ULTRA-LEAN ENGINE (No DOM Scanning, Direct Visibility Checks) ---
-  setInterval(() => {
-    
-    // 1. Audio Assassin: Hides the audio player X at the bottom of the screen
-    document.querySelectorAll('[class*="close"], [id*="close"]').forEach(btn => {
-      const rect = btn.getBoundingClientRect();
-      // If the X is at the very bottom of the screen (where Audio player lives) and is actually injected
-      if (rect.bottom > window.innerHeight - 100 && rect.bottom !== 0) {
-        btn.style.setProperty('display', 'none', 'important');
-        btn.style.setProperty('opacity', '0', 'important');
-      }
-    });
-
-    // 2. Video Hijack: Keep video paused until Start is clicked
-    if (!document.body.classList.contains('game-started')) {
-      document.querySelectorAll('video').forEach(v => v.pause());
-    }
-
-    // 3. The Visual Hunter (Lag-Free Edition)
-    const openPopups = document.querySelectorAll('#customBillboardFullOverlay, .mpe-popup, .mpe-media-overlay');
+    const openPopups = document.querySelectorAll('#customBillboardFullOverlay, .mpe-popup');
     let anyOpen = false;
 
-    openPopups.forEach(overlay => {
-        // FAST VISIBILITY CHECK: Replaced the laggy getComputedStyle with offsetParent
-        if (overlay.offsetParent !== null) {
+    openPopups.forEach(popup => {
+        if (popup.offsetParent !== null) {
             anyOpen = true;
-            
-            const textContainer = overlay.querySelector('.tag-text-content, div[class*="text"], h1, h2, h3, p');
-            if (!textContainer || !textContainer.textContent) return;
 
-            const textClean = textContainer.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
-            const currentLevel = LEVELS[window.currentLevelIndex];
+            // Look directly at the Image Source, NOT the text!
+            const img = popup.querySelector('img');
+            const textContainer = popup.querySelector('.tag-text-content, div[class*="text"], h1, h2, h3, p');
             
-            if (!currentLevel || window.isTeleporting) return;
-
-            currentLevel.imagesToFind.forEach((filename) => {
-                const cleanName = filename.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', '');
+            if (img && img.src && textContainer) {
+                const srcClean = decodeURIComponent(img.src).toLowerCase();
                 
-                if (textClean.includes(cleanName)) {
+                currentLevel.imagesToFind.forEach((filename) => {
+                    const filenameClean = filename.toLowerCase().replace('jpeg', '').replace('jpg', '').trim();
                     
-                    // A) Format it instantly (Removed the black box, added pure neon shadow text)
-                    if (!textContainer.dataset.styled) {
-                        textContainer.style.setProperty('position', 'absolute', 'important');
-                        textContainer.style.setProperty('left', '50%', 'important');
-                        textContainer.style.setProperty('top', '50%', 'important'); 
-                        textContainer.style.setProperty('transform', 'translate(-50%, -50%)', 'important'); 
-                        textContainer.style.setProperty('font-size', '280%', 'important'); 
-                        textContainer.style.setProperty('color', '#CCFF00', 'important');
-                        textContainer.style.setProperty('text-shadow', '0px 4px 20px rgba(0,0,0,0.9), 0px 0px 10px rgba(0,0,0,1)', 'important');
-                        textContainer.style.setProperty('margin', '0', 'important');
-                        textContainer.style.setProperty('white-space', 'nowrap', 'important');
-                        textContainer.style.setProperty('z-index', '9999', 'important');
+                    if (srcClean.includes(filenameClean)) {
                         
-                        textContainer.dataset.styled = "true"; 
-                    }
-
-                    // B) Game Logic
-                    if (!window.foundImages[filename]) {
-                        console.log(`🎯 [Escape Room] Found: ${filename}`);
-                        playItemSound(filename); 
-                        window.foundImages[filename] = true;
-                        
-                        if (checkAllFound()) {
-                            console.log(`🔓 [Escape Room] All items found! Door unlocked.`);
-                            try { window.globalChime.currentTime = 0; window.globalChime.play().catch(()=>{}); } catch(e){}
+                        // Format the text cleanly
+                        if (!textContainer.dataset.styled) {
+                            textContainer.style.setProperty('position', 'absolute', 'important');
+                            textContainer.style.setProperty('left', '50%', 'important');
+                            textContainer.style.setProperty('top', '50%', 'important'); 
+                            textContainer.style.setProperty('transform', 'translate(-50%, -50%)', 'important'); 
+                            textContainer.style.setProperty('font-size', '280%', 'important'); 
+                            textContainer.style.setProperty('color', '#CCFF00', 'important');
+                            textContainer.style.setProperty('text-shadow', '0px 4px 20px rgba(0,0,0,0.9), 0px 0px 10px rgba(0,0,0,1)', 'important');
+                            textContainer.style.setProperty('margin', '0', 'important');
+                            textContainer.style.setProperty('white-space', 'nowrap', 'important');
+                            textContainer.style.setProperty('z-index', '9999', 'important');
+                            
+                            // Strip any black backgrounds from parents
+                            const banner = textContainer.parentElement;
+                            if (banner) {
+                                banner.style.setProperty('background', 'transparent', 'important');
+                                banner.style.setProperty('background-color', 'transparent', 'important'); 
+                                banner.style.setProperty('box-shadow', 'none', 'important');
+                            }
+                            textContainer.dataset.styled = "true"; 
                         }
+
+                        // Game Logic
+                        if (!window.foundImages[filename]) {
+                            console.log(`🎯 [Escape Room] Found: ${filename}`);
+                            playItemSound(filename); 
+                            window.foundImages[filename] = true;
+                            
+                            if (checkAllFound()) {
+                                console.log(`🔓 [Escape Room] All items found! Door unlocked.`);
+                                try { window.globalChime.currentTime = 0; window.globalChime.play().catch(()=>{}); } catch(e){}
+                            }
+                        }
+                        window.activeOpenPopups.add(filename);
                     }
-                    
-                    window.activeOpenPopups.add(filename);
-                }
-            });
+                });
+            }
         }
     });
 
-    // 4. Teleport Trigger: If NO popups are open right now, but memory has items, user closed it.
+    // Teleport Trigger
     if (!anyOpen && window.activeOpenPopups.size > 0) {
         window.activeOpenPopups.clear(); 
-        
         if (checkAllFound() && !window.isTeleporting) {
             console.log(`🚀 [Escape Room] Initiating Teleport sequence!`);
-            executeFastTeleport(window.mpSdk, LEVELS[window.currentLevelIndex]);
+            executeFastTeleport(window.mpSdk, currentLevel);
         }
     }
+  });
 
-  }, 100);
+  observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
 
   // --- INITIALIZATION & DOOR LOCKS ---
   async function initMashupLogic(mpSdk) {
@@ -321,19 +306,6 @@ function startMechanics() {
     });
 
     window.allModelSweeps = Object.keys(sweepCollection);
-
-    const loadingText = document.getElementById('eye-spy-loading-text');
-    if (loadingText) loadingText.remove();
-    
-    const cover = document.getElementById('eye-spy-image-cover');
-    if (cover) {
-        cover.style.transition = "opacity 0.6s ease";
-        cover.style.opacity = "0";
-        setTimeout(() => cover.remove(), 600);
-    }
-    
-    const welcomeBlock = document.getElementById('eye-spy-welcome-block');
-    if (welcomeBlock) welcomeBlock.style.display = "flex";
 
     const startBtn = document.getElementById('eye-spy-start-btn');
     if (startBtn) {
