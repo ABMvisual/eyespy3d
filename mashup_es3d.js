@@ -12,6 +12,8 @@
 // e.g. for https://www.youtube.com/watch?v=dQw4w9WgXcQ the ID is dQw4w9WgXcQ
 const YOUTUBE_VIDEO_ID = 'rXT_61Yr2OM';
 
+console.log('EYE SPY 3D \u2014 V3003 loaded');
+
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
 const AUDIO_MAP = {
@@ -424,8 +426,12 @@ function startMechanics() {
     videoOverlay.style.display = 'block';
 
     // Fallback: if the YouTube API never loads (network issue, blocked script, etc),
-    // do not leave the player stuck, just move on after a generous timeout.
-    const fallbackTimer = setTimeout(proceedPastVideo, 20000);
+    // do not leave the player stuck. Pushed out to 90s so a slow-loading API can't
+    // be mistaken for a stuck video, and it logs clearly if it ever actually fires.
+    const fallbackTimer = setTimeout(() => {
+      console.warn('Intro video fallback timeout fired after 90s, proceeding without confirmation the video finished.');
+      proceedPastVideo();
+    }, 90000);
 
     function createPlayer() {
       clearTimeout(fallbackTimer);
@@ -433,12 +439,18 @@ function startMechanics() {
         videoId: YOUTUBE_VIDEO_ID,
         playerVars: { autoplay: 1, controls: 1, rel: 0, modestbranding: 1, playsinline: 1 },
         events: {
+          onReady: function () {
+            console.log('Intro video ready and should now be playing.');
+          },
           onStateChange: function (event) {
+            const stateNames = { '-1': 'UNSTARTED', 0: 'ENDED', 1: 'PLAYING', 2: 'PAUSED', 3: 'BUFFERING', 5: 'CUED' };
+            console.log('Intro video state changed to:', stateNames[event.data] || event.data);
             if (event.data === YT.PlayerState.ENDED) {
               proceedPastVideo();
             }
           },
-          onError: function () {
+          onError: function (event) {
+            console.warn('Intro video error, code:', event.data, '(2=invalid ID, 5=HTML5 error, 100=not found/private, 101 or 150=embedding disabled by owner)');
             proceedPastVideo();
           }
         }
