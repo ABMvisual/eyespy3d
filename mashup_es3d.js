@@ -1,7 +1,16 @@
 // =============================================================================
-// EYE SPY 3D — THE FINAL ENGINE (V5001)
-// FIXES: Updated Level 8 filename to 'australia in stitches', Image SRC Targeting, Fullscreen Video, Zero Lag
+// EYE SPY 3D - ENGINE (V3001)
+// Base: V3000 (confirmed overlay-watching engine, untouched below)
+// Added: YouTube intro video, entirely inside our own overlay, no MPEmbed
+// video/billboard system involved at all. Click to play (satisfies browser
+// autoplay-with-sound rules), fullscreen requested on the same click, video
+// end automatically unlocks the hunt sweep. Skip button included as a
+// fallback in case the video fails to load.
 // =============================================================================
+
+// >>> REPLACE THIS WITH YOUR ACTUAL YOUTUBE VIDEO ID <<<
+// e.g. for https://www.youtube.com/watch?v=dQw4w9WgXcQ the ID is dQw4w9WgXcQ
+const YOUTUBE_VIDEO_ID = 'REPLACE_WITH_YOUR_VIDEO_ID';
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
@@ -31,10 +40,8 @@ const AUDIO_MAP = {
   '/a third more time.jpeg': 'a third more time.mp3',
   '/odd purves terms.jpeg': 'odd purves terms.mp3',
   '/round thing.jpeg': 'round thing.mp3',
-  
-  // LEVELS 8 - 15
   '/cat in a turban.jpeg': 'cat in a turban.mp3',
-  '/australia in stitches.jpeg': 'embroidered australia.mp3', // Updated to match new image name
+  '/embroidered australia.jpeg': 'embroidered australia.mp3',
   '/three wooden discs.jpeg': 'three wooden discs.mp3',
   '/she disinterestedly sat.jpeg': 'she disinterestedly sat.mp3',
   '/picked pack.jpeg': 'picked pack.mp3',
@@ -71,11 +78,14 @@ function playItemSound(imageFilename) {
   if (mp3Name) {
     window.globalSfx.src = GITHUB_BASE + encodeURIComponent(mp3Name);
     window.globalSfx.currentTime = 0;
-    window.globalSfx.play().catch(()=>{});
+    window.globalSfx.play().catch(() => {});
   }
 }
 
-// --- 1. BOOT LOADER & CSS INJECTION ---
+function normalize(str) {
+  return (str || '').toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', '');
+}
+
 let bootInterval = setInterval(() => {
   if (document.head && document.body) {
     clearInterval(bootInterval);
@@ -87,61 +97,94 @@ function injectCustomUI() {
   const customStyles = document.createElement('style');
   customStyles.innerHTML = `
     * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
-    
-    [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
-    
-    /* AUDIO UI ASSASSIN */
-    audio, [id*="audio"], [class*="audio-player"] { display: none !important; opacity: 0 !important; pointer-events: none !important; visibility: hidden !important; }
-    
-    /* PRE-GAME STATE: Erase the video wrapper entirely until Start is clicked */
-    body:not(.game-started) .pano-media, 
-    body:not(.game-started) .mpe-media-overlay,
-    body:not(.game-started) video {
-        display: none !important; opacity: 0 !important; pointer-events: none !important; visibility: hidden !important;
+
+    [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay {
+      filter: none !important; -webkit-filter: none !important;
+      background: transparent !important; background-color: transparent !important;
+    }
+    [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner,
+    #customBillboardLoading, img[src*="loader.svg"] {
+      display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;
+    }
+    audio, video, [id*="audio"], [class*="audio-player"],
+    div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"], .mpe-media-close {
+      display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important;
+      pointer-events: none !important; visibility: hidden !important;
     }
 
-    /* FULLSCREEN VIDEO ON START: Forces true fullscreen */
-    body.game-started .pano-media, 
-    body.game-started .mpe-media-overlay {
-        display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important;
-        width: 100vw !important; height: 100vh !important; background: black !important;
-        z-index: 2147483640 !important; transform: none !important; border-radius: 0 !important;
+    #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close {
+      transform: scale(3.5) !important; right: 35px !important; top: 35px !important;
+      opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important;
     }
 
-    /* Nuke hover effects and black bars */
-    .mpe-media-overlay::before, .mpe-media-overlay::after, .pano-media:hover { background: transparent !important; filter: none !important; box-shadow: none !important; }
+    #customBillboardFull, #customBillboardFull * { transition: none !important; animation: none !important; }
 
-    #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; z-index: 99999 !important; pointer-events: auto !important; }
-
-    .mpe-popup, .mp-mattertag { transition: none !important; animation: none !important; }
-
-    #eye-spy-dark-overlay { 
-        position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; 
-        background: rgba(0, 0, 0, 0.4) !important; 
-        backdrop-filter: grayscale(100%) brightness(60%) !important;
-        -webkit-backdrop-filter: grayscale(100%) brightness(60%) !important;
-        z-index: 2147483645 !important; 
+    /* Giant centred label, targeted directly at the confirmed element */
+    #customBillboardFull .tag-text-content {
+      position: absolute !important; left: 50% !important; top: 50% !important;
+      transform: translate(-50%, -50%) !important; font-size: 240% !important;
+      color: white !important; margin: 0 !important; white-space: nowrap !important;
+      background-color: #1c1c1c !important; padding: 10px 20px !important; z-index: 5 !important;
     }
 
-    #eye-spy-image-cover { 
-        position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; 
-        background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/ES3D_load%20screen%20omni.png') !important; 
-        background-size: cover !important; background-position: center !important; 
-        z-index: 2147483646 !important; animation: slow-punch 12s infinite alternate ease-in-out;
+    #eye-spy-dark-overlay {
+      position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;
+      background: rgba(0, 0, 0, 0.4) !important;
+      backdrop-filter: grayscale(100%) brightness(60%) !important;
+      -webkit-backdrop-filter: grayscale(100%) brightness(60%) !important;
+      z-index: 2147483645 !important;
     }
-    #eye-spy-image-cover::after { 
-        content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-        background-image: inherit; background-size: contain !important; background-repeat: no-repeat !important; background-position: center !important; 
-        backdrop-filter: blur(15px); background-color: rgba(0,0,0,0.4); 
+    #eye-spy-image-cover {
+      position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;
+      background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/ES3D_load%20screen%20omni.png') !important;
+      background-size: cover !important; background-position: center !important;
+      z-index: 2147483646 !important; animation: slow-punch 12s infinite alternate ease-in-out;
     }
-    
+    #eye-spy-image-cover::after {
+      content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background-image: inherit; background-size: contain !important; background-repeat: no-repeat !important;
+      background-position: center !important; backdrop-filter: blur(15px); background-color: rgba(0,0,0,0.4);
+    }
     @keyframes slow-punch { 0% { transform: scale(1); } 100% { transform: scale(1.08); } }
 
-    #eye-spy-start-ui { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483647 !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; }
-    #eye-spy-welcome-block { display: flex; flex-direction: column; align-items: center; }
-    
-    #eye-spy-start-btn { padding: 16px 40px !important; font-size: 24px !important; font-weight: bold !important; background: #CCFF00 !important; color: #000 !important; border: none !important; border-radius: 8px !important; cursor: pointer !important; transition: transform 0.2s ease !important; box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important; pointer-events: auto !important; }
+    #eye-spy-start-ui {
+      position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;
+      z-index: 2147483647 !important; display: flex !important; flex-direction: column !important;
+      justify-content: center !important; align-items: center !important;
+    }
+    #eye-spy-welcome-block { display: none; flex-direction: column; align-items: center; }
+    #eye-spy-start-btn {
+      padding: 16px 40px !important; font-size: 24px !important; font-weight: bold !important;
+      background: #CCFF00 !important; color: #000 !important; border: none !important; border-radius: 8px !important;
+      cursor: pointer !important; transition: transform 0.2s ease !important;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important; pointer-events: auto !important;
+    }
     #eye-spy-start-btn:hover { transform: scale(1.05) !important; }
+    #eye-spy-loading-text {
+      position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal;
+      animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647;
+    }
+    @keyframes eye-spy-fade { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
+
+    /* INTRO VIDEO OVERLAY: entirely our own, no MPEmbed involvement */
+    #eye-spy-video-overlay {
+      position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;
+      background: #000 !important; z-index: 2147483647 !important; display: none;
+    }
+    #eye-spy-video-frame-wrap {
+      position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important;
+    }
+    #eye-spy-video-frame-wrap iframe {
+      width: 100% !important; height: 100% !important; border: none !important;
+    }
+    #eye-spy-video-skip-btn {
+      position: absolute !important; bottom: 30px !important; right: 30px !important;
+      padding: 10px 22px !important; font-size: 16px !important; font-weight: bold !important;
+      background: rgba(255,255,255,0.15) !important; color: #fff !important;
+      border: 1px solid rgba(255,255,255,0.6) !important; border-radius: 6px !important;
+      cursor: pointer !important; z-index: 2147483647 !important; pointer-events: auto !important;
+    }
+    #eye-spy-video-skip-btn:hover { background: rgba(255,255,255,0.3) !important; }
   `;
   document.head.appendChild(customStyles);
 
@@ -150,23 +193,21 @@ function injectCustomUI() {
 
   const startUI = document.createElement('div'); startUI.id = 'eye-spy-start-ui';
   startUI.innerHTML = `
+    <div id="eye-spy-loading-text">Loading 3D experience...</div>
     <div id="eye-spy-welcome-block">
       <h1 style="margin: 0 0 15px 0; text-align: center; font-size: 42px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); color: white;">Welcome to Eye Spy 3D</h1>
       <p style="margin: 0 0 30px 0; font-size: 20px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Please enjoy this experience with your audio on</p>
-      <button id="eye-spy-start-btn">Start now!</button>
+      <button id="eye-spy-start-btn">Watch the intro</button>
     </div>
   `;
   document.body.appendChild(startUI);
 
-  // TIMED DOLLHOUSE REVEAL
-  setTimeout(() => {
-    const cover = document.getElementById('eye-spy-image-cover');
-    if (cover) {
-        cover.style.transition = "opacity 0.8s ease";
-        cover.style.opacity = "0";
-        setTimeout(() => cover.remove(), 800);
-    }
-  }, 2500);
+  const videoOverlay = document.createElement('div'); videoOverlay.id = 'eye-spy-video-overlay';
+  videoOverlay.innerHTML = `
+    <div id="eye-spy-video-frame-wrap"></div>
+    <button id="eye-spy-video-skip-btn">Skip &gt;</button>
+  `;
+  document.body.appendChild(videoOverlay);
 
   startMechanics();
 }
@@ -180,21 +221,31 @@ function startMechanics() {
     { level: 5, startSweeps: ['66yna1yh5e2ig14bmzzf1sn2c'], targetSweep: '3hdk0cskxw0apbr2iw8016htb', imagesToFind: ['/Hanimexs Movielux.jpeg', '/argus previewer.jpeg', '/porcelain lobster.jpeg', '/scotts mower maker.jpeg'] },
     { level: 6, startSweeps: ['3hdk0cskxw0apbr2iw8016htb'], targetSweep: 'r7sd2g426fhbfa2wdh5dfxy5d', imagesToFind: ['/barley.jpg', '/some flumis.jpeg', '/wall climbing baby.jpeg', '/hide and seek.jpeg'] },
     { level: 7, startSweeps: ['r7sd2g426fhbfa2wdh5dfxy5d'], targetSweep: '20qckty5qi20t39838cq274rc', imagesToFind: ['/a pair of old jugs.jpeg', '/a third more time.jpeg', '/odd purves terms.jpeg', '/round thing.jpeg'] },
-    { level: 8, startSweeps: ['20qckty5qi20t39838cq274rc'], targetSweep: 'dy113u49qt5s7y38ms7ibmd9b', imagesToFind: ['/cat in a turban.jpeg', '/australia in stitches.jpeg', '/three wooden discs.jpeg'] }, // Updated filename here
+    { level: 8, startSweeps: ['20qckty5qi20t39838cq274rc'], targetSweep: 'dy113u49qt5s7y38ms7ibmd9b', imagesToFind: ['/cat in a turban.jpeg', '/embroidered australia.jpeg', '/three wooden discs.jpeg'] },
     { level: 9, startSweeps: ['dy113u49qt5s7y38ms7ibmd9b'], targetSweep: 'rxgziepm3g4e0fgdgnwwk6efd', imagesToFind: ['/she disinterestedly sat.jpeg', '/picked pack.jpeg', '/two little fellas.jpeg'] },
     { level: 10, startSweeps: ['rxgziepm3g4e0fgdgnwwk6efd'], targetSweep: 'w2bre69ufwyaywn11ch032aaa', imagesToFind: ['/drinking urn.jpeg', '/viking preserve.jpeg', '/confetti.jpeg', '/two box of confetti.jpeg'] },
     { level: 11, startSweeps: ['w2bre69ufwyaywn11ch032aaa'], targetSweep: 'dimg015tts6u2b30hh0pndaqd', imagesToFind: ['/eagle.jpeg', '/blue hand.jpeg', '/gnome all alone.jpeg', '/beetles.jpeg'] },
     { level: 12, startSweeps: ['dimg015tts6u2b30hh0pndaqd'], targetSweep: 'iwaxrd4g1gki6i64y6dk1iuhd', imagesToFind: ['/mock ducks.jpeg', '/unarmed man.jpeg', '/wooden goanna.jpeg'] },
     { level: 13, startSweeps: ['iwaxrd4g1gki6i64y6dk1iuhd'], targetSweep: 'aty78ze3y9ddyg8702gmncdma', imagesToFind: ['/whose head.jpeg', '/runners.jpeg', '/the plugs.jpeg', '/hat.jpeg', '/the hugs.jpeg'] },
     { level: 14, startSweeps: ['aty78ze3y9ddyg8702gmncdma'], targetSweep: 'e5ynaauc9kx9mar4r52hp1rfb', imagesToFind: ['/dimboola.jpeg', '/akubra.jpeg', '/egypt etc.jpeg', '/tiger.jpeg', '/butterfly.jpeg', '/horse head.jpeg'] },
-    { level: 15, startSweeps: ['e5ynaauc9kx9mar4r52hp1rfb'], targetSweep: 'e5ynaauc9kx9mar4r52hp1rfb', imagesToFind: [] }
+    { level: 15, startSweeps: ['e5ynaauc9kx9mar4r52hp1rfb'], targetSweep: null, imagesToFind: [] }
   ];
+
+  // Reverse lookup: normalised label text -> exact filename, built once.
+  const normalizedToFilename = {};
+  LEVELS.forEach(level => {
+    level.imagesToFind.forEach(img => {
+      normalizedToFilename[normalize(img)] = img;
+    });
+  });
 
   window.currentLevelIndex = 0;
   window.allModelSweeps = [];
   window.foundImages = {};
-  window.isTeleporting = false; 
-  window.activeOpenPopups = new Set(); 
+  window.isTeleporting = false;
+  window.activeOpenPopups = new Set();
+  window.lobbyLocked = false;
+  window.overlayWasOpen = false; // tracks last known state of #customBillboardFullOverlay
 
   function setupLevelTracking() {
     window.foundImages = {};
@@ -204,6 +255,7 @@ function startMechanics() {
     }
     window.isTeleporting = false;
     window.activeOpenPopups.clear();
+    window.overlayWasOpen = false;
   }
 
   function checkAllFound() {
@@ -212,84 +264,75 @@ function startMechanics() {
     return currentLevel.imagesToFind.every(img => window.foundImages[img] === true);
   }
 
-  // --- THE BULLETPROOF LOGIC (Image SRC Hunting) ---
-  const observer = new MutationObserver((mutations) => {
+  function isOverlayOpen(overlay) {
+    if (!overlay) return false;
+    const style = window.getComputedStyle(overlay);
+    return style.display !== 'none';
+  }
+
+  function handleOverlayState() {
     const currentLevel = LEVELS[window.currentLevelIndex];
-    if (!currentLevel || window.isTeleporting) return;
+    if (!currentLevel || currentLevel.imagesToFind.length === 0 || window.isTeleporting) return;
 
-    const openPopups = document.querySelectorAll('#customBillboardFullOverlay, .mpe-popup');
-    let anyOpen = false;
+    const overlay = document.getElementById('customBillboardFullOverlay');
+    const open = isOverlayOpen(overlay);
 
-    openPopups.forEach(popup => {
-        if (popup.offsetParent !== null) {
-            anyOpen = true;
+    if (open && !window.overlayWasOpen) {
+      // Popup just opened. Read the label directly.
+      const labelEl = overlay.querySelector('.tag-text-content');
+      const rawLabel = labelEl ? labelEl.textContent : '';
+      const cleanLabel = normalize(rawLabel);
+      const matchedFilename = normalizedToFilename[cleanLabel];
 
-            // Look directly at the Image Source, NOT the text!
-            const img = popup.querySelector('img');
-            const textContainer = popup.querySelector('.tag-text-content, div[class*="text"], h1, h2, h3, p');
-            
-            if (img && img.src && textContainer) {
-                const srcClean = decodeURIComponent(img.src).toLowerCase();
-                
-                currentLevel.imagesToFind.forEach((filename) => {
-                    const filenameClean = filename.toLowerCase().replace('jpeg', '').replace('jpg', '').trim();
-                    
-                    if (srcClean.includes(filenameClean)) {
-                        
-                        // Format the text cleanly
-                        if (!textContainer.dataset.styled) {
-                            textContainer.style.setProperty('position', 'absolute', 'important');
-                            textContainer.style.setProperty('left', '50%', 'important');
-                            textContainer.style.setProperty('top', '50%', 'important'); 
-                            textContainer.style.setProperty('transform', 'translate(-50%, -50%)', 'important'); 
-                            textContainer.style.setProperty('font-size', '280%', 'important'); 
-                            textContainer.style.setProperty('color', '#CCFF00', 'important');
-                            textContainer.style.setProperty('text-shadow', '0px 4px 20px rgba(0,0,0,0.9), 0px 0px 10px rgba(0,0,0,1)', 'important');
-                            textContainer.style.setProperty('margin', '0', 'important');
-                            textContainer.style.setProperty('white-space', 'nowrap', 'important');
-                            textContainer.style.setProperty('z-index', '9999', 'important');
-                            
-                            // Strip any black backgrounds from parents
-                            const banner = textContainer.parentElement;
-                            if (banner) {
-                                banner.style.setProperty('background', 'transparent', 'important');
-                                banner.style.setProperty('background-color', 'transparent', 'important'); 
-                                banner.style.setProperty('box-shadow', 'none', 'important');
-                            }
-                            textContainer.dataset.styled = "true"; 
-                        }
-
-                        // Game Logic
-                        if (!window.foundImages[filename]) {
-                            console.log(`🎯 [Escape Room] Found: ${filename}`);
-                            playItemSound(filename); 
-                            window.foundImages[filename] = true;
-                            
-                            if (checkAllFound()) {
-                                console.log(`🔓 [Escape Room] All items found! Door unlocked.`);
-                                try { window.globalChime.currentTime = 0; window.globalChime.play().catch(()=>{}); } catch(e){}
-                            }
-                        }
-                        window.activeOpenPopups.add(filename);
-                    }
-                });
-            }
+      if (matchedFilename && currentLevel.imagesToFind.includes(matchedFilename)) {
+        if (!window.foundImages[matchedFilename]) {
+          console.log(`Found: ${matchedFilename}`);
+          playItemSound(matchedFilename);
         }
-    });
+        window.foundImages[matchedFilename] = true;
+        window.activeOpenPopups.add(matchedFilename);
 
-    // Teleport Trigger
-    if (!anyOpen && window.activeOpenPopups.size > 0) {
-        window.activeOpenPopups.clear(); 
-        if (checkAllFound() && !window.isTeleporting) {
-            console.log(`🚀 [Escape Room] Initiating Teleport sequence!`);
-            executeFastTeleport(window.mpSdk, currentLevel);
+        if (checkAllFound()) {
+          console.log('All items found, door unlocked.');
+          try { window.globalChime.currentTime = 0; window.globalChime.play().catch(() => {}); } catch (e) {}
         }
+      } else {
+        console.log('Popup opened but label did not match any expected item:', rawLabel);
+      }
     }
-  });
 
-  observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+    if (!open && window.overlayWasOpen) {
+      // Popup just closed. Clear whichever item was showing.
+      window.activeOpenPopups.forEach(filename => window.activeOpenPopups.delete(filename));
+      if (checkAllFound() && window.activeOpenPopups.size === 0 && !window.isTeleporting) {
+        console.log('Teleport sequence starting.');
+        executeFastTeleport(window.mpSdk, currentLevel);
+      }
+    }
 
-  // --- INITIALIZATION & DOOR LOCKS ---
+    window.overlayWasOpen = open;
+  }
+
+  // Lightweight observer scoped to the single overlay element, not the whole page.
+  function attachOverlayObserver() {
+    const overlay = document.getElementById('customBillboardFullOverlay');
+    if (!overlay) {
+      // Overlay skeleton not in the DOM yet, retry shortly.
+      setTimeout(attachOverlayObserver, 250);
+      return;
+    }
+    const observer = new MutationObserver(() => handleOverlayState());
+    observer.observe(overlay, {
+      attributes: true,
+      attributeFilter: ['style', 'class'],
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+    // Catch the initial state too, in case it is already open.
+    handleOverlayState();
+  }
+
   async function initMashupLogic(mpSdk) {
     window.mpSdk = mpSdk;
     setupLevelTracking();
@@ -298,8 +341,8 @@ function startMechanics() {
       let sub = mpSdk.Sweep.data.subscribe({
         onCollectionUpdated: function (collection) {
           if (Object.keys(collection).length > 0) {
-              resolve(collection);
-              sub.cancel(); 
+            resolve(collection);
+            sub.cancel();
           }
         }
       });
@@ -307,93 +350,151 @@ function startMechanics() {
 
     window.allModelSweeps = Object.keys(sweepCollection);
 
+    const loadingText = document.getElementById('eye-spy-loading-text');
+    if (loadingText) loadingText.remove();
+
+    const cover = document.getElementById('eye-spy-image-cover');
+    if (cover) {
+      cover.style.transition = 'opacity 0.6s ease';
+      cover.style.opacity = '0';
+      setTimeout(() => cover.remove(), 600);
+    }
+
+    const welcomeBlock = document.getElementById('eye-spy-welcome-block');
+    if (welcomeBlock) welcomeBlock.style.display = 'flex';
+
     const startBtn = document.getElementById('eye-spy-start-btn');
     if (startBtn) {
-        startBtn.addEventListener('click', () => {
-            const docEl = document.documentElement;
-            if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
-            else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
+      startBtn.addEventListener('click', () => {
+        const docEl = document.documentElement;
+        if (docEl.requestFullscreen) {
+          docEl.requestFullscreen().catch(() => {});
+        } else if (docEl.webkitRequestFullscreen) {
+          docEl.webkitRequestFullscreen();
+        }
 
-            const ui = document.getElementById('eye-spy-start-ui');
-            const overlay = document.getElementById('eye-spy-dark-overlay');
-            if (ui) { ui.style.transition = "opacity 0.4s ease"; ui.style.opacity = "0"; setTimeout(() => ui.remove(), 400); }
-            if (overlay) { overlay.style.transition = "opacity 0.4s ease"; overlay.style.opacity = "0"; setTimeout(() => overlay.remove(), 400); }
+        const ui = document.getElementById('eye-spy-start-ui');
+        const overlay = document.getElementById('eye-spy-dark-overlay');
+        if (ui) { ui.style.transition = 'opacity 0.4s ease'; ui.style.opacity = '0'; setTimeout(() => ui.remove(), 400); }
+        if (overlay) { overlay.style.transition = 'opacity 0.4s ease'; overlay.style.opacity = '0'; setTimeout(() => overlay.remove(), 400); }
 
-            document.body.classList.add('game-started');
+        try { window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; window.globalSfx.play().catch(() => {}); } catch (e) {}
 
-            // --- THE BULLETPROOF VIDEO HOUND ---
-            let attempts = 0;
-            let waitForVideo = setInterval(() => {
-                const v = document.querySelector('video');
-                if (v) {
-                    clearInterval(waitForVideo); 
-                    v.currentTime = 0;
-                    v.play().catch(()=>{});
-                    
-                    v.onended = () => {
-                        let container = v.closest('.mpe-popup, .mp-mattertag, [id*="Billboard"], [class*="billboard"], .mpe-media-overlay, .pano-media') || v.parentElement;
-                        const closeBtn = container ? container.querySelector('[class*="close"]') : document.querySelector('[class*="close"]');
-                        if (closeBtn) closeBtn.click();
-                        else console.warn('[Eye Spy] Video ended but could not find the X to close it!');
-                    };
-                }
-                if(attempts++ > 100) clearInterval(waitForVideo); 
-            }, 100);
+        playIntroVideo();
+      });
+    }
 
-            try { window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; window.globalSfx.play().catch(() => {}); } catch (e) {}
+    mpSdk.on(mpSdk.Sweep.Event.ENTER, function (sweepId) {
+      if (window.currentLevelIndex !== 0 || window.lobbyLocked) return;
+      const lobbySweep = LEVELS[0].startSweeps[0];
+      const huntSweep = LEVELS[0].startSweeps[1];
+      if (sweepId === huntSweep) {
+        window.lobbyLocked = true;
+        mpSdk.Sweep.disable(lobbySweep).catch(() => {});
+      }
+    });
 
-            lockMapForCurrentLevel();
-        });
+    attachOverlayObserver();
+  }
+
+  // --- INTRO VIDEO (own overlay, no MPEmbed involvement) ---
+  function proceedPastVideo() {
+    const videoOverlay = document.getElementById('eye-spy-video-overlay');
+    if (videoOverlay) {
+      videoOverlay.style.transition = 'opacity 0.4s ease';
+      videoOverlay.style.opacity = '0';
+      setTimeout(() => videoOverlay.remove(), 400);
+    }
+    lockMapForCurrentLevel();
+  }
+
+  function playIntroVideo() {
+    const videoOverlay = document.getElementById('eye-spy-video-overlay');
+    const frameWrap = document.getElementById('eye-spy-video-frame-wrap');
+    const skipBtn = document.getElementById('eye-spy-video-skip-btn');
+
+    if (skipBtn) skipBtn.addEventListener('click', proceedPastVideo);
+
+    // No video configured, or overlay missing: skip straight to the hunt.
+    if (!YOUTUBE_VIDEO_ID || YOUTUBE_VIDEO_ID === 'REPLACE_WITH_YOUR_VIDEO_ID' || !videoOverlay || !frameWrap) {
+      proceedPastVideo();
+      return;
+    }
+
+    videoOverlay.style.display = 'block';
+
+    // Fallback: if the YouTube API never loads (network issue, blocked script, etc),
+    // do not leave the player stuck, just move on after a generous timeout.
+    const fallbackTimer = setTimeout(proceedPastVideo, 20000);
+
+    function createPlayer() {
+      clearTimeout(fallbackTimer);
+      new YT.Player(frameWrap, {
+        videoId: YOUTUBE_VIDEO_ID,
+        playerVars: { autoplay: 1, controls: 1, rel: 0, modestbranding: 1, playsinline: 1 },
+        events: {
+          onStateChange: function (event) {
+            if (event.data === YT.PlayerState.ENDED) {
+              proceedPastVideo();
+            }
+          },
+          onError: function () {
+            proceedPastVideo();
+          }
+        }
+      });
+    }
+
+    if (window.YT && window.YT.Player) {
+      createPlayer();
+    } else {
+      window.onYouTubeIframeAPIReady = createPlayer;
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
     }
   }
 
   function lockMapForCurrentLevel() {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel || window.allModelSweeps.length === 0) return;
-
-    const sweepsToDisable = window.allModelSweeps.filter(
-      id => !currentLevel.startSweeps.includes(id)
-    );
-
+    const sweepsToDisable = window.allModelSweeps.filter(id => !currentLevel.startSweeps.includes(id));
     if (sweepsToDisable.length > 0) {
       window.mpSdk.Sweep.disable(...sweepsToDisable).catch(() => {});
     }
   }
 
   async function executeFastTeleport(mpSdk, levelData) {
+    if (!levelData.targetSweep) return;
     window.isTeleporting = true;
-    
     try {
       await window.mpSdk.Sweep.enable(levelData.targetSweep).catch(() => {});
-
-      try { 
-          await window.mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: window.mpSdk.Sweep.Transition.FLY });
-      } catch (flyError) { 
-          await window.mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: window.mpSdk.Sweep.Transition.INSTANT }); 
+      try {
+        await window.mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: window.mpSdk.Sweep.Transition.FLY });
+      } catch (flyError) {
+        await window.mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: window.mpSdk.Sweep.Transition.INSTANT });
       }
-
-      window.currentLevelIndex++; 
-      
+      window.currentLevelIndex++;
       if (LEVELS[window.currentLevelIndex]) {
-          setupLevelTracking(); 
-          lockMapForCurrentLevel(); 
+        setupLevelTracking();
+        lockMapForCurrentLevel();
       } else {
-          console.log("🏆 [Escape Room] Complete!");
+        console.log('Game complete.');
       }
     } catch (error) {
-      console.error("Teleport failed:", error);
+      console.error('Teleport failed:', error);
     }
     window.isTeleporting = false;
   }
 
-  let checkSdkInterval = setInterval(function() {
+  let checkSdkInterval = setInterval(function () {
     if (window.mpSdk && window.mpSdk.App) {
-        window.mpSdk.App.state.subscribe(function (appState) {
-            if (appState.phase === window.mpSdk.App.Phase.PLAYING) {
-                clearInterval(checkSdkInterval); 
-                initMashupLogic(window.mpSdk); 
-            }
-        });
+      window.mpSdk.App.state.subscribe(function (appState) {
+        if (appState.phase === window.mpSdk.App.Phase.PLAYING) {
+          clearInterval(checkSdkInterval);
+          initMashupLogic(window.mpSdk);
+        }
+      });
     }
   }, 500);
 }
