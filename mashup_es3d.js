@@ -1,6 +1,6 @@
 // =============================================================================
-// EYE SPY 3D — MASTER ENGINE (V2002)
-// REVERT: Restored the original, robust 250ms Visual Hunter for Text & UI.
+// EYE SPY 3D — MASTER ENGINE (V2004)
+// FIX: Removed <video> from the UI assassin list so the Intro Video can play.
 // =============================================================================
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
@@ -91,7 +91,8 @@ function injectCustomUI() {
     [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay { filter: none !important; -webkit-filter: none !important; background: transparent !important; background-color: transparent !important; }
     [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
     
-    audio, video, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"], .mpe-media-close { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
+    /* NOTE: 'video' was removed from this list so MPEmbed can play your intro! */
+    audio, [id*="audio"], [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"], .mpe-media-close { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
     
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
@@ -165,8 +166,7 @@ function startMechanics() {
     { level: 15, startSweeps: ['20qckty5qi20t39838cq274rc'], targetSweep: 'e5ynaauc9kx9mar4r52hp1rfb', imagesToFind: [] }
   ];
 
-  // --- REVERTED: THE ORIGINAL VISUAL HUNTER LOOP ---
-  // This array helps the loop know exactly which words to make giant.
+  // --- OPTIMIZED VISUAL HUNTER LOOP ---
   const targetMatchStrings = [];
   LEVELS.forEach(level => {
     level.imagesToFind.forEach(img => {
@@ -175,46 +175,49 @@ function startMechanics() {
   });
 
   setInterval(() => {
-    // 1. Relentlessly hide the audio player and the tiny 'X' button
-    document.querySelectorAll('[class*="close"], [id*="close"], audio, video, [class*="audio-player"]').forEach(btn => {
+    // NOTE: 'video' was removed from this loop too!
+    document.querySelectorAll('[class*="close"], [id*="close"], audio, [class*="audio-player"]').forEach(btn => {
       const rect = btn.getBoundingClientRect();
-      if (rect.bottom > window.innerHeight - 100 || btn.tagName.toLowerCase() === 'audio' || btn.tagName.toLowerCase() === 'video') {
+      if (rect.bottom > window.innerHeight - 100 || btn.tagName.toLowerCase() === 'audio') {
         btn.style.setProperty('display', 'none', 'important');
         btn.style.setProperty('opacity', '0', 'important');
       }
     });
 
-    // 2. Relentlessly format the text (Waits for MPEmbed to finish loading it, then strikes)
-    const textElements = document.querySelectorAll('div, span, p, h1, h2, h3');
-    textElements.forEach(el => {
-      if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
-        const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
-        
-        if (textClean.length > 3 && targetMatchStrings.includes(textClean)) {
-          el.style.setProperty('position', 'absolute', 'important');
-          el.style.setProperty('left', '50%', 'important');
-          el.style.setProperty('top', '50%', 'important'); 
-          el.style.setProperty('transform', 'translate(-50%, -50%)', 'important'); 
-          el.style.setProperty('font-size', '240%', 'important'); 
-          el.style.setProperty('color', 'white', 'important');
-          el.style.setProperty('margin', '0', 'important');
-          el.style.setProperty('white-space', 'nowrap', 'important');
-          
-          const banner = el.parentElement;
-          if (banner && !banner.dataset.styled) {
-            banner.style.setProperty('background-color', '#1c1c1c', 'important');
-            banner.style.setProperty('background', '#1c1c1c', 'important'); 
-            if (window.getComputedStyle(banner).position === 'static') {
-              banner.style.setProperty('position', 'relative', 'important');
+    const openPopups = document.querySelectorAll('.mpe-popup, .mp-mattertag, .mpe-media-overlay');
+    if (openPopups.length === 0) return; 
+
+    openPopups.forEach(popup => {
+        const textElements = popup.querySelectorAll('div, span, p, h1, h2, h3');
+        textElements.forEach(el => {
+          if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
+            const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
+            
+            if (textClean.length > 3 && targetMatchStrings.includes(textClean)) {
+              el.style.setProperty('position', 'absolute', 'important');
+              el.style.setProperty('left', '50%', 'important');
+              el.style.setProperty('top', '50%', 'important'); 
+              el.style.setProperty('transform', 'translate(-50%, -50%)', 'important'); 
+              el.style.setProperty('font-size', '240%', 'important'); 
+              el.style.setProperty('color', 'white', 'important');
+              el.style.setProperty('margin', '0', 'important');
+              el.style.setProperty('white-space', 'nowrap', 'important');
+              
+              const banner = el.parentElement;
+              if (banner && !banner.dataset.styled) {
+                banner.style.setProperty('background-color', '#1c1c1c', 'important');
+                banner.style.setProperty('background', '#1c1c1c', 'important'); 
+                if (window.getComputedStyle(banner).position === 'static') {
+                  banner.style.setProperty('position', 'relative', 'important');
+                }
+                banner.style.setProperty('min-height', '75px', 'important');
+                banner.dataset.styled = "true"; 
+              }
             }
-            banner.style.setProperty('min-height', '75px', 'important');
-            banner.dataset.styled = "true"; 
           }
-        }
-      }
+        });
     });
   }, 250); 
-  // --- END OF VISUAL HUNTER REVERT ---
 
   window.currentLevelIndex = 0;
   window.allModelSweeps = [];
@@ -238,7 +241,7 @@ function startMechanics() {
     return currentLevel.imagesToFind.every(img => window.foundImages[img] === true);
   }
 
-  // --- THE GAME LOGIC TRIPWIRE (Now handles logic ONLY, not visuals) ---
+  // --- THE GAME LOGIC TRIPWIRE ---
   const observer = new MutationObserver((mutations) => {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel || currentLevel.imagesToFind.length === 0 || window.isTeleporting) return;
@@ -387,7 +390,6 @@ function startMechanics() {
     window.isTeleporting = false;
   }
 
-  // Waits for SDK Phase 'PLAYING' to prevent startup crashes.
   let checkSdkInterval = setInterval(function() {
     if (window.mpSdk && window.mpSdk.App) {
         window.mpSdk.App.state.subscribe(function (appState) {
