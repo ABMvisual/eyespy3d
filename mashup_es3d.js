@@ -10,7 +10,7 @@
 
 // >>> REPLACE THIS WITH YOUR ACTUAL YOUTUBE VIDEO ID <<<
 // e.g. for https://www.youtube.com/watch?v=dQw4w9WgXcQ the ID is dQw4w9WgXcQ
-const YOUTUBE_VIDEO_ID = 'https://youtu.be/rXT_61Yr2OM';
+const YOUTUBE_VIDEO_ID = 'rXT_61Yr2OM';
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
