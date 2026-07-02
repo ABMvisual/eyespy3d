@@ -1,9 +1,6 @@
 // =============================================================================
-// EYE SPY 3D — TEST BUILD (V2002-TEST)
-// Base: your V2002 (confirmed working, just slow)
-// Change 1: Gated visual hunter loop (fixes 5th-popup lag)
-// Change 2: CSS "assassination" block DISABLED (commented out) — this is a
-//           diagnostic test for the Level 8 issue, not a permanent change.
+// EYE SPY 3D — LEAN MASTER ENGINE (V4000)
+// ARCHITECTURE FIX: Zero DOM scanning. Directly targets #customBillboardFullOverlay
 // =============================================================================
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
@@ -34,6 +31,8 @@ const AUDIO_MAP = {
   '/a third more time.jpeg': 'a third more time.mp3',
   '/odd purves terms.jpeg': 'odd purves terms.mp3',
   '/round thing.jpeg': 'round thing.mp3',
+  
+  // LEVELS 8 - 15
   '/cat in a turban.jpeg': 'cat in a turban.mp3',
   '/embroidered australia.jpeg': 'embroidered australia.mp3',
   '/three wooden discs.jpeg': 'three wooden discs.mp3',
@@ -72,10 +71,11 @@ function playItemSound(imageFilename) {
   if (mp3Name) {
     window.globalSfx.src = GITHUB_BASE + encodeURIComponent(mp3Name);
     window.globalSfx.currentTime = 0;
-    window.globalSfx.play().catch(() => {});
+    window.globalSfx.play().catch(()=>{});
   }
 }
 
+// --- 1. BOOT LOADER & CSS INJECTION ---
 let bootInterval = setInterval(() => {
   if (document.head && document.body) {
     clearInterval(bootInterval);
@@ -87,72 +87,53 @@ function injectCustomUI() {
   const customStyles = document.createElement('style');
   customStyles.innerHTML = `
     * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+    
+    [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay { filter: none !important; -webkit-filter: none !important; background: transparent !important; background-color: transparent !important; }
+    [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+    
+    audio, [id*="audio"], [class*="audio-player"] { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
+    
+    /* PRE-GAME STATE: Hides the video player completely until "Start" is clicked */
+    body:not(.game-started) video, 
+    body:not(.game-started) [class*="close"], 
+    body:not(.game-started) .mpe-media-close {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        visibility: hidden !important;
+    }
 
-    /* ===================================================================
-       TEST: CSS ASSASSINATION BLOCK DISABLED FOR THIS BUILD ONLY.
-       If Level 8 popups start appearing (even ugly/unstyled) with this
-       commented out, that confirms this block was hiding them. If Level 8
-       is STILL dead with this off, the cause is elsewhere (MPEmbed side).
-
-    [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay {
-      filter: none !important; -webkit-filter: none !important;
-      background: transparent !important; background-color: transparent !important;
-    }
-    [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner,
-    #customBillboardLoading, img[src*="loader.svg"] {
-      display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;
-    }
-    audio, video, [id*="audio"], [class*="audio-player"],
-    div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"], .mpe-media-close {
-      display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important;
-      pointer-events: none !important; visibility: hidden !important;
-    }
-       =================================================================== */
-
-    #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close {
-      transform: scale(3.5) !important; right: 35px !important; top: 35px !important;
-      opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important;
-    }
+    #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; z-index: 99999 !important; pointer-events: auto !important; }
 
     .mpe-popup, .mp-mattertag { transition: none !important; animation: none !important; }
 
-    #eye-spy-dark-overlay {
-      position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;
-      background: rgba(0, 0, 0, 0.4) !important;
-      backdrop-filter: grayscale(100%) brightness(60%) !important;
-      -webkit-backdrop-filter: grayscale(100%) brightness(60%) !important;
-      z-index: 2147483645 !important;
+    #eye-spy-dark-overlay { 
+        position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; 
+        background: rgba(0, 0, 0, 0.4) !important; 
+        backdrop-filter: grayscale(100%) brightness(60%) !important;
+        -webkit-backdrop-filter: grayscale(100%) brightness(60%) !important;
+        z-index: 2147483645 !important; 
     }
-    #eye-spy-image-cover {
-      position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;
-      background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/ES3D_load%20screen%20omni.png') !important;
-      background-size: cover !important; background-position: center !important;
-      z-index: 2147483646 !important; animation: slow-punch 12s infinite alternate ease-in-out;
+
+    #eye-spy-image-cover { 
+        position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; 
+        background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/ES3D_load%20screen%20omni.png') !important; 
+        background-size: cover !important; background-position: center !important; 
+        z-index: 2147483646 !important; animation: slow-punch 12s infinite alternate ease-in-out;
     }
-    #eye-spy-image-cover::after {
-      content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background-image: inherit; background-size: contain !important; background-repeat: no-repeat !important;
-      background-position: center !important; backdrop-filter: blur(15px); background-color: rgba(0,0,0,0.4);
+    #eye-spy-image-cover::after { 
+        content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+        background-image: inherit; background-size: contain !important; background-repeat: no-repeat !important; background-position: center !important; 
+        backdrop-filter: blur(15px); background-color: rgba(0,0,0,0.4); 
     }
+    
     @keyframes slow-punch { 0% { transform: scale(1); } 100% { transform: scale(1.08); } }
 
-    #eye-spy-start-ui {
-      position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;
-      z-index: 2147483647 !important; display: flex !important; flex-direction: column !important;
-      justify-content: center !important; align-items: center !important;
-    }
+    #eye-spy-start-ui { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483647 !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; }
     #eye-spy-welcome-block { display: none; flex-direction: column; align-items: center; }
-    #eye-spy-start-btn {
-      padding: 16px 40px !important; font-size: 24px !important; font-weight: bold !important;
-      background: #CCFF00 !important; color: #000 !important; border: none !important; border-radius: 8px !important;
-      cursor: pointer !important; transition: transform 0.2s ease !important;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important; pointer-events: auto !important;
-    }
+    
+    #eye-spy-start-btn { padding: 16px 40px !important; font-size: 24px !important; font-weight: bold !important; background: #CCFF00 !important; color: #000 !important; border: none !important; border-radius: 8px !important; cursor: pointer !important; transition: transform 0.2s ease !important; box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important; pointer-events: auto !important; }
     #eye-spy-start-btn:hover { transform: scale(1.05) !important; }
-    #eye-spy-loading-text {
-      position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal;
-      animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647;
-    }
+    #eye-spy-loading-text { position: absolute; top: 40px; color: white; font-size: 16px; font-weight: normal; animation: eye-spy-fade 2s infinite ease-in-out; z-index: 2147483647; }
     @keyframes eye-spy-fade { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
   `;
   document.head.appendChild(customStyles);
@@ -189,66 +170,15 @@ function startMechanics() {
     { level: 11, startSweeps: ['w2bre69ufwyaywn11ch032aaa'], targetSweep: 'dimg015tts6u2b30hh0pndaqd', imagesToFind: ['/eagle.jpeg', '/blue hand.jpeg', '/gnome all alone.jpeg', '/beetles.jpeg'] },
     { level: 12, startSweeps: ['dimg015tts6u2b30hh0pndaqd'], targetSweep: 'iwaxrd4g1gki6i64y6dk1iuhd', imagesToFind: ['/mock ducks.jpeg', '/unarmed man.jpeg', '/wooden goanna.jpeg'] },
     { level: 13, startSweeps: ['iwaxrd4g1gki6i64y6dk1iuhd'], targetSweep: 'aty78ze3y9ddyg8702gmncdma', imagesToFind: ['/whose head.jpeg', '/runners.jpeg', '/the plugs.jpeg', '/hat.jpeg', '/the hugs.jpeg'] },
-    { level: 14, startSweeps: ['aty78ze3y9ddyg8702gmncdma'], targetSweep: '20qckty5qi20t39838cq274rc', imagesToFind: ['/dimboola.jpeg', '/akubra.jpeg', '/egypt etc.jpeg', '/tiger.jpeg', '/butterfly.jpeg', '/horse head.jpeg'] },
-    { level: 15, startSweeps: ['20qckty5qi20t39838cq274rc'], targetSweep: 'e5ynaauc9kx9mar4r52hp1rfb', imagesToFind: [] }
+    { level: 14, startSweeps: ['aty78ze3y9ddyg8702gmncdma'], targetSweep: 'e5ynaauc9kx9mar4r52hp1rfb', imagesToFind: ['/dimboola.jpeg', '/akubra.jpeg', '/egypt etc.jpeg', '/tiger.jpeg', '/butterfly.jpeg', '/horse head.jpeg'] },
+    { level: 15, startSweeps: ['e5ynaauc9kx9mar4r52hp1rfb'], targetSweep: 'e5ynaauc9kx9mar4r52hp1rfb', imagesToFind: [] }
   ];
-
-  const targetMatchStrings = [];
-  LEVELS.forEach(level => {
-    level.imagesToFind.forEach(img => {
-      targetMatchStrings.push(img.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', ''));
-    });
-  });
-
-  // GATED loop: skips all work when no popup is open (fixes 5th-popup lag)
-  setInterval(() => {
-    document.querySelectorAll('[class*="close"], [id*="close"], audio, video, [class*="audio-player"]').forEach(btn => {
-      const rect = btn.getBoundingClientRect();
-      if (rect.bottom > window.innerHeight - 100 || btn.tagName.toLowerCase() === 'audio' || btn.tagName.toLowerCase() === 'video') {
-        btn.style.setProperty('display', 'none', 'important');
-        btn.style.setProperty('opacity', '0', 'important');
-      }
-    });
-
-    const openPopups = document.querySelectorAll('.mpe-popup, .mp-mattertag, .mpe-media-overlay');
-    if (openPopups.length === 0) return;
-
-    openPopups.forEach(popup => {
-      const textElements = popup.querySelectorAll('div, span, p, h1, h2, h3');
-      textElements.forEach(el => {
-        if (el.children.length === 0 && el.textContent && el.offsetParent !== null) {
-          const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
-          if (textClean.length > 3 && targetMatchStrings.includes(textClean)) {
-            el.style.setProperty('position', 'absolute', 'important');
-            el.style.setProperty('left', '50%', 'important');
-            el.style.setProperty('top', '50%', 'important');
-            el.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
-            el.style.setProperty('font-size', '240%', 'important');
-            el.style.setProperty('color', 'white', 'important');
-            el.style.setProperty('margin', '0', 'important');
-            el.style.setProperty('white-space', 'nowrap', 'important');
-
-            const banner = el.parentElement;
-            if (banner && !banner.dataset.styled) {
-              banner.style.setProperty('background-color', '#1c1c1c', 'important');
-              banner.style.setProperty('background', '#1c1c1c', 'important');
-              if (window.getComputedStyle(banner).position === 'static') {
-                banner.style.setProperty('position', 'relative', 'important');
-              }
-              banner.style.setProperty('min-height', '75px', 'important');
-              banner.dataset.styled = "true";
-            }
-          }
-        }
-      });
-    });
-  }, 250);
 
   window.currentLevelIndex = 0;
   window.allModelSweeps = [];
   window.foundImages = {};
-  window.isTeleporting = false;
-  window.activeOpenPopups = new Set();
+  window.isTeleporting = false; 
+  window.activeOpenPopups = new Set(); 
 
   function setupLevelTracking() {
     window.foundImages = {};
@@ -266,52 +196,98 @@ function startMechanics() {
     return currentLevel.imagesToFind.every(img => window.foundImages[img] === true);
   }
 
-  const observer = new MutationObserver((mutations) => {
-    const currentLevel = LEVELS[window.currentLevelIndex];
-    if (!currentLevel || currentLevel.imagesToFind.length === 0 || window.isTeleporting) return;
-
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (node.nodeType === 1 || node.nodeType === 3) {
-          const outer = node.outerHTML || '';
-          currentLevel.imagesToFind.forEach((filename) => {
-            const encodedName = encodeURI(filename);
-            if (outer.includes(filename) || outer.includes(encodedName)) {
-              if (!window.foundImages[filename]) {
-                console.log(`🎯 [Escape Room] Found: ${filename}`);
-                playItemSound(filename);
-              }
-              window.activeOpenPopups.add(filename);
-              window.foundImages[filename] = true;
-              if (checkAllFound()) {
-                console.log(`🔓 [Escape Room] All items found! Door unlocked.`);
-                try { window.globalChime.currentTime = 0; window.globalChime.play().catch(() => {}); } catch (e) {}
-              }
-            }
-          });
-        }
-      });
-
-      mutation.removedNodes.forEach((node) => {
-        if (node.nodeType === 1 || node.nodeType === 3) {
-          const outer = node.outerHTML || '';
-          currentLevel.imagesToFind.forEach((filename) => {
-            const encodedName = encodeURI(filename);
-            if (outer.includes(filename) || outer.includes(encodedName)) {
-              window.activeOpenPopups.delete(filename);
-              if (checkAllFound() && window.activeOpenPopups.size === 0 && !window.isTeleporting) {
-                console.log(`🚀 [Escape Room] Initiating Teleport sequence!`);
-                executeFastTeleport(window.mpSdk, currentLevel);
-              }
-            }
-          });
-        }
-      });
+  // --- THE ULTRA-LEAN ENGINE (No DOM Scanning, Direct Visibility Checks) ---
+  setInterval(() => {
+    // 1. Keep unwanted audio players hidden, but leave the Intro Video untouched
+    document.querySelectorAll('audio, [class*="audio-player"]').forEach(btn => {
+      btn.style.setProperty('display', 'none', 'important');
+      btn.style.setProperty('opacity', '0', 'important');
     });
-  });
 
-  observer.observe(document.body, { childList: true, subtree: true });
+    // 2. Hijack the intro video so it stays frozen until Start is clicked
+    if (!document.body.classList.contains('game-started')) {
+      document.querySelectorAll('video').forEach(v => v.pause());
+    }
 
+    // 3. Directly target the Custom Billboard boxes
+    const openPopups = document.querySelectorAll('#customBillboardFullOverlay, .mpe-popup, .mpe-media-overlay');
+    let anyOpen = false;
+
+    openPopups.forEach(overlay => {
+        // If the box is actively visible on the screen
+        if (window.getComputedStyle(overlay).display !== 'none' && window.getComputedStyle(overlay).visibility !== 'hidden') {
+            anyOpen = true;
+            
+            // Look directly inside for the text
+            const textContainer = overlay.querySelector('.tag-text-content, div[class*="text"], h1, h2, h3, p');
+            if (!textContainer || !textContainer.textContent) return;
+
+            const textClean = textContainer.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const currentLevel = LEVELS[window.currentLevelIndex];
+            
+            if (!currentLevel || window.isTeleporting) return;
+
+            currentLevel.imagesToFind.forEach((filename) => {
+                const cleanName = filename.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', '');
+                
+                // We found a match!
+                if (textClean.includes(cleanName)) {
+                    
+                    // A) Format it instantly (Only applies once)
+                    if (!textContainer.dataset.styled) {
+                        textContainer.style.setProperty('position', 'absolute', 'important');
+                        textContainer.style.setProperty('left', '50%', 'important');
+                        textContainer.style.setProperty('top', '50%', 'important'); 
+                        textContainer.style.setProperty('transform', 'translate(-50%, -50%)', 'important'); 
+                        textContainer.style.setProperty('font-size', '240%', 'important'); 
+                        textContainer.style.setProperty('color', 'white', 'important');
+                        textContainer.style.setProperty('margin', '0', 'important');
+                        textContainer.style.setProperty('white-space', 'nowrap', 'important');
+                        
+                        const banner = textContainer.parentElement;
+                        if (banner) {
+                            banner.style.setProperty('background-color', '#1c1c1c', 'important');
+                            banner.style.setProperty('background', '#1c1c1c', 'important'); 
+                            if (window.getComputedStyle(banner).position === 'static') {
+                                banner.style.setProperty('position', 'relative', 'important');
+                            }
+                            banner.style.setProperty('min-height', '75px', 'important');
+                        }
+                        textContainer.dataset.styled = "true"; 
+                    }
+
+                    // B) Game Logic
+                    if (!window.foundImages[filename]) {
+                        console.log(`🎯 [Escape Room] Found: ${filename}`);
+                        playItemSound(filename); 
+                        window.foundImages[filename] = true;
+                        
+                        if (checkAllFound()) {
+                            console.log(`🔓 [Escape Room] All items found! Door unlocked.`);
+                            try { window.globalChime.currentTime = 0; window.globalChime.play().catch(()=>{}); } catch(e){}
+                        }
+                    }
+                    
+                    // Register that it is actively open right now
+                    window.activeOpenPopups.add(filename);
+                }
+            });
+        }
+    });
+
+    // 4. Teleport Trigger: If ALL popups are closed (display: none), but we have active popups in memory
+    if (!anyOpen && window.activeOpenPopups.size > 0) {
+        window.activeOpenPopups.clear(); // Clear the memory, the player closed it
+        
+        if (checkAllFound() && !window.isTeleporting) {
+            console.log(`🚀 [Escape Room] Initiating Teleport sequence!`);
+            executeFastTeleport(window.mpSdk, LEVELS[window.currentLevelIndex]);
+        }
+    }
+
+  }, 100); // Because we aren't scanning the DOM tree, running this at 100ms is incredibly fast and lag-free.
+
+  // --- INITIALIZATION & DOOR LOCKS ---
   async function initMashupLogic(mpSdk) {
     window.mpSdk = mpSdk;
     setupLevelTracking();
@@ -320,8 +296,8 @@ function startMechanics() {
       let sub = mpSdk.Sweep.data.subscribe({
         onCollectionUpdated: function (collection) {
           if (Object.keys(collection).length > 0) {
-            resolve(collection);
-            sub.cancel();
+              resolve(collection);
+              sub.cancel(); 
           }
         }
       });
@@ -331,43 +307,66 @@ function startMechanics() {
 
     const loadingText = document.getElementById('eye-spy-loading-text');
     if (loadingText) loadingText.remove();
-
+    
     const cover = document.getElementById('eye-spy-image-cover');
     if (cover) {
-      cover.style.transition = "opacity 0.6s ease";
-      cover.style.opacity = "0";
-      setTimeout(() => cover.remove(), 600);
+        cover.style.transition = "opacity 0.6s ease";
+        cover.style.opacity = "0";
+        setTimeout(() => cover.remove(), 600);
     }
-
+    
     const welcomeBlock = document.getElementById('eye-spy-welcome-block');
     if (welcomeBlock) welcomeBlock.style.display = "flex";
 
     const startBtn = document.getElementById('eye-spy-start-btn');
     if (startBtn) {
-      startBtn.addEventListener('click', () => {
-        const docEl = document.documentElement;
-        if (docEl.requestFullscreen) {
-          docEl.requestFullscreen().catch(() => {});
-        } else if (docEl.webkitRequestFullscreen) {
-          docEl.webkitRequestFullscreen();
-        }
+        startBtn.addEventListener('click', () => {
+            const docEl = document.documentElement;
+            if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
+            else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
 
-        const ui = document.getElementById('eye-spy-start-ui');
-        const overlay = document.getElementById('eye-spy-dark-overlay');
-        if (ui) { ui.style.transition = "opacity 0.4s ease"; ui.style.opacity = "0"; setTimeout(() => ui.remove(), 400); }
-        if (overlay) { overlay.style.transition = "opacity 0.4s ease"; overlay.style.opacity = "0"; setTimeout(() => overlay.remove(), 400); }
+            const ui = document.getElementById('eye-spy-start-ui');
+            const overlay = document.getElementById('eye-spy-dark-overlay');
+            if (ui) { ui.style.transition = "opacity 0.4s ease"; ui.style.opacity = "0"; setTimeout(() => ui.remove(), 400); }
+            if (overlay) { overlay.style.transition = "opacity 0.4s ease"; overlay.style.opacity = "0"; setTimeout(() => overlay.remove(), 400); }
 
-        try { window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; window.globalSfx.play().catch(() => {}); } catch (e) {}
+            document.body.classList.add('game-started');
 
-        lockMapForCurrentLevel();
-      });
+            // --- THE BULLETPROOF VIDEO HOUND ---
+            let attempts = 0;
+            let waitForVideo = setInterval(() => {
+                const v = document.querySelector('video');
+                if (v) {
+                    clearInterval(waitForVideo); 
+                    v.currentTime = 0;
+                    v.play().catch(()=>{});
+                    
+                    v.onended = () => {
+                        let container = v.closest('.mpe-popup, .mp-mattertag, [id*="Billboard"], [class*="billboard"]') || v.parentElement;
+                        // Scoped search inside container, fallback to page-wide if needed
+                        const closeBtn = container ? container.querySelector('[class*="close"]') : document.querySelector('[class*="close"]');
+                        if (closeBtn) closeBtn.click();
+                        else console.warn('[Eye Spy] Video ended but could not find the X to close it!');
+                    };
+                }
+                if(attempts++ > 100) clearInterval(waitForVideo); // Give up after 10 seconds to prevent endless loop
+            }, 100);
+
+            try { window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; window.globalSfx.play().catch(() => {}); } catch (e) {}
+
+            lockMapForCurrentLevel();
+        });
     }
   }
 
   function lockMapForCurrentLevel() {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel || window.allModelSweeps.length === 0) return;
-    const sweepsToDisable = window.allModelSweeps.filter(id => !currentLevel.startSweeps.includes(id));
+
+    const sweepsToDisable = window.allModelSweeps.filter(
+      id => !currentLevel.startSweeps.includes(id)
+    );
+
     if (sweepsToDisable.length > 0) {
       window.mpSdk.Sweep.disable(...sweepsToDisable).catch(() => {});
     }
@@ -375,19 +374,23 @@ function startMechanics() {
 
   async function executeFastTeleport(mpSdk, levelData) {
     window.isTeleporting = true;
+    
     try {
       await window.mpSdk.Sweep.enable(levelData.targetSweep).catch(() => {});
-      try {
-        await window.mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: window.mpSdk.Sweep.Transition.FLY });
-      } catch (flyError) {
-        await window.mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: window.mpSdk.Sweep.Transition.INSTANT });
+
+      try { 
+          await window.mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: window.mpSdk.Sweep.Transition.FLY });
+      } catch (flyError) { 
+          await window.mpSdk.Sweep.moveTo(levelData.targetSweep, { transition: window.mpSdk.Sweep.Transition.INSTANT }); 
       }
-      window.currentLevelIndex++;
+
+      window.currentLevelIndex++; 
+      
       if (LEVELS[window.currentLevelIndex]) {
-        setupLevelTracking();
-        lockMapForCurrentLevel();
+          setupLevelTracking(); 
+          lockMapForCurrentLevel(); 
       } else {
-        console.log("🏆 [Escape Room] Complete!");
+          console.log("🏆 [Escape Room] Complete!");
       }
     } catch (error) {
       console.error("Teleport failed:", error);
@@ -395,14 +398,14 @@ function startMechanics() {
     window.isTeleporting = false;
   }
 
-  let checkSdkInterval = setInterval(function () {
+  let checkSdkInterval = setInterval(function() {
     if (window.mpSdk && window.mpSdk.App) {
-      window.mpSdk.App.state.subscribe(function (appState) {
-        if (appState.phase === window.mpSdk.App.Phase.PLAYING) {
-          clearInterval(checkSdkInterval);
-          initMashupLogic(window.mpSdk);
-        }
-      });
+        window.mpSdk.App.state.subscribe(function (appState) {
+            if (appState.phase === window.mpSdk.App.Phase.PLAYING) {
+                clearInterval(checkSdkInterval); 
+                initMashupLogic(window.mpSdk); 
+            }
+        });
     }
   }, 500);
 }
