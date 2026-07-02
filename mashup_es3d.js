@@ -1,6 +1,6 @@
 // =============================================================================
-// EYE SPY 3D — MASTER ENGINE (V2000)
-// Features: MutationObserver (Tripwire), Strict Lockdown, Fullscreen Start, B&W UI
+// EYE SPY 3D — MASTER ENGINE (V2001)
+// Fixes: SDK Race Condition, Text Formatting Delay, Audio UI Targeting
 // =============================================================================
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
@@ -68,7 +68,6 @@ window.globalChime = new Audio('https://upload.wikimedia.org/wikipedia/commons/d
 
 function playItemSound(imageFilename) {
   let mp3Name = AUDIO_MAP[imageFilename];
-  // If an MP3 exists, play it. If not, do absolutely nothing (Silent Fallback).
   if (mp3Name) {
     window.globalSfx.src = GITHUB_BASE + encodeURIComponent(mp3Name);
     window.globalSfx.currentTime = 0;
@@ -93,19 +92,13 @@ function injectCustomUI() {
     [id*="media-overlay"], [class*="media-overlay"], .mpe-overlay, #mpe-overlay { filter: none !important; -webkit-filter: none !important; background: transparent !important; background-color: transparent !important; }
     [id*="media-loader"], [class*="media-loader"], .mpe-loader, #mpe-loader, .spinner, #customBillboardLoading, img[src*="loader.svg"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
     
-    /* ASSASSINATE AUDIO PLAYERS & X BUTTONS SAFELY VIA CSS */
-    audio, video, [id*="audio"], [class*="audio-player"], 
-    div[style*="bottom: 0px"] [class*="close"], 
-    div[style*="bottom: 0"] [class*="close"], 
-    .mpe-media-close { display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important; pointer-events: none !important; visibility: hidden !important; }
-    
     /* ENLARGE POPUP CLOSE BUTTON */
     #customBillboardFullOverlay [class*="close"], .mpe-window-close, .mpe-popup-close, .mpe-modal-close, .mp-mattertag-close { transform: scale(3.5) !important; right: 35px !important; top: 35px !important; opacity: 1 !important; visibility: visible !important; z-index: 99999 !important; pointer-events: auto !important; }
 
-    /* KILL POPUP ANIMATIONS (Makes them snappy) */
+    /* KILL POPUP ANIMATIONS */
     .mpe-popup, .mp-mattertag { transition: none !important; animation: none !important; }
 
-    /* DOLLHOUSE B&W OVERLAY (Start Screen) */
+    /* DOLLHOUSE B&W OVERLAY */
     #eye-spy-dark-overlay { 
         position: fixed !important; 
         top: 0 !important; left: 0 !important; 
@@ -116,7 +109,7 @@ function injectCustomUI() {
         z-index: 2147483645 !important; 
     }
 
-    /* KEY ART LOADING SCREEN WITH SLOW ZOOM (Punch In/Out) */
+    /* KEY ART LOADING SCREEN */
     #eye-spy-image-cover { 
         position: fixed !important; top: 0 !important; left: 0 !important; 
         width: 100vw !important; height: 100vh !important; 
@@ -132,10 +125,7 @@ function injectCustomUI() {
         backdrop-filter: blur(15px); background-color: rgba(0,0,0,0.4); 
     }
     
-    @keyframes slow-punch {
-        0% { transform: scale(1); }
-        100% { transform: scale(1.08); }
-    }
+    @keyframes slow-punch { 0% { transform: scale(1); } 100% { transform: scale(1.08); } }
 
     #eye-spy-start-ui { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483647 !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; }
     #eye-spy-welcome-block { display: none; flex-direction: column; align-items: center; }
@@ -161,6 +151,15 @@ function injectCustomUI() {
     </div>
   `;
   document.body.appendChild(startUI);
+
+  // TARGETED JS ASSASSINATION FOR AUDIO UI ONLY
+  setInterval(() => {
+    document.querySelectorAll('audio, video, [class*="audio-player"], div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"]').forEach(el => {
+      el.style.setProperty('display', 'none', 'important');
+      el.style.setProperty('opacity', '0', 'important');
+      el.style.setProperty('pointer-events', 'none', 'important');
+    });
+  }, 250);
 
   startMechanics();
 }
@@ -206,7 +205,7 @@ function startMechanics() {
     return currentLevel.imagesToFind.every(img => window.foundImages[img] === true);
   }
 
-  // --- THE TRIPWIRE (Restored & Highly Efficient) ---
+  // --- THE TRIPWIRE ---
   const observer = new MutationObserver((mutations) => {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel || currentLevel.imagesToFind.length === 0 || window.isTeleporting) return;
@@ -229,38 +228,39 @@ function startMechanics() {
               window.activeOpenPopups.add(filename); 
               window.foundImages[filename] = true;
 
-              // Apply the custom giant text formatting ONLY to this matched popup
+              // DELAYED TEXT FORMATTING (Allows Matterport to inject text first)
               if (node.nodeType === 1) {
-                  const cleanName = filename.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', '');
-                  const textEls = Array.from(node.querySelectorAll('div, span, p, h1, h2, h3'));
-                  
-                  textEls.forEach(el => {
-                      if (el.children.length === 0 && el.textContent) {
-                          const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
-                          if (textClean.includes(cleanName)) {
-                              el.style.setProperty('position', 'absolute', 'important');
-                              el.style.setProperty('left', '50%', 'important');
-                              el.style.setProperty('top', '50%', 'important');
-                              el.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
-                              el.style.setProperty('font-size', '240%', 'important');
-                              el.style.setProperty('color', 'white', 'important');
-                              el.style.setProperty('margin', '0', 'important');
-                              el.style.setProperty('white-space', 'nowrap', 'important');
-                              
-                              if (el.parentElement) {
-                                  el.parentElement.style.setProperty('background-color', '#1c1c1c', 'important');
-                                  el.parentElement.style.setProperty('background', '#1c1c1c', 'important');
-                                  el.parentElement.style.setProperty('min-height', '75px', 'important');
-                                  if (window.getComputedStyle(el.parentElement).position === 'static') {
-                                      el.parentElement.style.setProperty('position', 'relative', 'important');
+                  setTimeout(() => {
+                      const cleanName = filename.toLowerCase().replace(/[^a-z0-9]/g, '').replace('jpeg', '').replace('jpg', '');
+                      const textEls = Array.from(node.querySelectorAll('div, span, p, h1, h2, h3'));
+                      
+                      textEls.forEach(el => {
+                          if (el.children.length === 0 && el.textContent) {
+                              const textClean = el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
+                              if (textClean.includes(cleanName)) {
+                                  el.style.setProperty('position', 'absolute', 'important');
+                                  el.style.setProperty('left', '50%', 'important');
+                                  el.style.setProperty('top', '50%', 'important');
+                                  el.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+                                  el.style.setProperty('font-size', '240%', 'important');
+                                  el.style.setProperty('color', 'white', 'important');
+                                  el.style.setProperty('margin', '0', 'important');
+                                  el.style.setProperty('white-space', 'nowrap', 'important');
+                                  
+                                  if (el.parentElement) {
+                                      el.parentElement.style.setProperty('background-color', '#1c1c1c', 'important');
+                                      el.parentElement.style.setProperty('background', '#1c1c1c', 'important');
+                                      el.parentElement.style.setProperty('min-height', '75px', 'important');
+                                      if (window.getComputedStyle(el.parentElement).position === 'static') {
+                                          el.parentElement.style.setProperty('position', 'relative', 'important');
+                                      }
                                   }
                               }
                           }
-                      }
-                  });
+                      });
+                  }, 50); // 50ms delay
               }
               
-              // Win Condition Check
               if (checkAllFound()) {
                 console.log(`🔓 [Escape Room] All items found! Door unlocked.`);
                 try {
@@ -283,7 +283,6 @@ function startMechanics() {
             if (outer.includes(filename) || outer.includes(encodedName)) {
               window.activeOpenPopups.delete(filename); 
               
-              // If all found, and user just closed the last popup, TELEPORT!
               if (checkAllFound() && window.activeOpenPopups.size === 0 && !window.isTeleporting) {
                 console.log(`🚀 [Escape Room] Initiating Teleport sequence!`);
                 executeFastTeleport(window.mpSdk, currentLevel);
@@ -315,7 +314,6 @@ function startMechanics() {
 
     window.allModelSweeps = Object.keys(sweepCollection);
 
-    // Fade out Key Art so Dollhouse is visible underneath
     const loadingText = document.getElementById('eye-spy-loading-text');
     if (loadingText) loadingText.remove();
     
@@ -329,11 +327,9 @@ function startMechanics() {
     const welcomeBlock = document.getElementById('eye-spy-welcome-block');
     if (welcomeBlock) welcomeBlock.style.display = "flex";
 
-    // START BUTTON: Triggers Fullscreen, Clears Overlays, Locks Map
     const startBtn = document.getElementById('eye-spy-start-btn');
     if (startBtn) {
         startBtn.addEventListener('click', () => {
-            // Fullscreen Request
             const docEl = document.documentElement;
             if (docEl.requestFullscreen) {
                 docEl.requestFullscreen().catch((err) => console.log("Fullscreen denied:", err));
@@ -347,7 +343,6 @@ function startMechanics() {
             if (ui) { ui.style.transition = "opacity 0.4s ease"; ui.style.opacity = "0"; setTimeout(() => ui.remove(), 400); }
             if (overlay) { overlay.style.transition = "opacity 0.4s ease"; overlay.style.opacity = "0"; setTimeout(() => overlay.remove(), 400); }
 
-            // Init Audio Engine
             try { window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; window.globalSfx.play().catch(()=>{}); } catch(e) {}
             
             lockMapForCurrentLevel();
@@ -355,7 +350,6 @@ function startMechanics() {
     }
   }
 
-  // STRICT LOCKDOWN METHOD
   function lockMapForCurrentLevel() {
     const currentLevel = LEVELS[window.currentLevelIndex];
     if (!currentLevel || window.allModelSweeps.length === 0) return;
@@ -369,12 +363,10 @@ function startMechanics() {
     }
   }
 
-  // TELEPORT & ADVANCE
   async function executeFastTeleport(mpSdk, levelData) {
     window.isTeleporting = true;
     
     try {
-      // Temporarily enable target so player can fly there
       await window.mpSdk.Sweep.enable(levelData.targetSweep).catch(() => {});
 
       try { 
@@ -387,7 +379,7 @@ function startMechanics() {
       
       if (LEVELS[window.currentLevelIndex]) {
           setupLevelTracking(); 
-          lockMapForCurrentLevel(); // Instantly lock the door behind them
+          lockMapForCurrentLevel(); 
       } else {
           console.log("🏆 [Escape Room] Complete!");
       }
@@ -397,10 +389,15 @@ function startMechanics() {
     window.isTeleporting = false;
   }
 
+  // WAIT FOR SDK TO FULLY INITIALIZE TO PREVENT RACE CONDITIONS
   let checkSdkInterval = setInterval(function() {
-    if (window.mpSdk && window.mpSdk.Sweep) { 
-      clearInterval(checkSdkInterval); 
-      initMashupLogic(window.mpSdk); 
+    if (window.mpSdk && window.mpSdk.App) {
+        window.mpSdk.App.state.subscribe(function (appState) {
+            if (appState.phase === window.mpSdk.App.Phase.PLAYING) {
+                clearInterval(checkSdkInterval); 
+                initMashupLogic(window.mpSdk); 
+            }
+        });
     }
   }, 500);
 }
