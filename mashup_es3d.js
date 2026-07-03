@@ -1,18 +1,18 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3001)
-// Base: V3000 (confirmed overlay-watching engine, untouched below)
-// Added: YouTube intro video, entirely inside our own overlay, no MPEmbed
-// video/billboard system involved at all. Click to play (satisfies browser
-// autoplay-with-sound rules), fullscreen requested on the same click, video
-// end automatically unlocks the hunt sweep. Skip button included as a
-// fallback in case the video fails to load.
+// EYE SPY 3D - ENGINE (V3004)
+// Base: V3003 overlay-watching engine (untouched below the intro sequence).
+// Restructured intro: video plays first, immediately, no separate "Start now"
+// step. Model loads quietly behind it. When the video ends, the player is
+// dropped straight at the Level 1 hunt sweep, no lobby sweep visited at all,
+// removing the special two-sweep Level 1 case entirely.
+// Label styling now applied via direct inline JS on open, not a stylesheet
+// rule, since MPEmbed injects its own <style> tag after ours and a stylesheet
+// rule can't reliably win a tie against that.
 // =============================================================================
 
-// >>> REPLACE THIS WITH YOUR ACTUAL YOUTUBE VIDEO ID <<<
-// e.g. for https://www.youtube.com/watch?v=dQw4w9WgXcQ the ID is dQw4w9WgXcQ
 const YOUTUBE_VIDEO_ID = 'rXT_61Yr2OM';
 
-console.log('EYE SPY 3D \u2014 V3003 loaded');
+console.log('EYE SPY 3D \u2014 V3004 loaded');
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
@@ -120,14 +120,7 @@ function injectCustomUI() {
     }
 
     #customBillboardFull, #customBillboardFull * { transition: none !important; animation: none !important; }
-
-    /* Giant centred label, targeted directly at the confirmed element */
-    #customBillboardFull .tag-text-content {
-      position: absolute !important; left: 50% !important; top: 50% !important;
-      transform: translate(-50%, -50%) !important; font-size: 240% !important;
-      color: white !important; margin: 0 !important; white-space: nowrap !important;
-      background-color: #1c1c1c !important; padding: 10px 20px !important; z-index: 5 !important;
-    }
+    /* Label styling is now applied via direct inline JS on open, see handleOverlayState(). */
 
     #eye-spy-dark-overlay {
       position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;
@@ -154,7 +147,7 @@ function injectCustomUI() {
       z-index: 2147483647 !important; display: flex !important; flex-direction: column !important;
       justify-content: center !important; align-items: center !important;
     }
-    #eye-spy-welcome-block { display: none; flex-direction: column; align-items: center; }
+    #eye-spy-welcome-block { display: flex; flex-direction: column; align-items: center; }
     #eye-spy-start-btn {
       padding: 16px 40px !important; font-size: 24px !important; font-weight: bold !important;
       background: #CCFF00 !important; color: #000 !important; border: none !important; border-radius: 8px !important;
@@ -195,7 +188,6 @@ function injectCustomUI() {
 
   const startUI = document.createElement('div'); startUI.id = 'eye-spy-start-ui';
   startUI.innerHTML = `
-    <div id="eye-spy-loading-text">Loading 3D experience...</div>
     <div id="eye-spy-welcome-block">
       <h1 style="margin: 0 0 15px 0; text-align: center; font-size: 42px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); color: white;">Welcome to Eye Spy 3D</h1>
       <p style="margin: 0 0 30px 0; font-size: 20px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">Please enjoy this experience with your audio on</p>
@@ -216,7 +208,7 @@ function injectCustomUI() {
 
 function startMechanics() {
   const LEVELS = [
-    { level: 1, startSweeps: ['7k4p5mu5f5eydt8h0f8cygptb', 'cwckxx365uimbeqk6ngp0t5ud'], targetSweep: 'ep98q9hxumexd83q38p12k4xc', imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
+    { level: 1, startSweeps: ['cwckxx365uimbeqk6ngp0t5ud'], targetSweep: 'ep98q9hxumexd83q38p12k4xc', imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
     { level: 2, startSweeps: ['ep98q9hxumexd83q38p12k4xc'], targetSweep: 't3si6z3gnc6ix4qh6cgmtgnfa', imagesToFind: ['/decongestant cough elixir.jpeg', '/plastic fruit.jpeg', '/pineapple sunday.jpeg'] },
     { level: 3, startSweeps: ['t3si6z3gnc6ix4qh6cgmtgnfa'], targetSweep: '2cngsqh5q4t1ep85y5ky0h49d', imagesToFind: ['/aztec chocolate.jpeg', '/atomic coffee.jpeg', '/royal perambulator.jpeg'] },
     { level: 4, startSweeps: ['2cngsqh5q4t1ep85y5ky0h49d'], targetSweep: '66yna1yh5e2ig14bmzzf1sn2c', imagesToFind: ['/a crow in a bag.jpeg', '/a hand in two.jpeg', '/vitreous china.jpeg', '/musical tyre.jpeg'] },
@@ -246,8 +238,26 @@ function startMechanics() {
   window.foundImages = {};
   window.isTeleporting = false;
   window.activeOpenPopups = new Set();
-  window.lobbyLocked = false;
   window.overlayWasOpen = false; // tracks last known state of #customBillboardFullOverlay
+
+  const startBtn = document.getElementById('eye-spy-start-btn');
+  if (startBtn) {
+    startBtn.addEventListener('click', () => {
+      const docEl = document.documentElement;
+      if (docEl.requestFullscreen) {
+        docEl.requestFullscreen().catch(() => {});
+      } else if (docEl.webkitRequestFullscreen) {
+        docEl.webkitRequestFullscreen();
+      }
+
+      const ui = document.getElementById('eye-spy-start-ui');
+      if (ui) { ui.style.transition = 'opacity 0.4s ease'; ui.style.opacity = '0'; setTimeout(() => ui.remove(), 400); }
+
+      try { window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; window.globalSfx.play().catch(() => {}); } catch (e) {}
+
+      playIntroVideo();
+    });
+  }
 
   function setupLevelTracking() {
     window.foundImages = {};
@@ -285,6 +295,23 @@ function startMechanics() {
       const rawLabel = labelEl ? labelEl.textContent : '';
       const cleanLabel = normalize(rawLabel);
       const matchedFilename = normalizedToFilename[cleanLabel];
+
+      // Inline styles beat MPEmbed's own late-injected stylesheet, which a
+      // rule in our <style> block couldn't reliably override.
+      if (labelEl) {
+        labelEl.style.setProperty('position', 'absolute', 'important');
+        labelEl.style.setProperty('left', '50%', 'important');
+        labelEl.style.setProperty('top', '50%', 'important');
+        labelEl.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+        labelEl.style.setProperty('font-size', '240%', 'important');
+        labelEl.style.setProperty('color', 'white', 'important');
+        labelEl.style.setProperty('margin', '0', 'important');
+        labelEl.style.setProperty('white-space', 'nowrap', 'important');
+        labelEl.style.setProperty('background-color', '#1c1c1c', 'important');
+        labelEl.style.setProperty('padding', '10px 20px', 'important');
+        labelEl.style.setProperty('z-index', '5', 'important');
+        labelEl.style.setProperty('width', 'auto', 'important');
+      }
 
       if (matchedFilename && currentLevel.imagesToFind.includes(matchedFilename)) {
         if (!window.foundImages[matchedFilename]) {
@@ -351,52 +378,46 @@ function startMechanics() {
     });
 
     window.allModelSweeps = Object.keys(sweepCollection);
+    window.tourReady = true;
+    attachOverlayObserver();
+    checkReadyToReveal();
+  }
 
-    const loadingText = document.getElementById('eye-spy-loading-text');
-    if (loadingText) loadingText.remove();
+  // --- READY-STATE HANDSHAKE: reveal only once both the video has finished
+  // and the model has loaded, whichever happens second. ---
+  window.videoFinished = false;
+  window.tourReady = false;
+  window.hasRevealed = false;
 
+  function checkReadyToReveal() {
+    if (window.videoFinished && window.tourReady && !window.hasRevealed) {
+      window.hasRevealed = true;
+      revealGameAndTeleport();
+    }
+  }
+
+  async function revealGameAndTeleport() {
     const cover = document.getElementById('eye-spy-image-cover');
     if (cover) {
       cover.style.transition = 'opacity 0.6s ease';
       cover.style.opacity = '0';
       setTimeout(() => cover.remove(), 600);
     }
-
-    const welcomeBlock = document.getElementById('eye-spy-welcome-block');
-    if (welcomeBlock) welcomeBlock.style.display = 'flex';
-
-    const startBtn = document.getElementById('eye-spy-start-btn');
-    if (startBtn) {
-      startBtn.addEventListener('click', () => {
-        const docEl = document.documentElement;
-        if (docEl.requestFullscreen) {
-          docEl.requestFullscreen().catch(() => {});
-        } else if (docEl.webkitRequestFullscreen) {
-          docEl.webkitRequestFullscreen();
-        }
-
-        const ui = document.getElementById('eye-spy-start-ui');
-        const overlay = document.getElementById('eye-spy-dark-overlay');
-        if (ui) { ui.style.transition = 'opacity 0.4s ease'; ui.style.opacity = '0'; setTimeout(() => ui.remove(), 400); }
-        if (overlay) { overlay.style.transition = 'opacity 0.4s ease'; overlay.style.opacity = '0'; setTimeout(() => overlay.remove(), 400); }
-
-        try { window.globalSfx.src = 'data:audio/mp3;base64,//MkxAA'; window.globalSfx.play().catch(() => {}); } catch (e) {}
-
-        playIntroVideo();
-      });
+    const darkOverlay = document.getElementById('eye-spy-dark-overlay');
+    if (darkOverlay) {
+      darkOverlay.style.transition = 'opacity 0.6s ease';
+      darkOverlay.style.opacity = '0';
+      setTimeout(() => darkOverlay.remove(), 600);
     }
 
-    mpSdk.on(mpSdk.Sweep.Event.ENTER, function (sweepId) {
-      if (window.currentLevelIndex !== 0 || window.lobbyLocked) return;
-      const lobbySweep = LEVELS[0].startSweeps[0];
-      const huntSweep = LEVELS[0].startSweeps[1];
-      if (sweepId === huntSweep) {
-        window.lobbyLocked = true;
-        mpSdk.Sweep.disable(lobbySweep).catch(() => {});
-      }
-    });
-
-    attachOverlayObserver();
+    const huntSweep = LEVELS[0].startSweeps[0];
+    try {
+      await window.mpSdk.Sweep.enable(huntSweep).catch(() => {});
+      await window.mpSdk.Sweep.moveTo(huntSweep, { transition: window.mpSdk.Sweep.Transition.INSTANT });
+    } catch (e) {
+      console.warn('Initial move to hunt sweep failed:', e);
+    }
+    lockMapForCurrentLevel();
   }
 
   // --- INTRO VIDEO (own overlay, no MPEmbed involvement) ---
@@ -407,7 +428,8 @@ function startMechanics() {
       videoOverlay.style.opacity = '0';
       setTimeout(() => videoOverlay.remove(), 400);
     }
-    lockMapForCurrentLevel();
+    window.videoFinished = true;
+    checkReadyToReveal();
   }
 
   function playIntroVideo() {
