@@ -1,13 +1,17 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3008)
-// Base: V3007, no logic changes.
-// Adds diagnostic logging around the video-end to reveal handoff, to inspect
-// the load-screen-stuck-until-Escape issue rather than guess at it.
+// EYE SPY 3D - ENGINE (V3010)
+// Base: V3009
+// Fix: confirmed via window.foundImages inspection that "plastic fruit"
+// never matched because its real label is "Bowl of Plastic Fruit", not
+// "Plastic Fruit", a naming mismatch on the MPEmbed authoring side. Matching
+// is now tolerant of labels that contain or are contained by the expected
+// name, scoped to the current level's own items only, so it stays safe from
+// cross-matching between levels while surviving this kind of variation.
 // =============================================================================
 
 const YOUTUBE_VIDEO_ID = 'rXT_61Yr2OM';
 
-console.log('EYE SPY 3D \u2014 V3008 loaded');
+console.log('EYE SPY 3D \u2014 V3010 loaded');
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
@@ -291,13 +295,55 @@ function startMechanics() {
       const labelEl = overlay.querySelector('.tag-text-content');
       const rawLabel = labelEl ? labelEl.textContent : '';
       const cleanLabel = normalize(rawLabel);
-      const matchedFilename = normalizedToFilename[cleanLabel];
 
-      // Sit within the label's own existing banner rather than fighting
-      // MPEmbed's layout with absolute positioning over the whole image.
-      // Inline styles beat MPEmbed's own late-injected stylesheet, which a
-      // rule in our <style> block couldn't reliably override.
-      if (labelEl) {
+      // Exact match first (cheap, and the common case). If that fails, fall
+      // back to a contains-either-way check against this level's own items
+      // only, so a label like "Bowl of Plastic Fruit" still matches the
+      // expected "plastic fruit" without risking a false match against a
+      // different level's items.
+      let matchedFilename = normalizedToFilename[cleanLabel];
+      if (!matchedFilename && cleanLabel) {
+        matchedFilename = currentLevel.imagesToFind.find((img) => {
+          const cleanImg = normalize(img);
+          return cleanLabel.includes(cleanImg) || cleanImg.includes(cleanLabel);
+        });
+      }
+
+      // #customBillboardFull carries class "audio" for the replay-clue
+      // popup and "photo" for item popups, confirmed via inspection. Style
+      // each differently rather than guessing at one shared treatment.
+      const billboardFull = document.getElementById('customBillboardFull');
+      const isAudioClue = billboardFull && billboardFull.classList.contains('audio');
+
+      if (labelEl && isAudioClue) {
+        // Full grey card, text centred and free to wrap so nothing is cut
+        // off regardless of word count.
+        const backgroundEl = overlay.querySelector('.customBillboardBackground') || overlay.querySelector('.customBillboardBG');
+        if (backgroundEl) {
+          backgroundEl.style.setProperty('background-color', '#4a4a4a', 'important');
+          backgroundEl.style.setProperty('display', 'flex', 'important');
+          backgroundEl.style.setProperty('align-items', 'center', 'important');
+          backgroundEl.style.setProperty('justify-content', 'center', 'important');
+        }
+        labelEl.style.setProperty('position', 'static', 'important');
+        labelEl.style.setProperty('display', 'block', 'important');
+        labelEl.style.setProperty('width', '85%', 'important');
+        labelEl.style.setProperty('max-width', '85%', 'important');
+        labelEl.style.setProperty('box-sizing', 'border-box', 'important');
+        labelEl.style.setProperty('text-align', 'center', 'important');
+        labelEl.style.setProperty('font-size', '150%', 'important');
+        labelEl.style.setProperty('color', 'white', 'important');
+        labelEl.style.setProperty('margin', 'auto', 'important');
+        labelEl.style.setProperty('background-color', 'transparent', 'important');
+        labelEl.style.setProperty('padding', '20px', 'important');
+        labelEl.style.setProperty('white-space', 'normal', 'important');
+        labelEl.style.setProperty('overflow', 'visible', 'important');
+      } else if (labelEl) {
+        // Item popup: sit within the label's own existing banner rather
+        // than fighting MPEmbed's layout with absolute positioning over
+        // the whole image. Inline styles beat MPEmbed's own late-injected
+        // stylesheet, which a rule in our <style> block couldn't reliably
+        // override.
         labelEl.style.setProperty('display', 'block', 'important');
         labelEl.style.setProperty('width', '100%', 'important');
         labelEl.style.setProperty('box-sizing', 'border-box', 'important');
