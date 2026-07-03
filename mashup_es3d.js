@@ -1,15 +1,19 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3028)
-// Base: V3027
-// Change: load screen background image swapped from ES3D_load screen
-// omni.png to the new Load_image.webp. Uploaded to the repo as its real
-// file type rather than renamed to keep the old .png extension, to avoid
-// any content-type mismatch risk.
+// EYE SPY 3D - ENGINE (V3029)
+// Base: V3028
+// Fix: the overlay MutationObserver had no throttle at all, unlike the
+// panoPlayer chrome hider fixed in V3026. isOverlayOpen() calls
+// getComputedStyle(), forcing a synchronous style recalculation, and this
+// was running on every single mutation across the entire popup subtree.
+// If MPEmbed animates the popup's own fade-in via repeated inline style
+// writes, every frame of that animation was forcing a reflow here, right
+// at the moment the popup should be appearing. Throttled to at most once
+// per animation frame, same pattern as V3026.
 // =============================================================================
 
 const YOUTUBE_VIDEO_ID = 'Ly2dwu4pTVo';
 
-console.log('EYE SPY 3D \u2014 V3028 loaded');
+console.log('EYE SPY 3D \u2014 V3029 loaded');
 
 // Switched from raw.githubusercontent.com to jsDelivr's GitHub mirror.
 // raw.githubusercontent.com is not intended for serving production binary
@@ -470,7 +474,23 @@ function startMechanics() {
       setTimeout(attachOverlayObserver, 250);
       return;
     }
-    const observer = new MutationObserver(() => handleOverlayState());
+    // isOverlayOpen() forces a synchronous style recalculation on every
+    // call, via getComputedStyle(). This observer watches the entire popup
+    // subtree (style, class, and text changes), so if MPEmbed animates the
+    // popup's own fade-in via repeated inline style writes, every frame of
+    // that animation was triggering a forced reflow here, right at the
+    // exact moment the popup should be appearing smoothly. Throttled to at
+    // most once per animation frame, same pattern already used for the
+    // panoPlayer chrome hider.
+    let scheduled = false;
+    const observer = new MutationObserver(() => {
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(() => {
+        scheduled = false;
+        handleOverlayState();
+      });
+    });
     observer.observe(overlay, {
       attributes: true,
       attributeFilter: ['style', 'class'],
