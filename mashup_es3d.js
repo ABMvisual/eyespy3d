@@ -1,19 +1,17 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3022)
-// Base: V3021
-// Removed the diagnostic crawler baked in since V3019. It was running two
-// extra sets of MutationObservers alongside the game's own, and calling
-// getBoundingClientRect()/getComputedStyle() eight times over on every
-// single popup open, both of which force a synchronous layout recalculation.
-// That is the likely cause of the popup-appearance lag reported after V3019.
-// The crawler had already told us what we needed (arrival audio confirmed
-// fine, and the exact race condition behind V3021), so it is done. This
-// build should feel as snappy as it did before V3019.
+// EYE SPY 3D - ENGINE (V3023)
+// Base: V3022
+// Fix: removed the placeholder "door unlocked" chime pointing at a random
+// Wikipedia Commons Tada.mp3, not something anyone on this project added,
+// not meant to be in use, and confirmed as the one remaining CORB-blocked
+// request after the jsDelivr swap fixed the other 47. globalChime is now
+// an empty Audio() with the play call guarded to only fire once a real
+// src is set.
 // =============================================================================
 
 const YOUTUBE_VIDEO_ID = 'rXT_61Yr2OM';
 
-console.log('EYE SPY 3D \u2014 V3022 loaded');
+console.log('EYE SPY 3D \u2014 V3023 loaded');
 
 // Switched from raw.githubusercontent.com to jsDelivr's GitHub mirror.
 // raw.githubusercontent.com is not intended for serving production binary
@@ -83,7 +81,13 @@ const AUDIO_MAP = {
 };
 
 window.globalSfx = new Audio();
-window.globalChime = new Audio('https://upload.wikimedia.org/wikipedia/commons/d/d7/Tada.mp3');
+// Placeholder "door unlocked" chime removed. It was pointing at a random
+// Wikipedia Commons URL nobody on this project added, not meant to be in
+// use, and it was the one remaining CORB-blocked request left after the
+// jsDelivr swap fixed all 47 real item sounds. Left as an empty Audio()
+// so the mechanism still exists, just set window.globalChime.src to a
+// real hosted file (e.g. via GITHUB_BASE) once one exists.
+window.globalChime = new Audio();
 
 function playItemSound(imageFilename) {
   let mp3Name = AUDIO_MAP[imageFilename];
@@ -425,7 +429,12 @@ function startMechanics() {
           }
           if (checkAllFound()) {
             console.log('All items found, door unlocked.');
-            try { window.globalChime.currentTime = 0; window.globalChime.play().catch(() => {}); } catch (e) {}
+            try {
+              if (window.globalChime.src) {
+                window.globalChime.currentTime = 0;
+                window.globalChime.play().catch(() => {});
+              }
+            } catch (e) {}
           }
         } else if (!isAudioClue) {
           // Only log a non-match for item popups. The replay-clue audio
