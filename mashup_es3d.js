@@ -1,16 +1,13 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3014)
-// Base: V3013
-// Fix: confirmed via direct inspection that Level 11's fourth item polygon
-// is labelled "Beatles" and uses beatles.jpeg (a pun, not a typo of
-// "beetles"). Same pattern as the Level 8/9 fixes, a real filename change
-// on the MPEmbed side. Audio still has no confirmed source file, same
-// known content gap as other post-Level-2 items.
+// EYE SPY 3D - ENGINE (V3015)
+// Base: V3014
+// Change: item popup label font-size bumped from 180% to 240% per request.
+// No other logic changed.
 // =============================================================================
 
 const YOUTUBE_VIDEO_ID = 'rXT_61Yr2OM';
 
-console.log('EYE SPY 3D \u2014 V3014 loaded');
+console.log('EYE SPY 3D \u2014 V3015 loaded');
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
@@ -358,7 +355,7 @@ function startMechanics() {
           labelEl.style.setProperty('width', '100%', 'important');
           labelEl.style.setProperty('box-sizing', 'border-box', 'important');
           labelEl.style.setProperty('text-align', 'center', 'important');
-          labelEl.style.setProperty('font-size', '180%', 'important');
+          labelEl.style.setProperty('font-size', '240%', 'important');
           labelEl.style.setProperty('color', 'white', 'important');
           labelEl.style.setProperty('margin', '0', 'important');
           labelEl.style.setProperty('background-color', '#1c1c1c', 'important');
