@@ -1,27 +1,20 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3030)
-// Base: V3029
-// Fix: the persistent "text centred over the middle of the image" bug was
-// a second style leak that every previous fix missed. V3017/V3018/V3021
-// all reset labelEl only, but the audio branch also stamps four !important
-// properties onto .customBillboardBackground (grey background plus flex
-// centring) and nothing ever removed them. Once the audio popup opened
-// even once, that container flex-centred every later item popup's label
-// into the middle of the image. Now reset alongside labelEl on every open.
-//
-// Separately DIAGNOSED, NOT a code bug: the audio popup auto-opening on
-// Level 8 arrival. The diagnostic log shows every level transition logs a
-// native #panoPlayer arrival-audio event EXCEPT Level 8, where instead an
-// audio billboard popup auto-opened with an empty label one second before
-// the level registered. Level 8's clue audio is configured differently in
-// MPEmbed: as an auto-opening Custom Billboard rather than as per-pano
-// audio. Fix is in MPEmbed's settings for pano 20qckty5qi20t39838cq274rc,
-// compare against a working level's pano (e.g. r7sd2g426fhbfa2wdh5dfxy5d).
+// EYE SPY 3D - ENGINE (V3031)
+// Base: V3030
+// Fix: added background cache-warming for every item audio file on boot.
+// jsDelivr's edge nodes pull a file from GitHub origin the first time
+// anyone in a region requests it, a multi-second penalty before it is
+// cached and fast. Every item mp3 was uploaded in the same recent batch,
+// so all 52 were sitting completely cold, nobody had ever triggered a
+// request for any of them. Likely explanation for "it was snappy before,
+// unplayable now", that timing lines up exactly with the mass upload.
+// Now silently warmed, staggered, the moment the game boots, well before
+// a player reaches the level that needs each one.
 // =============================================================================
 
 const YOUTUBE_VIDEO_ID = 'Ly2dwu4pTVo';
 
-console.log('EYE SPY 3D \u2014 V3030 loaded');
+console.log('EYE SPY 3D \u2014 V3031 loaded');
 
 // Switched from raw.githubusercontent.com to jsDelivr's GitHub mirror.
 // raw.githubusercontent.com is not intended for serving production binary
@@ -89,6 +82,28 @@ const AUDIO_MAP = {
   '/butterfly.jpeg': 'butterfly.mp3',
   '/horse head.jpeg': 'horse head.mp3'
 };
+
+// jsDelivr's edge nodes have to pull a file from GitHub origin the very
+// first time anyone in a given region requests it, which can take a
+// couple of seconds before it's cached and fast for everyone after. Every
+// item mp3 was uploaded to GitHub in the same recent batch, so all of
+// them were sitting completely cold on jsDelivr, nobody had ever
+// triggered a request for any of them before. Firing a harmless,
+// staggered background request for each file the moment the game boots
+// means that cold-cache penalty happens silently in the background, well
+// before a player ever reaches the level that needs it, instead of live
+// in front of them.
+function warmAudioCache() {
+  const uniqueUrls = [...new Set(Object.values(AUDIO_MAP))].map(
+    (name) => GITHUB_BASE + encodeURIComponent(name)
+  );
+  uniqueUrls.forEach((url, i) => {
+    setTimeout(() => {
+      fetch(url, { mode: 'no-cors', cache: 'default' }).catch(() => {});
+    }, i * 150);
+  });
+}
+warmAudioCache();
 
 window.globalSfx = new Audio();
 // Placeholder "door unlocked" chime removed. It was pointing at a random
