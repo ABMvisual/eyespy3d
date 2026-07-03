@@ -1,15 +1,17 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3025)
-// Base: V3024
-// Fix: beatles now points at the real uploaded "beatles.mp3" instead of
-// the old "beetles.mp3" placeholder name left over from before the pun
-// spelling fix. All 51 item sounds are now uploaded and correctly wired
-// up in AUDIO_MAP, confirmed against the repo file listing.
+// EYE SPY 3D - ENGINE (V3027)
+// Base: V3026
+// Change: swapped intro video to the new version (Ly2dwu4pTVo). As with
+// the original video, it must NOT be marked "Made for Kids" on YouTube,
+// or the JS API this game relies on to detect when the video ends is
+// disabled, and it should not be Private/Unlisted-restricted in a way
+// that blocks embedding. Video was still processing on YouTube's end at
+// the time this was wired in, worth a live test once it's finished.
 // =============================================================================
 
-const YOUTUBE_VIDEO_ID = 'rXT_61Yr2OM';
+const YOUTUBE_VIDEO_ID = 'Ly2dwu4pTVo';
 
-console.log('EYE SPY 3D \u2014 V3025 loaded');
+console.log('EYE SPY 3D \u2014 V3027 loaded');
 
 // Switched from raw.githubusercontent.com to jsDelivr's GitHub mirror.
 // raw.githubusercontent.com is not intended for serving production binary
@@ -490,11 +492,26 @@ function startMechanics() {
       setTimeout(attachPanoAudioChromeHider, 250);
       return;
     }
+
+    // This observer previously ran querySelectorAll and rewrote three style
+    // properties on EVERY single mutation inside #panoPlayer, with no guard
+    // at all, unlike the popup label observer which has had a once-per-open
+    // guard since V3011. While arrival audio plays, its progress/attribute
+    // updates can generate a steady stream of mutations, and this function
+    // was doing full DOM work on every one of them. Throttled to at most
+    // once per animation frame, and skips elements that already have the
+    // hidden styles applied rather than rewriting them every time.
+    let scheduled = false;
     const hideChrome = () => {
-      panoPlayer.querySelectorAll('.closetab, i[class*="times-circle"], [class*="close"]').forEach(el => {
-        el.style.setProperty('display', 'none', 'important');
-        el.style.setProperty('opacity', '0', 'important');
-        el.style.setProperty('pointer-events', 'none', 'important');
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(() => {
+        scheduled = false;
+        panoPlayer.querySelectorAll('.closetab, i[class*="times-circle"], [class*="close"]').forEach(el => {
+          el.style.setProperty('display', 'none', 'important');
+          el.style.setProperty('opacity', '0', 'important');
+          el.style.setProperty('pointer-events', 'none', 'important');
+        });
       });
     };
     const observer = new MutationObserver(hideChrome);
