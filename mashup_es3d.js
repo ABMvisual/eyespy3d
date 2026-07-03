@@ -1,15 +1,13 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3007)
-// Base: V3006
-// Correction: the native per-pano audio is essential gameplay, it is the
-// level's clue and must keep playing. V3006 wrongly paused and muted it.
-// This version only hides the player's visual chrome (the close icon), the
-// audio itself is left completely alone.
+// EYE SPY 3D - ENGINE (V3008)
+// Base: V3007, no logic changes.
+// Adds diagnostic logging around the video-end to reveal handoff, to inspect
+// the load-screen-stuck-until-Escape issue rather than guess at it.
 // =============================================================================
 
 const YOUTUBE_VIDEO_ID = 'rXT_61Yr2OM';
 
-console.log('EYE SPY 3D \u2014 V3007 loaded');
+console.log('EYE SPY 3D \u2014 V3008 loaded');
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
@@ -400,6 +398,7 @@ function startMechanics() {
 
     window.allModelSweeps = Object.keys(sweepCollection);
     window.tourReady = true;
+    console.log('tourReady set true. allModelSweeps count:', window.allModelSweeps.length);
     attachOverlayObserver();
     attachPanoAudioChromeHider();
 
@@ -426,42 +425,55 @@ function startMechanics() {
   window.hasRevealed = false;
 
   function checkReadyToReveal() {
+    console.log('checkReadyToReveal called. videoFinished:', window.videoFinished, 'tourReady:', window.tourReady, 'hasRevealed:', window.hasRevealed);
     if (window.videoFinished && window.tourReady && !window.hasRevealed) {
       window.hasRevealed = true;
+      console.log('Conditions met, calling revealGameAndTeleport().');
       revealGameAndTeleport();
     }
   }
 
   async function revealGameAndTeleport() {
-    const cover = document.getElementById('eye-spy-image-cover');
-    if (cover) {
-      cover.style.transition = 'opacity 0.6s ease';
-      cover.style.opacity = '0';
-      setTimeout(() => cover.remove(), 600);
-    }
-    const darkOverlay = document.getElementById('eye-spy-dark-overlay');
-    if (darkOverlay) {
-      darkOverlay.style.transition = 'opacity 0.6s ease';
-      darkOverlay.style.opacity = '0';
-      setTimeout(() => darkOverlay.remove(), 600);
-    }
-
-    // Land at the lobby, not the hunt sweep. The player then walks across
-    // naturally (a single click on Matterport's own navigation arrow), which
-    // reads as far less abrupt than an instant forced jump straight after
-    // the video ends.
-    const lobbySweep = LEVELS[0].startSweeps[0];
+    console.log('revealGameAndTeleport() started.');
     try {
-      await window.mpSdk.Sweep.enable(lobbySweep).catch(() => {});
+      const cover = document.getElementById('eye-spy-image-cover');
+      if (cover) {
+        cover.style.transition = 'opacity 0.6s ease';
+        cover.style.opacity = '0';
+        setTimeout(() => cover.remove(), 600);
+        console.log('Cover fade triggered.');
+      } else {
+        console.log('Cover element not found, nothing to fade.');
+      }
+      const darkOverlay = document.getElementById('eye-spy-dark-overlay');
+      if (darkOverlay) {
+        darkOverlay.style.transition = 'opacity 0.6s ease';
+        darkOverlay.style.opacity = '0';
+        setTimeout(() => darkOverlay.remove(), 600);
+        console.log('Dark overlay fade triggered.');
+      } else {
+        console.log('Dark overlay element not found, nothing to fade.');
+      }
+
+      // Land at the lobby, not the hunt sweep. The player then walks across
+      // naturally (a single click on Matterport's own navigation arrow), which
+      // reads as far less abrupt than an instant forced jump straight after
+      // the video ends.
+      const lobbySweep = LEVELS[0].startSweeps[0];
+      console.log('Attempting to enable and move to lobby sweep:', lobbySweep);
+      await window.mpSdk.Sweep.enable(lobbySweep).catch((e) => console.warn('Sweep.enable failed:', e));
       await window.mpSdk.Sweep.moveTo(lobbySweep, { transition: window.mpSdk.Sweep.Transition.INSTANT });
+      console.log('Move to lobby sweep completed.');
+      lockMapForCurrentLevel();
+      console.log('lockMapForCurrentLevel() completed. revealGameAndTeleport() finished successfully.');
     } catch (e) {
-      console.warn('Initial move to lobby sweep failed:', e);
+      console.error('revealGameAndTeleport() threw an error:', e);
     }
-    lockMapForCurrentLevel();
   }
 
   // --- INTRO VIDEO (own overlay, no MPEmbed involvement) ---
   function proceedPastVideo() {
+    console.log('proceedPastVideo() called.');
     const videoOverlay = document.getElementById('eye-spy-video-overlay');
     if (videoOverlay) {
       videoOverlay.style.transition = 'opacity 0.4s ease';
