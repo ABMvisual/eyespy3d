@@ -1,19 +1,17 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3017)
-// Base: V3016
-// Fix: the "wild formatting" bug was never Level-8-specific. labelEl is one
-// shared, reused element for both the item-popup and audio-clue-popup
-// styling branches, and each branch only ever set its own properties,
-// never clearing the other's. So once the floor audio-clue icon had been
-// opened even once, at any level, properties like max-width and
-// white-space stayed stuck on every item popup afterwards. Fixed by
-// resetting labelEl.style.cssText before either branch runs, confirmed
-// reproducible from Level 1 onwards prior to this fix.
+// EYE SPY 3D - ENGINE (V3019)
+// Base: V3018
+// TEMPORARY DEBUG BUILD: the diagnostic crawler (previously a separate
+// console paste) is now baked directly into this file, so it auto-attaches
+// on load with no extra step and survives page refreshes without needing
+// to be pasted in again. Functionally identical to the standalone crawler
+// script. Once the current formatting/audio bugs are confirmed fixed, this
+// block should be stripped back out for a clean production build.
 // =============================================================================
 
 const YOUTUBE_VIDEO_ID = 'rXT_61Yr2OM';
 
-console.log('EYE SPY 3D \u2014 V3017 loaded');
+console.log('EYE SPY 3D \u2014 V3019 loaded');
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
@@ -327,15 +325,20 @@ function startMechanics() {
         const billboardFull = document.getElementById('customBillboardFull');
         const isAudioClue = billboardFull && billboardFull.classList.contains('audio');
 
-        // Reset first: labelEl is one shared, reused element for both popup
-        // types. Previously each branch only set its own properties and
-        // never cleared the other branch's, so once the audio-clue popup had
-        // been opened even once, properties like max-width and white-space
-        // stayed stuck on every item popup afterwards, regardless of level.
-        // That was the real cause of "wild formatting", not anything
-        // Level-8-specific. Clearing cssText first means each branch fully
-        // owns its own look with nothing left over from the other.
-        labelEl.style.cssText = '';
+        // Clear only the specific properties either branch ever sets, not
+        // the whole inline style. A full cssText reset (the V3017 fix) also
+        // wiped out MPEmbed's OWN inline positioning on this element (very
+        // likely something like position/bottom tied to --tagBottomOffset,
+        // set by MPEmbed itself when the popup is first built), which our
+        // item branch never explicitly re-applies. That is why item popups
+        // started rendering centred over the middle of the image instead of
+        // pinned to the bottom banner, immediately after that fix. Clearing
+        // only the union of properties both branches use fixes the original
+        // leak (audio styling stuck on item popups) without touching
+        // anything MPEmbed itself put there.
+        ['position', 'display', 'width', 'max-width', 'box-sizing', 'text-align', 'font-size',
+          'color', 'margin', 'background-color', 'padding', 'white-space', 'overflow']
+          .forEach((prop) => labelEl.style.removeProperty(prop));
 
         if (isAudioClue) {
           // Full grey card, text centred and free to wrap so nothing is cut
@@ -657,3 +660,158 @@ function startMechanics() {
     }
   }, 500);
 }
+
+// =============================================================================
+// DIAGNOSTIC CRAWLER (baked in for this debug build, see V3019 note above)
+// Runs silently, does not modify gameplay, styling, or audio. Read-only.
+// Auto-attaches on load. Once playtesting is done, run dumpEyeSpyLog() in
+// the console, copy the JSON output, and remove this whole block for the
+// production build.
+// =============================================================================
+(function () {
+  window.eyeSpyLog = window.eyeSpyLog || [];
+  let lastPanoId = null;
+  let eventCount = 0;
+
+  function log(type, data) {
+    eventCount++;
+    window.eyeSpyLog.push({
+      t: new Date().toISOString().slice(11, 19),
+      type,
+      ...data
+    });
+    if (eventCount % 20 === 0) {
+      console.log('%c[EyeSpyCrawler] auto-checkpoint, ' + eventCount + ' events logged so far', 'color:#0af');
+    }
+  }
+
+  // ---- 1. Native panoPlayer arrival-audio watcher ----
+  // Fires every time #panoPlayer's audio element changes source (i.e. every
+  // pano arrival) and records whether it actually played.
+  function watchPanoPlayer() {
+    const panoPlayer = document.getElementById('panoPlayer');
+    if (!panoPlayer) {
+      setTimeout(watchPanoPlayer, 300);
+      return;
+    }
+    const panoid = panoPlayer.getAttribute('panoid');
+
+    function inspectAudio() {
+      const audioEl = panoPlayer.querySelector('audio');
+      if (!audioEl) {
+        log('arrival_audio', { panoid: panoPlayer.getAttribute('panoid'), found: false });
+        return;
+      }
+      const snapshot = {
+        panoid: panoPlayer.getAttribute('panoid'),
+        found: true,
+        src: audioEl.currentSrc || audioEl.src,
+        paused: audioEl.paused,
+        muted: audioEl.muted,
+        readyState: audioEl.readyState,
+        networkState: audioEl.networkState,
+        duration: audioEl.duration,
+        error: audioEl.error ? audioEl.error.code : null
+      };
+      log('arrival_audio', snapshot);
+
+      // Check again 1.5s later to see if it actually started playing
+      // (readyState/paused can lag right at attach time).
+      setTimeout(() => {
+        log('arrival_audio_followup', {
+          panoid: panoPlayer.getAttribute('panoid'),
+          paused: audioEl.paused,
+          currentTime: audioEl.currentTime,
+          error: audioEl.error ? audioEl.error.code : null
+        });
+      }, 1500);
+    }
+
+    const observer = new MutationObserver(() => {
+      const currentPanoId = panoPlayer.getAttribute('panoid');
+      if (currentPanoId !== lastPanoId) {
+        lastPanoId = currentPanoId;
+        inspectAudio();
+      }
+    });
+    observer.observe(panoPlayer, { attributes: true, childList: true, subtree: true });
+    lastPanoId = panoid;
+    inspectAudio();
+  }
+  watchPanoPlayer();
+
+  // ---- 2. Billboard popup layout + content watcher ----
+  // Fires every time the item/audio popup overlay opens, records computed
+  // widths up the container chain plus the label text and its RAW inline
+  // cssText, so a style leaking from one popup type into the other (the
+  // V3017 bug) shows up directly as a diff in cssText between opens,
+  // rather than needing to be inferred from rendered widths.
+  window.lastPopupType = null;
+  function watchBillboard() {
+    const overlay = document.getElementById('customBillboardFullOverlay');
+    if (!overlay) {
+      setTimeout(watchBillboard, 300);
+      return;
+    }
+    const observer = new MutationObserver(() => {
+      const isOpen = overlay.style.display !== 'none' && overlay.style.display !== '';
+      if (!isOpen) return;
+
+      const full = document.getElementById('customBillboardFull');
+      const bg = full ? full.querySelector('.customBillboardBackground') : null;
+      const content = full ? full.querySelector('.billboard-content') : null;
+      const textContent = full ? full.querySelector('.tag-text-content') : null;
+      const label = full ? full.querySelector('.tag-label') : null;
+      const mediaContent = full ? full.querySelector('.tag-media-content') : null;
+
+      const rect = (el) => el ? { w: Math.round(el.getBoundingClientRect().width), h: Math.round(el.getBoundingClientRect().height) } : null;
+      const computedWidth = (el) => el ? getComputedStyle(el).width : null;
+
+      const thisPopupType = full && full.classList.contains('audio') ? 'audio' : 'item';
+
+      log('billboard_open', {
+        panoid: document.getElementById('panoPlayer') ? document.getElementById('panoPlayer').getAttribute('panoid') : null,
+        popupType: thisPopupType,
+        previousPopupType: window.lastPopupType,
+        fullClasses: full ? full.className : null,
+        overlayClasses: overlay.className,
+        isAudioClue: full ? full.classList.contains('audio') : null,
+        labelText: (textContent ? textContent.textContent : '').trim(),
+        rawLabelOnly: (label ? label.textContent : '').trim(),
+        labelCssText: textContent ? textContent.style.cssText : null,
+        rect_billboardContent: rect(content),
+        rect_customBillboardBackground: rect(bg),
+        rect_tagTextContent: rect(textContent),
+        rect_tagMediaContent: rect(mediaContent),
+        computedWidth_billboardContent: computedWidth(content),
+        computedWidth_customBillboardBackground: computedWidth(bg),
+        computedWidth_tagTextContent: computedWidth(textContent),
+        computedWidth_customBillboardFull: computedWidth(full),
+        mediaContentHTML: mediaContent ? mediaContent.innerHTML.slice(0, 300) : null
+      });
+      window.lastPopupType = thisPopupType;
+    });
+    observer.observe(overlay, { attributes: true, attributeFilter: ['style'] });
+  }
+  watchBillboard();
+
+  // ---- 3. Level transition watcher ----
+  // Piggybacks on window.currentLevelIndex if the game script exposes it,
+  // just to timestamp when each level actually changed.
+  let lastLevelIndex = null;
+  setInterval(() => {
+    if (typeof window.currentLevelIndex !== 'undefined' && window.currentLevelIndex !== lastLevelIndex) {
+      lastLevelIndex = window.currentLevelIndex;
+      log('level_change', { levelIndex: lastLevelIndex });
+    }
+  }, 500);
+
+  // ---- Dump / export helpers ----
+  window.dumpEyeSpyLog = function () {
+    console.log('%c=== EYE SPY 3D DIAGNOSTIC LOG (' + window.eyeSpyLog.length + ' events) ===', 'color:#0f0;font-weight:bold');
+    console.log(JSON.stringify(window.eyeSpyLog, null, 2));
+    console.log('%cCopy everything between the JSON brackets above and send it back.', 'color:#0af');
+  };
+
+  console.log('%c[EyeSpyCrawler] attached. Play the game normally start to finish, then run dumpEyeSpyLog() in this console and copy the output.', 'color:#0f0;font-weight:bold');
+})();
