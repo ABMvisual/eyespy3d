@@ -1,17 +1,15 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3027)
-// Base: V3026
-// Change: swapped intro video to the new version (Ly2dwu4pTVo). As with
-// the original video, it must NOT be marked "Made for Kids" on YouTube,
-// or the JS API this game relies on to detect when the video ends is
-// disabled, and it should not be Private/Unlisted-restricted in a way
-// that blocks embedding. Video was still processing on YouTube's end at
-// the time this was wired in, worth a live test once it's finished.
+// EYE SPY 3D - ENGINE (V3028)
+// Base: V3027
+// Change: load screen background image swapped from ES3D_load screen
+// omni.png to the new Load_image.webp. Uploaded to the repo as its real
+// file type rather than renamed to keep the old .png extension, to avoid
+// any content-type mismatch risk.
 // =============================================================================
 
 const YOUTUBE_VIDEO_ID = 'Ly2dwu4pTVo';
 
-console.log('EYE SPY 3D \u2014 V3027 loaded');
+console.log('EYE SPY 3D \u2014 V3028 loaded');
 
 // Switched from raw.githubusercontent.com to jsDelivr's GitHub mirror.
 // raw.githubusercontent.com is not intended for serving production binary
@@ -148,7 +146,7 @@ function injectCustomUI() {
     }
     #eye-spy-image-cover {
       position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;
-      background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/ES3D_load%20screen%20omni.png') !important;
+      background-image: url('https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/Load_image.webp') !important;
       background-size: cover !important; background-position: center !important;
       z-index: 2147483646 !important; animation: slow-punch 12s infinite alternate ease-in-out;
     }
