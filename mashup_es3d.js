@@ -1,18 +1,15 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3004)
-// Base: V3003 overlay-watching engine (untouched below the intro sequence).
-// Restructured intro: video plays first, immediately, no separate "Start now"
-// step. Model loads quietly behind it. When the video ends, the player is
-// dropped straight at the Level 1 hunt sweep, no lobby sweep visited at all,
-// removing the special two-sweep Level 1 case entirely.
-// Label styling now applied via direct inline JS on open, not a stylesheet
-// rule, since MPEmbed injects its own <style> tag after ours and a stylesheet
-// rule can't reliably win a tie against that.
+// EYE SPY 3D - ENGINE (V3007)
+// Base: V3006
+// Correction: the native per-pano audio is essential gameplay, it is the
+// level's clue and must keep playing. V3006 wrongly paused and muted it.
+// This version only hides the player's visual chrome (the close icon), the
+// audio itself is left completely alone.
 // =============================================================================
 
 const YOUTUBE_VIDEO_ID = 'rXT_61Yr2OM';
 
-console.log('EYE SPY 3D \u2014 V3004 loaded');
+console.log('EYE SPY 3D \u2014 V3007 loaded');
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
@@ -109,7 +106,10 @@ function injectCustomUI() {
       display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;
     }
     audio, video, [id*="audio"], [class*="audio-player"],
-    div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"], .mpe-media-close {
+    div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"], .mpe-media-close,
+    .pano-media, .mpe-media-overlay, .pano-media [class*="close"], .mpe-media-overlay [class*="close"],
+    #panoPlayer .audioplayer, #panoPlayer .audiopalyerpano, #panoPlayer .closetab,
+    #panoPlayer i.closetab, #panoPlayer i[class*="times-circle"] {
       display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important;
       pointer-events: none !important; visibility: hidden !important;
     }
@@ -208,7 +208,7 @@ function injectCustomUI() {
 
 function startMechanics() {
   const LEVELS = [
-    { level: 1, startSweeps: ['cwckxx365uimbeqk6ngp0t5ud'], targetSweep: 'ep98q9hxumexd83q38p12k4xc', imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
+    { level: 1, startSweeps: ['7k4p5mu5f5eydt8h0f8cygptb', 'cwckxx365uimbeqk6ngp0t5ud'], targetSweep: 'ep98q9hxumexd83q38p12k4xc', imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
     { level: 2, startSweeps: ['ep98q9hxumexd83q38p12k4xc'], targetSweep: 't3si6z3gnc6ix4qh6cgmtgnfa', imagesToFind: ['/decongestant cough elixir.jpeg', '/plastic fruit.jpeg', '/pineapple sunday.jpeg'] },
     { level: 3, startSweeps: ['t3si6z3gnc6ix4qh6cgmtgnfa'], targetSweep: '2cngsqh5q4t1ep85y5ky0h49d', imagesToFind: ['/aztec chocolate.jpeg', '/atomic coffee.jpeg', '/royal perambulator.jpeg'] },
     { level: 4, startSweeps: ['2cngsqh5q4t1ep85y5ky0h49d'], targetSweep: '66yna1yh5e2ig14bmzzf1sn2c', imagesToFind: ['/a crow in a bag.jpeg', '/a hand in two.jpeg', '/vitreous china.jpeg', '/musical tyre.jpeg'] },
@@ -289,38 +289,40 @@ function startMechanics() {
     const overlay = document.getElementById('customBillboardFullOverlay');
     const open = isOverlayOpen(overlay);
 
-    if (open && !window.overlayWasOpen) {
-      // Popup just opened. Read the label directly.
+    if (open) {
       const labelEl = overlay.querySelector('.tag-text-content');
       const rawLabel = labelEl ? labelEl.textContent : '';
       const cleanLabel = normalize(rawLabel);
       const matchedFilename = normalizedToFilename[cleanLabel];
 
+      // Sit within the label's own existing banner rather than fighting
+      // MPEmbed's layout with absolute positioning over the whole image.
       // Inline styles beat MPEmbed's own late-injected stylesheet, which a
       // rule in our <style> block couldn't reliably override.
       if (labelEl) {
-        labelEl.style.setProperty('position', 'absolute', 'important');
-        labelEl.style.setProperty('left', '50%', 'important');
-        labelEl.style.setProperty('top', '50%', 'important');
-        labelEl.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
-        labelEl.style.setProperty('font-size', '240%', 'important');
+        labelEl.style.setProperty('display', 'block', 'important');
+        labelEl.style.setProperty('width', '100%', 'important');
+        labelEl.style.setProperty('box-sizing', 'border-box', 'important');
+        labelEl.style.setProperty('text-align', 'center', 'important');
+        labelEl.style.setProperty('font-size', '180%', 'important');
         labelEl.style.setProperty('color', 'white', 'important');
         labelEl.style.setProperty('margin', '0', 'important');
-        labelEl.style.setProperty('white-space', 'nowrap', 'important');
         labelEl.style.setProperty('background-color', '#1c1c1c', 'important');
-        labelEl.style.setProperty('padding', '10px 20px', 'important');
-        labelEl.style.setProperty('z-index', '5', 'important');
-        labelEl.style.setProperty('width', 'auto', 'important');
+        labelEl.style.setProperty('padding', '14px 24px', 'important');
       }
 
+      // Recompute fresh on every check, only one item can ever be showing
+      // through this single reused overlay, so this can never go stale even
+      // if a close-then-reopen gets batched into one mutation callback.
+      window.activeOpenPopups.clear();
+
       if (matchedFilename && currentLevel.imagesToFind.includes(matchedFilename)) {
+        window.activeOpenPopups.add(matchedFilename);
         if (!window.foundImages[matchedFilename]) {
           console.log(`Found: ${matchedFilename}`);
           playItemSound(matchedFilename);
+          window.foundImages[matchedFilename] = true;
         }
-        window.foundImages[matchedFilename] = true;
-        window.activeOpenPopups.add(matchedFilename);
-
         if (checkAllFound()) {
           console.log('All items found, door unlocked.');
           try { window.globalChime.currentTime = 0; window.globalChime.play().catch(() => {}); } catch (e) {}
@@ -330,10 +332,9 @@ function startMechanics() {
       }
     }
 
-    if (!open && window.overlayWasOpen) {
-      // Popup just closed. Clear whichever item was showing.
-      window.activeOpenPopups.forEach(filename => window.activeOpenPopups.delete(filename));
-      if (checkAllFound() && window.activeOpenPopups.size === 0 && !window.isTeleporting) {
+    if (!open) {
+      window.activeOpenPopups.clear();
+      if (checkAllFound() && !window.isTeleporting) {
         console.log('Teleport sequence starting.');
         executeFastTeleport(window.mpSdk, currentLevel);
       }
@@ -362,6 +363,26 @@ function startMechanics() {
     handleOverlayState();
   }
 
+  // Hides MPEmbed's native per-pano audio player's visual chrome only (the
+  // close icon). The audio itself must keep playing, it is the level's clue.
+  function attachPanoAudioChromeHider() {
+    const panoPlayer = document.getElementById('panoPlayer');
+    if (!panoPlayer) {
+      setTimeout(attachPanoAudioChromeHider, 250);
+      return;
+    }
+    const hideChrome = () => {
+      panoPlayer.querySelectorAll('.closetab, i[class*="times-circle"], [class*="close"]').forEach(el => {
+        el.style.setProperty('display', 'none', 'important');
+        el.style.setProperty('opacity', '0', 'important');
+        el.style.setProperty('pointer-events', 'none', 'important');
+      });
+    };
+    const observer = new MutationObserver(hideChrome);
+    observer.observe(panoPlayer, { childList: true, subtree: true });
+    hideChrome();
+  }
+
   async function initMashupLogic(mpSdk) {
     window.mpSdk = mpSdk;
     setupLevelTracking();
@@ -380,6 +401,21 @@ function startMechanics() {
     window.allModelSweeps = Object.keys(sweepCollection);
     window.tourReady = true;
     attachOverlayObserver();
+    attachPanoAudioChromeHider();
+
+    // Lobby lock: once the player first walks from the lobby to the hunt
+    // sweep, the lobby is disabled behind them. Level 1 only, one-time only.
+    window.lobbyLocked = false;
+    mpSdk.on(mpSdk.Sweep.Event.ENTER, function (sweepId) {
+      if (window.currentLevelIndex !== 0 || window.lobbyLocked) return;
+      const lobbySweep = LEVELS[0].startSweeps[0];
+      const huntSweep = LEVELS[0].startSweeps[1];
+      if (sweepId === huntSweep) {
+        window.lobbyLocked = true;
+        mpSdk.Sweep.disable(lobbySweep).catch(() => {});
+      }
+    });
+
     checkReadyToReveal();
   }
 
@@ -410,12 +446,16 @@ function startMechanics() {
       setTimeout(() => darkOverlay.remove(), 600);
     }
 
-    const huntSweep = LEVELS[0].startSweeps[0];
+    // Land at the lobby, not the hunt sweep. The player then walks across
+    // naturally (a single click on Matterport's own navigation arrow), which
+    // reads as far less abrupt than an instant forced jump straight after
+    // the video ends.
+    const lobbySweep = LEVELS[0].startSweeps[0];
     try {
-      await window.mpSdk.Sweep.enable(huntSweep).catch(() => {});
-      await window.mpSdk.Sweep.moveTo(huntSweep, { transition: window.mpSdk.Sweep.Transition.INSTANT });
+      await window.mpSdk.Sweep.enable(lobbySweep).catch(() => {});
+      await window.mpSdk.Sweep.moveTo(lobbySweep, { transition: window.mpSdk.Sweep.Transition.INSTANT });
     } catch (e) {
-      console.warn('Initial move to hunt sweep failed:', e);
+      console.warn('Initial move to lobby sweep failed:', e);
     }
     lockMapForCurrentLevel();
   }
