@@ -1,19 +1,28 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3019)
-// Base: V3018
-// TEMPORARY DEBUG BUILD: the diagnostic crawler (previously a separate
-// console paste) is now baked directly into this file, so it auto-attaches
-// on load with no extra step and survives page refreshes without needing
-// to be pasted in again. Functionally identical to the standalone crawler
-// script. Once the current formatting/audio bugs are confirmed fixed, this
-// block should be stripped back out for a clean production build.
+// EYE SPY 3D - ENGINE (V3020)
+// Base: V3019
+// Fix 1: DevTools Issues panel confirmed all 48 item-sound mp3 requests to
+// raw.githubusercontent.com were being blocked by CORB. Switched GITHUB_BASE
+// to jsDelivr's GitHub mirror, which serves the same files with correct
+// audio content types, so item-found sound effects can now actually load.
+// Fix 2: dumpEyeSpyLog() now downloads a JSON file instead of printing to
+// console. The console log-level filter has swallowed that output multiple
+// times running, a downloaded file can't be hidden by a filter setting.
 // =============================================================================
 
 const YOUTUBE_VIDEO_ID = 'rXT_61Yr2OM';
 
-console.log('EYE SPY 3D \u2014 V3019 loaded');
+console.log('EYE SPY 3D \u2014 V3020 loaded');
 
-const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
+// Switched from raw.githubusercontent.com to jsDelivr's GitHub mirror.
+// raw.githubusercontent.com is not intended for serving production binary
+// assets and does not reliably declare the correct content type for mp3
+// files. Confirmed directly in DevTools' Issues panel: all 48 item sound
+// effect requests were being blocked by CORB (Cross-Origin Read Blocking),
+// which is why found-item sound effects have never played reliably. jsDelivr
+// mirrors the same repo files with correct audio content types and CORS
+// headers, so the same files now load without being blocked.
+const GITHUB_BASE = 'https://cdn.jsdelivr.net/gh/ABMvisual/eyespy3d@main/';
 
 const AUDIO_MAP = {
   '/pink bopeep.jpeg': 'pink bo-peep.mp3',
@@ -807,11 +816,23 @@ function startMechanics() {
   }, 500);
 
   // ---- Dump / export helpers ----
+  // Downloads a file instead of relying on console visibility. The console
+  // log filter has silently swallowed this output multiple times running,
+  // a downloaded file can't be hidden by a filter setting, it either
+  // appears in Downloads or it doesn't, no DevTools guesswork needed.
   window.dumpEyeSpyLog = function () {
-    console.log('%c=== EYE SPY 3D DIAGNOSTIC LOG (' + window.eyeSpyLog.length + ' events) ===', 'color:#0f0;font-weight:bold');
-    console.log(JSON.stringify(window.eyeSpyLog, null, 2));
-    console.log('%cCopy everything between the JSON brackets above and send it back.', 'color:#0af');
+    const payload = JSON.stringify(window.eyeSpyLog, null, 2);
+    const blob = new Blob([payload], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'eyespy_diagnostic_log.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    console.log('%c[EyeSpyCrawler] Downloaded eyespy_diagnostic_log.json (' + window.eyeSpyLog.length + ' events) to your Downloads folder. Upload that file directly.', 'color:#0f0;font-weight:bold');
   };
 
-  console.log('%c[EyeSpyCrawler] attached. Play the game normally start to finish, then run dumpEyeSpyLog() in this console and copy the output.', 'color:#0f0;font-weight:bold');
+  console.log('%c[EyeSpyCrawler] attached. Play the game normally start to finish, then run dumpEyeSpyLog() in this console. It downloads a file, upload that file directly.', 'color:#0f0;font-weight:bold');
 })();
