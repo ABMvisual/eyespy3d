@@ -1,0 +1,1309 @@
+[
+  {
+    "t": "08:02:54",
+    "type": "arrival_audio",
+    "panoid": null,
+    "found": false
+  },
+  {
+    "t": "08:02:55",
+    "type": "level_change",
+    "levelIndex": 0
+  },
+  {
+    "t": "08:03:23",
+    "type": "arrival_audio",
+    "panoid": "cwckxx365uimbeqk6ngp0t5ud",
+    "found": true,
+    "src": "https://3d.abmvisual.com/media/3780/pink%20bopeep.mp3",
+    "paused": true,
+    "muted": false,
+    "readyState": 0,
+    "networkState": 3,
+    "duration": null,
+    "error": null
+  },
+  {
+    "t": "08:03:24",
+    "type": "arrival_audio_followup",
+    "panoid": "cwckxx365uimbeqk6ngp0t5ud",
+    "paused": false,
+    "currentTime": 1.40475,
+    "error": null
+  },
+  {
+    "t": "08:03:29",
+    "type": "billboard_open",
+    "panoid": "cwckxx365uimbeqk6ngp0t5ud",
+    "popupType": "item",
+    "previousPopupType": null,
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "Pink Bo-Peep",
+    "rawLabelOnly": "Pink Bo-Peep",
+    "labelCssText": "",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 805
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 805
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 38
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 805
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//pink bopeep.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:03:31",
+    "type": "billboard_open",
+    "panoid": "cwckxx365uimbeqk6ngp0t5ud",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "Two white cows",
+    "rawLabelOnly": "Two white cows",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//two white cows.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:03:39",
+    "type": "billboard_open",
+    "panoid": "cwckxx365uimbeqk6ngp0t5ud",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "Yourself",
+    "rawLabelOnly": "Yourself",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//yourself.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:03:42",
+    "type": "arrival_audio",
+    "panoid": "ep98q9hxumexd83q38p12k4xc",
+    "found": true,
+    "src": "https://3d.abmvisual.com/media/3780/bowl%20of%20plastic%20fruit.mp3",
+    "paused": true,
+    "muted": false,
+    "readyState": 0,
+    "networkState": 3,
+    "duration": null,
+    "error": null
+  },
+  {
+    "t": "08:03:42",
+    "type": "level_change",
+    "levelIndex": 1
+  },
+  {
+    "t": "08:03:43",
+    "type": "arrival_audio_followup",
+    "panoid": "ep98q9hxumexd83q38p12k4xc",
+    "paused": false,
+    "currentTime": 1.405455,
+    "error": null
+  },
+  {
+    "t": "08:03:57",
+    "type": "billboard_open",
+    "panoid": "ep98q9hxumexd83q38p12k4xc",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "Decongestant cough elixir",
+    "rawLabelOnly": "Decongestant cough elixir",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//decongestant cough elixir.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:04:10",
+    "type": "billboard_open",
+    "panoid": "ep98q9hxumexd83q38p12k4xc",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "Bowl of plastic fruit",
+    "rawLabelOnly": "Bowl of plastic fruit",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//plastic fruit.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:04:21",
+    "type": "billboard_open",
+    "panoid": "ep98q9hxumexd83q38p12k4xc",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "Pineapple Sunday",
+    "rawLabelOnly": "Pineapple Sunday",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//pineapple sunday.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:04:25",
+    "type": "level_change",
+    "levelIndex": 2
+  },
+  {
+    "t": "08:04:25",
+    "type": "arrival_audio",
+    "panoid": "t3si6z3gnc6ix4qh6cgmtgnfa",
+    "found": true,
+    "src": "https://3d.abmvisual.com/media/3780/Aztec%20chocolate.mp3",
+    "paused": true,
+    "muted": false,
+    "readyState": 0,
+    "networkState": 3,
+    "duration": null,
+    "error": null
+  },
+  {
+    "t": "08:04:26",
+    "type": "arrival_audio_followup",
+    "panoid": "t3si6z3gnc6ix4qh6cgmtgnfa",
+    "paused": false,
+    "currentTime": 1.437888,
+    "error": null
+  },
+  {
+    "t": "08:04:47",
+    "type": "billboard_open",
+    "panoid": "t3si6z3gnc6ix4qh6cgmtgnfa",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "Atomic coffee",
+    "rawLabelOnly": "Atomic coffee",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//atomic coffee.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:05:03",
+    "type": "billboard_open",
+    "panoid": "t3si6z3gnc6ix4qh6cgmtgnfa",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "Royal perambulator",
+    "rawLabelOnly": "Royal perambulator",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//royal perambulator.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:05:15",
+    "type": "billboard_open",
+    "panoid": "t3si6z3gnc6ix4qh6cgmtgnfa",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "Aztec chocolate",
+    "rawLabelOnly": "Aztec chocolate",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//aztec chocolate.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:05:19",
+    "type": "level_change",
+    "levelIndex": 3
+  },
+  {
+    "t": "08:05:19",
+    "type": "arrival_audio",
+    "panoid": "2cngsqh5q4t1ep85y5ky0h49d",
+    "found": true,
+    "src": "https://3d.abmvisual.com/media/3780/crowin%20the%20bag.mp3",
+    "paused": true,
+    "muted": false,
+    "readyState": 0,
+    "networkState": 3,
+    "duration": null,
+    "error": null
+  },
+  {
+    "t": "08:05:20",
+    "type": "arrival_audio_followup",
+    "panoid": "2cngsqh5q4t1ep85y5ky0h49d",
+    "paused": false,
+    "currentTime": 1.410201,
+    "error": null
+  },
+  {
+    "t": "08:05:42",
+    "type": "billboard_open",
+    "panoid": "2cngsqh5q4t1ep85y5ky0h49d",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "a hand in two",
+    "rawLabelOnly": "a hand in two",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//a hand in two.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:05:44",
+    "type": "billboard_open",
+    "panoid": "2cngsqh5q4t1ep85y5ky0h49d",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "a crow in a bag",
+    "rawLabelOnly": "a crow in a bag",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//a crow in a bag.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:05:53",
+    "type": "billboard_open",
+    "panoid": "2cngsqh5q4t1ep85y5ky0h49d",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "vitreous china",
+    "rawLabelOnly": "vitreous china",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//vitreous china.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:05:56",
+    "type": "billboard_open",
+    "panoid": "2cngsqh5q4t1ep85y5ky0h49d",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "a hand in two",
+    "rawLabelOnly": "a hand in two",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//a hand in two.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:06:05",
+    "type": "billboard_open",
+    "panoid": "2cngsqh5q4t1ep85y5ky0h49d",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "a musical tyre",
+    "rawLabelOnly": "a musical tyre",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//musical tyre.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:06:08",
+    "type": "arrival_audio",
+    "panoid": "66yna1yh5e2ig14bmzzf1sn2c",
+    "found": true,
+    "src": "https://3d.abmvisual.com/media/3780/hanimex.mp3",
+    "paused": true,
+    "muted": false,
+    "readyState": 0,
+    "networkState": 3,
+    "duration": null,
+    "error": null
+  },
+  {
+    "t": "08:06:08",
+    "type": "level_change",
+    "levelIndex": 4
+  },
+  {
+    "t": "08:06:10",
+    "type": "arrival_audio_followup",
+    "panoid": "66yna1yh5e2ig14bmzzf1sn2c",
+    "paused": false,
+    "currentTime": 1.418759,
+    "error": null
+  },
+  {
+    "t": "08:06:25",
+    "type": "billboard_open",
+    "panoid": "66yna1yh5e2ig14bmzzf1sn2c",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "Hanimex's Movielux",
+    "rawLabelOnly": "Hanimex's Movielux",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//Hanimexs Movielux.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:06:43",
+    "type": "billboard_open",
+    "panoid": "66yna1yh5e2ig14bmzzf1sn2c",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "The Argus PreViewer",
+    "rawLabelOnly": "The Argus PreViewer",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//argus previewer.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:06:56",
+    "type": "billboard_open",
+    "panoid": "66yna1yh5e2ig14bmzzf1sn2c",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "a porcelain lobster",
+    "rawLabelOnly": "a porcelain lobster",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//porcelain lobster.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:07:07",
+    "type": "billboard_open",
+    "panoid": "66yna1yh5e2ig14bmzzf1sn2c",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "scott's mower maker",
+    "rawLabelOnly": "scott's mower maker",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//scotts mower maker.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:07:09",
+    "type": "arrival_audio",
+    "panoid": "3hdk0cskxw0apbr2iw8016htb",
+    "found": true,
+    "src": "https://3d.abmvisual.com/media/3780/wall%20climbing%20baby.mp3",
+    "paused": true,
+    "muted": false,
+    "readyState": 0,
+    "networkState": 3,
+    "duration": null,
+    "error": null
+  },
+  {
+    "t": "08:07:10",
+    "type": "level_change",
+    "levelIndex": 5
+  },
+  {
+    "t": "08:07:11",
+    "type": "arrival_audio_followup",
+    "panoid": "3hdk0cskxw0apbr2iw8016htb",
+    "paused": false,
+    "currentTime": 1.423636,
+    "error": null
+  },
+  {
+    "t": "08:07:21",
+    "type": "billboard_open",
+    "panoid": "3hdk0cskxw0apbr2iw8016htb",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "Barley",
+    "rawLabelOnly": "Barley",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//barley.jpg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:07:32",
+    "type": "billboard_open",
+    "panoid": "3hdk0cskxw0apbr2iw8016htb",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "Some Flumi's",
+    "rawLabelOnly": "Some Flumi's",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//some flumis.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:07:48",
+    "type": "billboard_open",
+    "panoid": "3hdk0cskxw0apbr2iw8016htb",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "Hide and seek",
+    "rawLabelOnly": "Hide and seek",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//hide and seek.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:07:57",
+    "type": "billboard_open",
+    "panoid": "3hdk0cskxw0apbr2iw8016htb",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "Wall climbing baby",
+    "rawLabelOnly": "Wall climbing baby",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//wall climbing baby.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:08:00",
+    "type": "arrival_audio",
+    "panoid": "r7sd2g426fhbfa2wdh5dfxy5d",
+    "found": true,
+    "src": "https://3d.abmvisual.com/media/3780/an%20odd%20purves%20terms.mp3",
+    "paused": true,
+    "muted": false,
+    "readyState": 0,
+    "networkState": 3,
+    "duration": null,
+    "error": null
+  },
+  {
+    "t": "08:08:01",
+    "type": "level_change",
+    "levelIndex": 6
+  },
+  {
+    "t": "08:08:02",
+    "type": "arrival_audio_followup",
+    "panoid": "r7sd2g426fhbfa2wdh5dfxy5d",
+    "paused": false,
+    "currentTime": 1.422445,
+    "error": null
+  },
+  {
+    "t": "08:08:11",
+    "type": "billboard_open",
+    "panoid": "r7sd2g426fhbfa2wdh5dfxy5d",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "A third more time",
+    "rawLabelOnly": "A third more time",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//a third more time.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:08:18",
+    "type": "billboard_open",
+    "panoid": "r7sd2g426fhbfa2wdh5dfxy5d",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "An odd purves terms",
+    "rawLabelOnly": "An odd purves terms",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//odd purves terms.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:08:30",
+    "type": "billboard_open",
+    "panoid": "r7sd2g426fhbfa2wdh5dfxy5d",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "A round thing that serves",
+    "rawLabelOnly": "A round thing that serves",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//round thing.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:08:40",
+    "type": "billboard_open",
+    "panoid": "r7sd2g426fhbfa2wdh5dfxy5d",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "A pair of old jugs",
+    "rawLabelOnly": "A pair of old jugs",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//a pair of old jugs.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:08:43",
+    "type": "billboard_open",
+    "panoid": "r7sd2g426fhbfa2wdh5dfxy5d",
+    "popupType": "audio",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard audio cs-default onpano tour nolabel nodescription notext media",
+    "overlayClasses": "audio",
+    "isAudioClue": true,
+    "labelText": "",
+    "rawLabelOnly": "",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 400,
+      "h": 60
+    },
+    "rect_customBillboardBackground": {
+      "w": 400,
+      "h": 60
+    },
+    "rect_tagTextContent": {
+      "w": 400,
+      "h": 28
+    },
+    "rect_tagMediaContent": {
+      "w": 400,
+      "h": 32
+    },
+    "computedWidth_billboardContent": "400px",
+    "computedWidth_customBillboardBackground": "400px",
+    "computedWidth_tagTextContent": "400px",
+    "computedWidth_customBillboardFull": "400px",
+    "mediaContentHTML": "<audio controls=\"\" controlslist=\"nodownload\" autoplay=\"\" src=\"/media/3780/three%20wooden%20discs.mp3\" class=\"audioplayer\" full=\"1\" data-volume=\"1\"></audio>"
+  },
+  {
+    "t": "08:08:44",
+    "type": "level_change",
+    "levelIndex": 7
+  },
+  {
+    "t": "08:08:55",
+    "type": "billboard_open",
+    "panoid": "r7sd2g426fhbfa2wdh5dfxy5d",
+    "popupType": "item",
+    "previousPopupType": "audio",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "Australia in stitches",
+    "rawLabelOnly": "Australia in stitches",
+    "labelCssText": "position: static !important; display: block !important; width: 85% !important; max-width: 85% !important; box-sizing: border-box !important; text-align: center !important; font-size: 150% !important; color: white !important; margin: auto !important; background-color: transparent !important; padding: 20px !important; white-space: normal !important; overflow: visible !important;",
+    "rect_billboardContent": {
+      "w": 1591,
+      "h": 805
+    },
+    "rect_customBillboardBackground": {
+      "w": 1591,
+      "h": 805
+    },
+    "rect_tagTextContent": {
+      "w": 223,
+      "h": 163
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 805
+    },
+    "computedWidth_billboardContent": "1591px",
+    "computedWidth_customBillboardBackground": "1591px",
+    "computedWidth_tagTextContent": "223.109px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//australia in stitches.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:08:59",
+    "type": "billboard_open",
+    "panoid": "r7sd2g426fhbfa2wdh5dfxy5d",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "a cat in a turban",
+    "rawLabelOnly": "a cat in a turban",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//cat in a turban.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:09:05",
+    "type": "billboard_open",
+    "panoid": "r7sd2g426fhbfa2wdh5dfxy5d",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "three wooden discs",
+    "rawLabelOnly": "three wooden discs",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//three wooden discs.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:09:55",
+    "type": "arrival_audio",
+    "panoid": "dy113u49qt5s7y38ms7ibmd9b",
+    "found": true,
+    "src": "https://3d.abmvisual.com/media/3780/she%20disinterestedly%20sat.mp3",
+    "paused": true,
+    "muted": false,
+    "readyState": 0,
+    "networkState": 3,
+    "duration": null,
+    "error": null
+  },
+  {
+    "t": "08:09:56",
+    "type": "level_change",
+    "levelIndex": 8
+  },
+  {
+    "t": "08:09:57",
+    "type": "arrival_audio_followup",
+    "panoid": "dy113u49qt5s7y38ms7ibmd9b",
+    "paused": false,
+    "currentTime": 1.40993,
+    "error": null
+  },
+  {
+    "t": "08:10:05",
+    "type": "billboard_open",
+    "panoid": "dy113u49qt5s7y38ms7ibmd9b",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "she disinterestedly sat",
+    "rawLabelOnly": "she disinterestedly sat",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//she disinterestedly sat.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  },
+  {
+    "t": "08:10:11",
+    "type": "billboard_open",
+    "panoid": "dy113u49qt5s7y38ms7ibmd9b",
+    "popupType": "item",
+    "previousPopupType": "item",
+    "fullClasses": "customBillboard photo cs-default openCustomBillboardMedia haslabel nodescription media wider",
+    "overlayClasses": "",
+    "isAudioClue": false,
+    "labelText": "two chambermen",
+    "rawLabelOnly": "two chambermen",
+    "labelCssText": "display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; font-size: 240% !important; color: white !important; margin: 0px !important; background-color: rgb(28, 28, 28) !important; padding: 14px 24px !important;",
+    "rect_billboardContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_customBillboardBackground": {
+      "w": 1432,
+      "h": 881
+    },
+    "rect_tagTextContent": {
+      "w": 1432,
+      "h": 94
+    },
+    "rect_tagMediaContent": {
+      "w": 1432,
+      "h": 881
+    },
+    "computedWidth_billboardContent": "1431.9px",
+    "computedWidth_customBillboardBackground": "1431.9px",
+    "computedWidth_tagTextContent": "1431.9px",
+    "computedWidth_customBillboardFull": "1431.9px",
+    "mediaContentHTML": "<img class=\"tag-image\" src=\"/media/3780//two chambermen.jpeg\" data-width=\"1920\" data-height=\"1080\" data-ratio=\"1.7777777777777777\" style=\"aspect-ratio: 1.77778 / 1;\">"
+  }
+]
