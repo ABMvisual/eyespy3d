@@ -1,18 +1,19 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3020)
-// Base: V3019
-// Fix 1: DevTools Issues panel confirmed all 48 item-sound mp3 requests to
-// raw.githubusercontent.com were being blocked by CORB. Switched GITHUB_BASE
-// to jsDelivr's GitHub mirror, which serves the same files with correct
-// audio content types, so item-found sound effects can now actually load.
-// Fix 2: dumpEyeSpyLog() now downloads a JSON file instead of printing to
-// console. The console log-level filter has swallowed that output multiple
-// times running, a downloaded file can't be hidden by a filter setting.
+// EYE SPY 3D - ENGINE (V3022)
+// Base: V3021
+// Removed the diagnostic crawler baked in since V3019. It was running two
+// extra sets of MutationObservers alongside the game's own, and calling
+// getBoundingClientRect()/getComputedStyle() eight times over on every
+// single popup open, both of which force a synchronous layout recalculation.
+// That is the likely cause of the popup-appearance lag reported after V3019.
+// The crawler had already told us what we needed (arrival audio confirmed
+// fine, and the exact race condition behind V3021), so it is done. This
+// build should feel as snappy as it did before V3019.
 // =============================================================================
 
 const YOUTUBE_VIDEO_ID = 'rXT_61Yr2OM';
 
-console.log('EYE SPY 3D \u2014 V3020 loaded');
+console.log('EYE SPY 3D \u2014 V3022 loaded');
 
 // Switched from raw.githubusercontent.com to jsDelivr's GitHub mirror.
 // raw.githubusercontent.com is not intended for serving production binary
@@ -309,8 +310,32 @@ function startMechanics() {
       // playback (a progress indicator, for instance), this observer can
       // fire many times a second, redoing the same work each time was the
       // likely cause of lag returning.
-      if (labelEl && labelEl.dataset.esHandled !== 'true') {
-        labelEl.dataset.esHandled = 'true';
+      if (labelEl && labelEl.dataset.esHandled !== 'true' && labelEl.dataset.esPending !== 'true') {
+        // Mark pending synchronously so further mutation firings within the
+        // same open do not schedule duplicate work, but do not read
+        // classList or style anything yet.
+        labelEl.dataset.esPending = 'true';
+
+        // Defer one frame before reading #customBillboardFull's class or
+        // applying any styling. Confirmed via the diagnostic log: when an
+        // item popup opens immediately after the audio-clue popup, our
+        // observer's very first eligible mutation can fire before MPEmbed
+        // has finished swapping the class from "audio" to "photo" on the
+        // reused element, causing the item popup to be styled with the
+        // audio branch's properties. A one-frame defer gives that class
+        // swap time to settle before we ever read it. Still only one style
+        // pass per open, so this does not reintroduce the mutation-storm
+        // lag the esHandled guard was originally added to prevent.
+        requestAnimationFrame(() => {
+          // The popup may have already closed again within that one frame
+          // (a very fast click-through). Bail out rather than styling a
+          // popup that is no longer open.
+          if (!isOverlayOpen(overlay)) {
+            delete labelEl.dataset.esPending;
+            return;
+          }
+
+          labelEl.dataset.esHandled = 'true';
 
         const rawLabel = labelEl.textContent;
         const cleanLabel = normalize(rawLabel);
@@ -408,6 +433,7 @@ function startMechanics() {
           // time it opens is expected noise, not useful.
           console.log('Popup opened but label did not match any expected item:', rawLabel);
         }
+        });
       }
     }
 
@@ -420,7 +446,10 @@ function startMechanics() {
         }
       }
       const staleLabelEl = overlay.querySelector('.tag-text-content');
-      if (staleLabelEl) delete staleLabelEl.dataset.esHandled;
+      if (staleLabelEl) {
+        delete staleLabelEl.dataset.esHandled;
+        delete staleLabelEl.dataset.esPending;
+      }
     }
 
     window.overlayWasOpen = open;
@@ -669,170 +698,3 @@ function startMechanics() {
     }
   }, 500);
 }
-
-// =============================================================================
-// DIAGNOSTIC CRAWLER (baked in for this debug build, see V3019 note above)
-// Runs silently, does not modify gameplay, styling, or audio. Read-only.
-// Auto-attaches on load. Once playtesting is done, run dumpEyeSpyLog() in
-// the console, copy the JSON output, and remove this whole block for the
-// production build.
-// =============================================================================
-(function () {
-  window.eyeSpyLog = window.eyeSpyLog || [];
-  let lastPanoId = null;
-  let eventCount = 0;
-
-  function log(type, data) {
-    eventCount++;
-    window.eyeSpyLog.push({
-      t: new Date().toISOString().slice(11, 19),
-      type,
-      ...data
-    });
-    if (eventCount % 20 === 0) {
-      console.log('%c[EyeSpyCrawler] auto-checkpoint, ' + eventCount + ' events logged so far', 'color:#0af');
-    }
-  }
-
-  // ---- 1. Native panoPlayer arrival-audio watcher ----
-  // Fires every time #panoPlayer's audio element changes source (i.e. every
-  // pano arrival) and records whether it actually played.
-  function watchPanoPlayer() {
-    const panoPlayer = document.getElementById('panoPlayer');
-    if (!panoPlayer) {
-      setTimeout(watchPanoPlayer, 300);
-      return;
-    }
-    const panoid = panoPlayer.getAttribute('panoid');
-
-    function inspectAudio() {
-      const audioEl = panoPlayer.querySelector('audio');
-      if (!audioEl) {
-        log('arrival_audio', { panoid: panoPlayer.getAttribute('panoid'), found: false });
-        return;
-      }
-      const snapshot = {
-        panoid: panoPlayer.getAttribute('panoid'),
-        found: true,
-        src: audioEl.currentSrc || audioEl.src,
-        paused: audioEl.paused,
-        muted: audioEl.muted,
-        readyState: audioEl.readyState,
-        networkState: audioEl.networkState,
-        duration: audioEl.duration,
-        error: audioEl.error ? audioEl.error.code : null
-      };
-      log('arrival_audio', snapshot);
-
-      // Check again 1.5s later to see if it actually started playing
-      // (readyState/paused can lag right at attach time).
-      setTimeout(() => {
-        log('arrival_audio_followup', {
-          panoid: panoPlayer.getAttribute('panoid'),
-          paused: audioEl.paused,
-          currentTime: audioEl.currentTime,
-          error: audioEl.error ? audioEl.error.code : null
-        });
-      }, 1500);
-    }
-
-    const observer = new MutationObserver(() => {
-      const currentPanoId = panoPlayer.getAttribute('panoid');
-      if (currentPanoId !== lastPanoId) {
-        lastPanoId = currentPanoId;
-        inspectAudio();
-      }
-    });
-    observer.observe(panoPlayer, { attributes: true, childList: true, subtree: true });
-    lastPanoId = panoid;
-    inspectAudio();
-  }
-  watchPanoPlayer();
-
-  // ---- 2. Billboard popup layout + content watcher ----
-  // Fires every time the item/audio popup overlay opens, records computed
-  // widths up the container chain plus the label text and its RAW inline
-  // cssText, so a style leaking from one popup type into the other (the
-  // V3017 bug) shows up directly as a diff in cssText between opens,
-  // rather than needing to be inferred from rendered widths.
-  window.lastPopupType = null;
-  function watchBillboard() {
-    const overlay = document.getElementById('customBillboardFullOverlay');
-    if (!overlay) {
-      setTimeout(watchBillboard, 300);
-      return;
-    }
-    const observer = new MutationObserver(() => {
-      const isOpen = overlay.style.display !== 'none' && overlay.style.display !== '';
-      if (!isOpen) return;
-
-      const full = document.getElementById('customBillboardFull');
-      const bg = full ? full.querySelector('.customBillboardBackground') : null;
-      const content = full ? full.querySelector('.billboard-content') : null;
-      const textContent = full ? full.querySelector('.tag-text-content') : null;
-      const label = full ? full.querySelector('.tag-label') : null;
-      const mediaContent = full ? full.querySelector('.tag-media-content') : null;
-
-      const rect = (el) => el ? { w: Math.round(el.getBoundingClientRect().width), h: Math.round(el.getBoundingClientRect().height) } : null;
-      const computedWidth = (el) => el ? getComputedStyle(el).width : null;
-
-      const thisPopupType = full && full.classList.contains('audio') ? 'audio' : 'item';
-
-      log('billboard_open', {
-        panoid: document.getElementById('panoPlayer') ? document.getElementById('panoPlayer').getAttribute('panoid') : null,
-        popupType: thisPopupType,
-        previousPopupType: window.lastPopupType,
-        fullClasses: full ? full.className : null,
-        overlayClasses: overlay.className,
-        isAudioClue: full ? full.classList.contains('audio') : null,
-        labelText: (textContent ? textContent.textContent : '').trim(),
-        rawLabelOnly: (label ? label.textContent : '').trim(),
-        labelCssText: textContent ? textContent.style.cssText : null,
-        rect_billboardContent: rect(content),
-        rect_customBillboardBackground: rect(bg),
-        rect_tagTextContent: rect(textContent),
-        rect_tagMediaContent: rect(mediaContent),
-        computedWidth_billboardContent: computedWidth(content),
-        computedWidth_customBillboardBackground: computedWidth(bg),
-        computedWidth_tagTextContent: computedWidth(textContent),
-        computedWidth_customBillboardFull: computedWidth(full),
-        mediaContentHTML: mediaContent ? mediaContent.innerHTML.slice(0, 300) : null
-      });
-      window.lastPopupType = thisPopupType;
-    });
-    observer.observe(overlay, { attributes: true, attributeFilter: ['style'] });
-  }
-  watchBillboard();
-
-  // ---- 3. Level transition watcher ----
-  // Piggybacks on window.currentLevelIndex if the game script exposes it,
-  // just to timestamp when each level actually changed.
-  let lastLevelIndex = null;
-  setInterval(() => {
-    if (typeof window.currentLevelIndex !== 'undefined' && window.currentLevelIndex !== lastLevelIndex) {
-      lastLevelIndex = window.currentLevelIndex;
-      log('level_change', { levelIndex: lastLevelIndex });
-    }
-  }, 500);
-
-  // ---- Dump / export helpers ----
-  // Downloads a file instead of relying on console visibility. The console
-  // log filter has silently swallowed this output multiple times running,
-  // a downloaded file can't be hidden by a filter setting, it either
-  // appears in Downloads or it doesn't, no DevTools guesswork needed.
-  window.dumpEyeSpyLog = function () {
-    const payload = JSON.stringify(window.eyeSpyLog, null, 2);
-    const blob = new Blob([payload], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'eyespy_diagnostic_log.json';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    console.log('%c[EyeSpyCrawler] Downloaded eyespy_diagnostic_log.json (' + window.eyeSpyLog.length + ' events) to your Downloads folder. Upload that file directly.', 'color:#0f0;font-weight:bold');
-  };
-
-  console.log('%c[EyeSpyCrawler] attached. Play the game normally start to finish, then run dumpEyeSpyLog() in this console. It downloads a file, upload that file directly.', 'color:#0f0;font-weight:bold');
-})();
