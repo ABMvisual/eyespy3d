@@ -1,13 +1,19 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3015)
-// Base: V3014
-// Change: item popup label font-size bumped from 180% to 240% per request.
-// No other logic changed.
+// EYE SPY 3D - ENGINE (V3017)
+// Base: V3016
+// Fix: the "wild formatting" bug was never Level-8-specific. labelEl is one
+// shared, reused element for both the item-popup and audio-clue-popup
+// styling branches, and each branch only ever set its own properties,
+// never clearing the other's. So once the floor audio-clue icon had been
+// opened even once, at any level, properties like max-width and
+// white-space stayed stuck on every item popup afterwards. Fixed by
+// resetting labelEl.style.cssText before either branch runs, confirmed
+// reproducible from Level 1 onwards prior to this fix.
 // =============================================================================
 
 const YOUTUBE_VIDEO_ID = 'rXT_61Yr2OM';
 
-console.log('EYE SPY 3D \u2014 V3015 loaded');
+console.log('EYE SPY 3D \u2014 V3017 loaded');
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
@@ -43,7 +49,6 @@ const AUDIO_MAP = {
   '/three wooden discs.jpeg': 'three wooden discs.mp3',
   '/she disinterestedly sat.jpeg': 'she disinterestedly sat.mp3',
   '/picked pack.jpeg': 'picked pack.mp3',
-  '/two little fellas.jpeg': 'two little fellas.mp3',
   '/two chambermen.jpeg': 'two little fellas.mp3',
   '/drinking urn.jpeg': 'drinking urn.mp3',
   '/viking preserve.jpeg': 'viking preserve.mp3',
@@ -321,6 +326,16 @@ function startMechanics() {
         // each differently rather than guessing at one shared treatment.
         const billboardFull = document.getElementById('customBillboardFull');
         const isAudioClue = billboardFull && billboardFull.classList.contains('audio');
+
+        // Reset first: labelEl is one shared, reused element for both popup
+        // types. Previously each branch only set its own properties and
+        // never cleared the other branch's, so once the audio-clue popup had
+        // been opened even once, properties like max-width and white-space
+        // stayed stuck on every item popup afterwards, regardless of level.
+        // That was the real cause of "wild formatting", not anything
+        // Level-8-specific. Clearing cssText first means each branch fully
+        // owns its own look with nothing left over from the other.
+        labelEl.style.cssText = '';
 
         if (isAudioClue) {
           // Full grey card, text centred and free to wrap so nothing is cut
