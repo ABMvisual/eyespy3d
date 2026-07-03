@@ -1,17 +1,15 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3023)
-// Base: V3022
-// Fix: removed the placeholder "door unlocked" chime pointing at a random
-// Wikipedia Commons Tada.mp3, not something anyone on this project added,
-// not meant to be in use, and confirmed as the one remaining CORB-blocked
-// request after the jsDelivr swap fixed the other 47. globalChime is now
-// an empty Audio() with the play call guarded to only fire once a real
-// src is set.
+// EYE SPY 3D - ENGINE (V3025)
+// Base: V3024
+// Fix: beatles now points at the real uploaded "beatles.mp3" instead of
+// the old "beetles.mp3" placeholder name left over from before the pun
+// spelling fix. All 51 item sounds are now uploaded and correctly wired
+// up in AUDIO_MAP, confirmed against the repo file listing.
 // =============================================================================
 
 const YOUTUBE_VIDEO_ID = 'rXT_61Yr2OM';
 
-console.log('EYE SPY 3D \u2014 V3023 loaded');
+console.log('EYE SPY 3D \u2014 V3025 loaded');
 
 // Switched from raw.githubusercontent.com to jsDelivr's GitHub mirror.
 // raw.githubusercontent.com is not intended for serving production binary
@@ -33,7 +31,7 @@ const AUDIO_MAP = {
   '/aztec chocolate.jpeg': 'aztec chocolate.mp3',
   '/atomic coffee.jpeg': 'atomic coffee.mp3',
   '/royal perambulator.jpeg': 'royal perambulator.mp3',
-  '/a crow in a bag.jpeg': 'a crow in a bag.mp3',
+  '/a crow in the bag.jpeg': 'a crow in the bag.mp3',
   '/a hand in two.jpeg': 'a hand in two.mp3',
   '/vitreous china.jpeg': 'vitreous china.mp3',
   '/musical tyre.jpeg': 'musical tyre.mp3',
@@ -55,7 +53,7 @@ const AUDIO_MAP = {
   '/three wooden discs.jpeg': 'three wooden discs.mp3',
   '/she disinterestedly sat.jpeg': 'she disinterestedly sat.mp3',
   '/picked pack.jpeg': 'picked pack.mp3',
-  '/two chambermen.jpeg': 'two little fellas.mp3',
+  '/two chambermen.jpeg': 'two chambermen.mp3',
   '/drinking urn.jpeg': 'drinking urn.mp3',
   '/viking preserve.jpeg': 'viking preserve.mp3',
   '/confetti.jpeg': 'confetti.mp3',
@@ -63,7 +61,7 @@ const AUDIO_MAP = {
   '/eagle.jpeg': 'eagle.mp3',
   '/blue hand.jpeg': 'blue hand.mp3',
   '/gnome all alone.jpeg': 'gnome all alone.mp3',
-  '/beatles.jpeg': 'beetles.mp3',
+  '/beatles.jpeg': 'beatles.mp3',
   '/mock ducks.jpeg': 'mock ducks.mp3',
   '/unarmed man.jpeg': 'unarmed man.mp3',
   '/wooden goanna.jpeg': 'wooden goanna.mp3',
@@ -228,7 +226,7 @@ function startMechanics() {
     { level: 1, startSweeps: ['7k4p5mu5f5eydt8h0f8cygptb', 'cwckxx365uimbeqk6ngp0t5ud'], targetSweep: 'ep98q9hxumexd83q38p12k4xc', imagesToFind: ['/pink bopeep.jpeg', '/two white cows.jpeg', '/yourself.jpeg'] },
     { level: 2, startSweeps: ['ep98q9hxumexd83q38p12k4xc'], targetSweep: 't3si6z3gnc6ix4qh6cgmtgnfa', imagesToFind: ['/decongestant cough elixir.jpeg', '/plastic fruit.jpeg', '/pineapple sunday.jpeg'] },
     { level: 3, startSweeps: ['t3si6z3gnc6ix4qh6cgmtgnfa'], targetSweep: '2cngsqh5q4t1ep85y5ky0h49d', imagesToFind: ['/aztec chocolate.jpeg', '/atomic coffee.jpeg', '/royal perambulator.jpeg'] },
-    { level: 4, startSweeps: ['2cngsqh5q4t1ep85y5ky0h49d'], targetSweep: '66yna1yh5e2ig14bmzzf1sn2c', imagesToFind: ['/a crow in a bag.jpeg', '/a hand in two.jpeg', '/vitreous china.jpeg', '/musical tyre.jpeg'] },
+    { level: 4, startSweeps: ['2cngsqh5q4t1ep85y5ky0h49d'], targetSweep: '66yna1yh5e2ig14bmzzf1sn2c', imagesToFind: ['/a crow in the bag.jpeg', '/a hand in two.jpeg', '/vitreous china.jpeg', '/musical tyre.jpeg'] },
     { level: 5, startSweeps: ['66yna1yh5e2ig14bmzzf1sn2c'], targetSweep: '3hdk0cskxw0apbr2iw8016htb', imagesToFind: ['/Hanimexs Movielux.jpeg', '/argus previewer.jpeg', '/porcelain lobster.jpeg', '/scotts mower maker.jpeg'] },
     { level: 6, startSweeps: ['3hdk0cskxw0apbr2iw8016htb'], targetSweep: 'r7sd2g426fhbfa2wdh5dfxy5d', imagesToFind: ['/barley.jpg', '/some flumis.jpeg', '/wall climbing baby.jpeg', '/hide and seek.jpeg'] },
     { level: 7, startSweeps: ['r7sd2g426fhbfa2wdh5dfxy5d'], targetSweep: '20qckty5qi20t39838cq274rc', imagesToFind: ['/a pair of old jugs.jpeg', '/a third more time.jpeg', '/odd purves terms.jpeg', '/round thing.jpeg'] },
