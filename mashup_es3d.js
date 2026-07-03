@@ -1,17 +1,15 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3011)
-// Base: V3010
-// Fix for lag returning: handleOverlayState() was doing full work, style
-// application and console logging, on every single mutation fire, not just
-// on genuine open/close transitions. If the audio element inside the
-// replay-clue popup mutates its own attributes during playback, that could
-// fire many times a second. Styling is now applied once per open, and the
-// no-match log only fires once per open rather than on every mutation.
+// EYE SPY 3D - ENGINE (V3012)
+// Base: V3011
+// Fix: confirmed via direct inspection that Level 8's third item polygon
+// actually uses /australia in stitches.jpeg, not /embroidered
+// australia.jpeg as the data assumed. This is a real filename difference,
+// not just a label variant, corrected directly here.
 // =============================================================================
 
 const YOUTUBE_VIDEO_ID = 'rXT_61Yr2OM';
 
-console.log('EYE SPY 3D \u2014 V3011 loaded');
+console.log('EYE SPY 3D \u2014 V3012 loaded');
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
@@ -43,6 +41,7 @@ const AUDIO_MAP = {
   '/round thing.jpeg': 'round thing.mp3',
   '/cat in a turban.jpeg': 'cat in a turban.mp3',
   '/embroidered australia.jpeg': 'embroidered australia.mp3',
+  '/australia in stitches.jpeg': 'australia in stitches.mp3',
   '/three wooden discs.jpeg': 'three wooden discs.mp3',
   '/she disinterestedly sat.jpeg': 'she disinterestedly sat.mp3',
   '/picked pack.jpeg': 'picked pack.mp3',
@@ -217,7 +216,7 @@ function startMechanics() {
     { level: 5, startSweeps: ['66yna1yh5e2ig14bmzzf1sn2c'], targetSweep: '3hdk0cskxw0apbr2iw8016htb', imagesToFind: ['/Hanimexs Movielux.jpeg', '/argus previewer.jpeg', '/porcelain lobster.jpeg', '/scotts mower maker.jpeg'] },
     { level: 6, startSweeps: ['3hdk0cskxw0apbr2iw8016htb'], targetSweep: 'r7sd2g426fhbfa2wdh5dfxy5d', imagesToFind: ['/barley.jpg', '/some flumis.jpeg', '/wall climbing baby.jpeg', '/hide and seek.jpeg'] },
     { level: 7, startSweeps: ['r7sd2g426fhbfa2wdh5dfxy5d'], targetSweep: '20qckty5qi20t39838cq274rc', imagesToFind: ['/a pair of old jugs.jpeg', '/a third more time.jpeg', '/odd purves terms.jpeg', '/round thing.jpeg'] },
-    { level: 8, startSweeps: ['20qckty5qi20t39838cq274rc'], targetSweep: 'dy113u49qt5s7y38ms7ibmd9b', imagesToFind: ['/cat in a turban.jpeg', '/embroidered australia.jpeg', '/three wooden discs.jpeg'] },
+    { level: 8, startSweeps: ['20qckty5qi20t39838cq274rc'], targetSweep: 'dy113u49qt5s7y38ms7ibmd9b', imagesToFind: ['/cat in a turban.jpeg', '/australia in stitches.jpeg', '/three wooden discs.jpeg'] },
     { level: 9, startSweeps: ['dy113u49qt5s7y38ms7ibmd9b'], targetSweep: 'rxgziepm3g4e0fgdgnwwk6efd', imagesToFind: ['/she disinterestedly sat.jpeg', '/picked pack.jpeg', '/two little fellas.jpeg'] },
     { level: 10, startSweeps: ['rxgziepm3g4e0fgdgnwwk6efd'], targetSweep: 'w2bre69ufwyaywn11ch032aaa', imagesToFind: ['/drinking urn.jpeg', '/viking preserve.jpeg', '/confetti.jpeg', '/two box of confetti.jpeg'] },
     { level: 11, startSweeps: ['w2bre69ufwyaywn11ch032aaa'], targetSweep: 'dimg015tts6u2b30hh0pndaqd', imagesToFind: ['/eagle.jpeg', '/blue hand.jpeg', '/gnome all alone.jpeg', '/beetles.jpeg'] },
