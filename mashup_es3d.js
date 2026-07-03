@@ -1,19 +1,27 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3029)
-// Base: V3028
-// Fix: the overlay MutationObserver had no throttle at all, unlike the
-// panoPlayer chrome hider fixed in V3026. isOverlayOpen() calls
-// getComputedStyle(), forcing a synchronous style recalculation, and this
-// was running on every single mutation across the entire popup subtree.
-// If MPEmbed animates the popup's own fade-in via repeated inline style
-// writes, every frame of that animation was forcing a reflow here, right
-// at the moment the popup should be appearing. Throttled to at most once
-// per animation frame, same pattern as V3026.
+// EYE SPY 3D - ENGINE (V3030)
+// Base: V3029
+// Fix: the persistent "text centred over the middle of the image" bug was
+// a second style leak that every previous fix missed. V3017/V3018/V3021
+// all reset labelEl only, but the audio branch also stamps four !important
+// properties onto .customBillboardBackground (grey background plus flex
+// centring) and nothing ever removed them. Once the audio popup opened
+// even once, that container flex-centred every later item popup's label
+// into the middle of the image. Now reset alongside labelEl on every open.
+//
+// Separately DIAGNOSED, NOT a code bug: the audio popup auto-opening on
+// Level 8 arrival. The diagnostic log shows every level transition logs a
+// native #panoPlayer arrival-audio event EXCEPT Level 8, where instead an
+// audio billboard popup auto-opened with an empty label one second before
+// the level registered. Level 8's clue audio is configured differently in
+// MPEmbed: as an auto-opening Custom Billboard rather than as per-pano
+// audio. Fix is in MPEmbed's settings for pano 20qckty5qi20t39838cq274rc,
+// compare against a working level's pano (e.g. r7sd2g426fhbfa2wdh5dfxy5d).
 // =============================================================================
 
 const YOUTUBE_VIDEO_ID = 'Ly2dwu4pTVo';
 
-console.log('EYE SPY 3D \u2014 V3029 loaded');
+console.log('EYE SPY 3D \u2014 V3030 loaded');
 
 // Switched from raw.githubusercontent.com to jsDelivr's GitHub mirror.
 // raw.githubusercontent.com is not intended for serving production binary
@@ -380,10 +388,23 @@ function startMechanics() {
           'color', 'margin', 'background-color', 'padding', 'white-space', 'overflow']
           .forEach((prop) => labelEl.style.removeProperty(prop));
 
+        // Reset the shared background container as well as the label.
+        // Every previous fix (V3017, V3018, V3021) only ever reset labelEl,
+        // but the audio branch also stamps four !important properties onto
+        // .customBillboardBackground (grey background plus flex centring),
+        // and nothing ever removed them. Once the audio popup had opened
+        // even once, that container kept flex-centring forever, which is
+        // why item popups rendered with the label vertically centred over
+        // the middle of the image instead of sitting in its banner.
+        const backgroundEl = overlay.querySelector('.customBillboardBackground') || overlay.querySelector('.customBillboardBG');
+        if (backgroundEl) {
+          ['background-color', 'display', 'align-items', 'justify-content']
+            .forEach((prop) => backgroundEl.style.removeProperty(prop));
+        }
+
         if (isAudioClue) {
           // Full grey card, text centred and free to wrap so nothing is cut
           // off regardless of word count.
-          const backgroundEl = overlay.querySelector('.customBillboardBackground') || overlay.querySelector('.customBillboardBG');
           if (backgroundEl) {
             backgroundEl.style.setProperty('background-color', '#4a4a4a', 'important');
             backgroundEl.style.setProperty('display', 'flex', 'important');
