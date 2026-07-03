@@ -1,17 +1,17 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3010)
-// Base: V3009
-// Fix: confirmed via window.foundImages inspection that "plastic fruit"
-// never matched because its real label is "Bowl of Plastic Fruit", not
-// "Plastic Fruit", a naming mismatch on the MPEmbed authoring side. Matching
-// is now tolerant of labels that contain or are contained by the expected
-// name, scoped to the current level's own items only, so it stays safe from
-// cross-matching between levels while surviving this kind of variation.
+// EYE SPY 3D - ENGINE (V3011)
+// Base: V3010
+// Fix for lag returning: handleOverlayState() was doing full work, style
+// application and console logging, on every single mutation fire, not just
+// on genuine open/close transitions. If the audio element inside the
+// replay-clue popup mutates its own attributes during playback, that could
+// fire many times a second. Styling is now applied once per open, and the
+// no-match log only fires once per open rather than on every mutation.
 // =============================================================================
 
 const YOUTUBE_VIDEO_ID = 'rXT_61Yr2OM';
 
-console.log('EYE SPY 3D \u2014 V3010 loaded');
+console.log('EYE SPY 3D \u2014 V3011 loaded');
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
@@ -293,95 +293,109 @@ function startMechanics() {
 
     if (open) {
       const labelEl = overlay.querySelector('.tag-text-content');
-      const rawLabel = labelEl ? labelEl.textContent : '';
-      const cleanLabel = normalize(rawLabel);
 
-      // Exact match first (cheap, and the common case). If that fails, fall
-      // back to a contains-either-way check against this level's own items
-      // only, so a label like "Bowl of Plastic Fruit" still matches the
-      // expected "plastic fruit" without risking a false match against a
-      // different level's items.
-      let matchedFilename = normalizedToFilename[cleanLabel];
-      if (!matchedFilename && cleanLabel) {
-        matchedFilename = currentLevel.imagesToFind.find((img) => {
-          const cleanImg = normalize(img);
-          return cleanLabel.includes(cleanImg) || cleanImg.includes(cleanLabel);
-        });
-      }
+      // Style and log only once per open, not on every mutation fire. If the
+      // audio element inside a popup mutates its own attributes during
+      // playback (a progress indicator, for instance), this observer can
+      // fire many times a second, redoing the same work each time was the
+      // likely cause of lag returning.
+      if (labelEl && labelEl.dataset.esHandled !== 'true') {
+        labelEl.dataset.esHandled = 'true';
 
-      // #customBillboardFull carries class "audio" for the replay-clue
-      // popup and "photo" for item popups, confirmed via inspection. Style
-      // each differently rather than guessing at one shared treatment.
-      const billboardFull = document.getElementById('customBillboardFull');
-      const isAudioClue = billboardFull && billboardFull.classList.contains('audio');
+        const rawLabel = labelEl.textContent;
+        const cleanLabel = normalize(rawLabel);
 
-      if (labelEl && isAudioClue) {
-        // Full grey card, text centred and free to wrap so nothing is cut
-        // off regardless of word count.
-        const backgroundEl = overlay.querySelector('.customBillboardBackground') || overlay.querySelector('.customBillboardBG');
-        if (backgroundEl) {
-          backgroundEl.style.setProperty('background-color', '#4a4a4a', 'important');
-          backgroundEl.style.setProperty('display', 'flex', 'important');
-          backgroundEl.style.setProperty('align-items', 'center', 'important');
-          backgroundEl.style.setProperty('justify-content', 'center', 'important');
+        // Exact match first (cheap, and the common case). If that fails, fall
+        // back to a contains-either-way check against this level's own items
+        // only, so a label like "Bowl of Plastic Fruit" still matches the
+        // expected "plastic fruit" without risking a false match against a
+        // different level's items.
+        let matchedFilename = normalizedToFilename[cleanLabel];
+        if (!matchedFilename && cleanLabel) {
+          matchedFilename = currentLevel.imagesToFind.find((img) => {
+            const cleanImg = normalize(img);
+            return cleanLabel.includes(cleanImg) || cleanImg.includes(cleanLabel);
+          });
         }
-        labelEl.style.setProperty('position', 'static', 'important');
-        labelEl.style.setProperty('display', 'block', 'important');
-        labelEl.style.setProperty('width', '85%', 'important');
-        labelEl.style.setProperty('max-width', '85%', 'important');
-        labelEl.style.setProperty('box-sizing', 'border-box', 'important');
-        labelEl.style.setProperty('text-align', 'center', 'important');
-        labelEl.style.setProperty('font-size', '150%', 'important');
-        labelEl.style.setProperty('color', 'white', 'important');
-        labelEl.style.setProperty('margin', 'auto', 'important');
-        labelEl.style.setProperty('background-color', 'transparent', 'important');
-        labelEl.style.setProperty('padding', '20px', 'important');
-        labelEl.style.setProperty('white-space', 'normal', 'important');
-        labelEl.style.setProperty('overflow', 'visible', 'important');
-      } else if (labelEl) {
-        // Item popup: sit within the label's own existing banner rather
-        // than fighting MPEmbed's layout with absolute positioning over
-        // the whole image. Inline styles beat MPEmbed's own late-injected
-        // stylesheet, which a rule in our <style> block couldn't reliably
-        // override.
-        labelEl.style.setProperty('display', 'block', 'important');
-        labelEl.style.setProperty('width', '100%', 'important');
-        labelEl.style.setProperty('box-sizing', 'border-box', 'important');
-        labelEl.style.setProperty('text-align', 'center', 'important');
-        labelEl.style.setProperty('font-size', '180%', 'important');
-        labelEl.style.setProperty('color', 'white', 'important');
-        labelEl.style.setProperty('margin', '0', 'important');
-        labelEl.style.setProperty('background-color', '#1c1c1c', 'important');
-        labelEl.style.setProperty('padding', '14px 24px', 'important');
-      }
 
-      // Recompute fresh on every check, only one item can ever be showing
-      // through this single reused overlay, so this can never go stale even
-      // if a close-then-reopen gets batched into one mutation callback.
-      window.activeOpenPopups.clear();
+        // #customBillboardFull carries class "audio" for the replay-clue
+        // popup and "photo" for item popups, confirmed via inspection. Style
+        // each differently rather than guessing at one shared treatment.
+        const billboardFull = document.getElementById('customBillboardFull');
+        const isAudioClue = billboardFull && billboardFull.classList.contains('audio');
 
-      if (matchedFilename && currentLevel.imagesToFind.includes(matchedFilename)) {
-        window.activeOpenPopups.add(matchedFilename);
-        if (!window.foundImages[matchedFilename]) {
-          console.log(`Found: ${matchedFilename}`);
-          playItemSound(matchedFilename);
-          window.foundImages[matchedFilename] = true;
+        if (isAudioClue) {
+          // Full grey card, text centred and free to wrap so nothing is cut
+          // off regardless of word count.
+          const backgroundEl = overlay.querySelector('.customBillboardBackground') || overlay.querySelector('.customBillboardBG');
+          if (backgroundEl) {
+            backgroundEl.style.setProperty('background-color', '#4a4a4a', 'important');
+            backgroundEl.style.setProperty('display', 'flex', 'important');
+            backgroundEl.style.setProperty('align-items', 'center', 'important');
+            backgroundEl.style.setProperty('justify-content', 'center', 'important');
+          }
+          labelEl.style.setProperty('position', 'static', 'important');
+          labelEl.style.setProperty('display', 'block', 'important');
+          labelEl.style.setProperty('width', '85%', 'important');
+          labelEl.style.setProperty('max-width', '85%', 'important');
+          labelEl.style.setProperty('box-sizing', 'border-box', 'important');
+          labelEl.style.setProperty('text-align', 'center', 'important');
+          labelEl.style.setProperty('font-size', '150%', 'important');
+          labelEl.style.setProperty('color', 'white', 'important');
+          labelEl.style.setProperty('margin', 'auto', 'important');
+          labelEl.style.setProperty('background-color', 'transparent', 'important');
+          labelEl.style.setProperty('padding', '20px', 'important');
+          labelEl.style.setProperty('white-space', 'normal', 'important');
+          labelEl.style.setProperty('overflow', 'visible', 'important');
+        } else {
+          // Item popup: sit within the label's own existing banner rather
+          // than fighting MPEmbed's layout with absolute positioning over
+          // the whole image. Inline styles beat MPEmbed's own late-injected
+          // stylesheet, which a rule in our <style> block couldn't reliably
+          // override.
+          labelEl.style.setProperty('display', 'block', 'important');
+          labelEl.style.setProperty('width', '100%', 'important');
+          labelEl.style.setProperty('box-sizing', 'border-box', 'important');
+          labelEl.style.setProperty('text-align', 'center', 'important');
+          labelEl.style.setProperty('font-size', '180%', 'important');
+          labelEl.style.setProperty('color', 'white', 'important');
+          labelEl.style.setProperty('margin', '0', 'important');
+          labelEl.style.setProperty('background-color', '#1c1c1c', 'important');
+          labelEl.style.setProperty('padding', '14px 24px', 'important');
         }
-        if (checkAllFound()) {
-          console.log('All items found, door unlocked.');
-          try { window.globalChime.currentTime = 0; window.globalChime.play().catch(() => {}); } catch (e) {}
+
+        window.activeOpenPopups.clear();
+
+        if (matchedFilename && currentLevel.imagesToFind.includes(matchedFilename)) {
+          window.activeOpenPopups.add(matchedFilename);
+          if (!window.foundImages[matchedFilename]) {
+            console.log(`Found: ${matchedFilename}`);
+            playItemSound(matchedFilename);
+            window.foundImages[matchedFilename] = true;
+          }
+          if (checkAllFound()) {
+            console.log('All items found, door unlocked.');
+            try { window.globalChime.currentTime = 0; window.globalChime.play().catch(() => {}); } catch (e) {}
+          }
+        } else if (!isAudioClue) {
+          // Only log a non-match for item popups. The replay-clue audio
+          // popup never matches an item on purpose, logging that every
+          // time it opens is expected noise, not useful.
+          console.log('Popup opened but label did not match any expected item:', rawLabel);
         }
-      } else {
-        console.log('Popup opened but label did not match any expected item:', rawLabel);
       }
     }
 
     if (!open) {
-      window.activeOpenPopups.clear();
-      if (checkAllFound() && !window.isTeleporting) {
-        console.log('Teleport sequence starting.');
-        executeFastTeleport(window.mpSdk, currentLevel);
+      if (window.overlayWasOpen) {
+        window.activeOpenPopups.clear();
+        if (checkAllFound() && !window.isTeleporting) {
+          console.log('Teleport sequence starting.');
+          executeFastTeleport(window.mpSdk, currentLevel);
+        }
       }
+      const staleLabelEl = overlay.querySelector('.tag-text-content');
+      if (staleLabelEl) delete staleLabelEl.dataset.esHandled;
     }
 
     window.overlayWasOpen = open;
