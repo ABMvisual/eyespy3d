@@ -1,15 +1,14 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3012)
-// Base: V3011
-// Fix: confirmed via direct inspection that Level 8's third item polygon
-// actually uses /australia in stitches.jpeg, not /embroidered
-// australia.jpeg as the data assumed. This is a real filename difference,
-// not just a label variant, corrected directly here.
+// EYE SPY 3D - ENGINE (V3013)
+// Base: V3012
+// Fix: confirmed via direct inspection that Level 9's third item polygon
+// actually uses two chambermen.jpeg, not two little fellas.jpeg. Same
+// pattern as the Level 8 fix, a real filename change on the MPEmbed side.
 // =============================================================================
 
 const YOUTUBE_VIDEO_ID = 'rXT_61Yr2OM';
 
-console.log('EYE SPY 3D \u2014 V3012 loaded');
+console.log('EYE SPY 3D \u2014 V3013 loaded');
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/ABMvisual/eyespy3d/main/';
 
@@ -46,6 +45,7 @@ const AUDIO_MAP = {
   '/she disinterestedly sat.jpeg': 'she disinterestedly sat.mp3',
   '/picked pack.jpeg': 'picked pack.mp3',
   '/two little fellas.jpeg': 'two little fellas.mp3',
+  '/two chambermen.jpeg': 'two little fellas.mp3',
   '/drinking urn.jpeg': 'drinking urn.mp3',
   '/viking preserve.jpeg': 'viking preserve.mp3',
   '/confetti.jpeg': 'confetti.mp3',
@@ -217,7 +217,7 @@ function startMechanics() {
     { level: 6, startSweeps: ['3hdk0cskxw0apbr2iw8016htb'], targetSweep: 'r7sd2g426fhbfa2wdh5dfxy5d', imagesToFind: ['/barley.jpg', '/some flumis.jpeg', '/wall climbing baby.jpeg', '/hide and seek.jpeg'] },
     { level: 7, startSweeps: ['r7sd2g426fhbfa2wdh5dfxy5d'], targetSweep: '20qckty5qi20t39838cq274rc', imagesToFind: ['/a pair of old jugs.jpeg', '/a third more time.jpeg', '/odd purves terms.jpeg', '/round thing.jpeg'] },
     { level: 8, startSweeps: ['20qckty5qi20t39838cq274rc'], targetSweep: 'dy113u49qt5s7y38ms7ibmd9b', imagesToFind: ['/cat in a turban.jpeg', '/australia in stitches.jpeg', '/three wooden discs.jpeg'] },
-    { level: 9, startSweeps: ['dy113u49qt5s7y38ms7ibmd9b'], targetSweep: 'rxgziepm3g4e0fgdgnwwk6efd', imagesToFind: ['/she disinterestedly sat.jpeg', '/picked pack.jpeg', '/two little fellas.jpeg'] },
+    { level: 9, startSweeps: ['dy113u49qt5s7y38ms7ibmd9b'], targetSweep: 'rxgziepm3g4e0fgdgnwwk6efd', imagesToFind: ['/she disinterestedly sat.jpeg', '/picked pack.jpeg', '/two chambermen.jpeg'] },
     { level: 10, startSweeps: ['rxgziepm3g4e0fgdgnwwk6efd'], targetSweep: 'w2bre69ufwyaywn11ch032aaa', imagesToFind: ['/drinking urn.jpeg', '/viking preserve.jpeg', '/confetti.jpeg', '/two box of confetti.jpeg'] },
     { level: 11, startSweeps: ['w2bre69ufwyaywn11ch032aaa'], targetSweep: 'dimg015tts6u2b30hh0pndaqd', imagesToFind: ['/eagle.jpeg', '/blue hand.jpeg', '/gnome all alone.jpeg', '/beetles.jpeg'] },
     { level: 12, startSweeps: ['dimg015tts6u2b30hh0pndaqd'], targetSweep: 'iwaxrd4g1gki6i64y6dk1iuhd', imagesToFind: ['/mock ducks.jpeg', '/unarmed man.jpeg', '/wooden goanna.jpeg'] },
