@@ -1,6 +1,10 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V3031)
-// Base: V3030
+// EYE SPY 3D - ENGINE (V3032-test)
+// Base: V3031
+// Test build: identical gameplay to V3031, plus a lime "JS TEST V3032" badge
+// in the bottom-left corner, to confirm a new script URL loads in MPEmbed.
+//
+// Previous (V3031):
 // Fix: added background cache-warming for every item audio file on boot.
 // jsDelivr's edge nodes pull a file from GitHub origin the first time
 // anyone in a region requests it, a multi-second penalty before it is
@@ -14,7 +18,7 @@
 
 const YOUTUBE_VIDEO_ID = 'Ly2dwu4pTVo';
 
-console.log('EYE SPY 3D \u2014 V3031 loaded');
+console.log('EYE SPY 3D \u2014 V3032-test loaded');
 
 // Switched from raw.githubusercontent.com to jsDelivr's GitHub mirror.
 // raw.githubusercontent.com is not intended for serving production binary
@@ -222,6 +226,13 @@ function injectCustomUI() {
       cursor: pointer !important; z-index: 2147483647 !important; pointer-events: auto !important;
     }
     #eye-spy-video-skip-btn:hover { background: rgba(255,255,255,0.3) !important; }
+
+    /* V3032-test load marker, remove once the new URL is confirmed working */
+    body::after {
+      content: "JS TEST V3032"; position: fixed; left: 12px; bottom: 12px; z-index: 2147483647;
+      padding: 6px 12px; background: #CCFF00; color: #000; font: bold 14px/1.2 sans-serif;
+      border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.5); pointer-events: none;
+    }
   `;
   document.head.appendChild(customStyles);
 
