@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4002)
+// EYE SPY 3D - ENGINE (V4003)
 // Rewrite of V3031. Still loaded into MPEmbed as a custom script, still uses
 // MPEmbed's popups and per-pano clue audio, but the game itself (levels,
 // progress, hints, skipping, scores) now lives here, with its own HUD.
@@ -14,7 +14,7 @@
   if (window.__ES3D_LOADED__) return;
   window.__ES3D_LOADED__ = true;
 
-  const VERSION = 'V4002';
+  const VERSION = 'V4003';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -34,6 +34,11 @@
   const DISC_CLICK_REPLAYS = false;
   // Page the Share button hands out. Empty = the page that embeds the game.
   const SHARE_URL = 'https://abmvisual.com/eye-spy-3d';
+  // Fetch each level's popup photos in the background on arrival, so a popup
+  // opens without waiting for its photo. Add &es3dpreload=0 to the page
+  // address to turn it off, and &es3ddebug=1 to show how long each photo took.
+  const PRELOAD_PHOTOS = !/[?&]es3dpreload=0/.test(location.search);
+  const DEBUG_TIMING = /[?&]es3ddebug=1/.test(location.search);
   const SAVE_KEY = 'es3d_save_v1';
   const BOARD_KEY = 'es3d_board_v1';
   const BOARD_SIZE = 10;
@@ -52,9 +57,9 @@
       sweep: 'cwckxx365uimbeqk6ngp0t5ud', clue: 'pink bopeep.mp3',
       riddle: 'The {pink bo-peep|Pink Bo-Peep} has lost her sheep, and {two white cows|two white cows} had taken over. The front is silver and the back is brown: once you find {yourself|yourself}, it’s time to move around.',
       items: [
-        { id: 'pink bo-peep', name: 'Pink Bo-Peep', hint: 'A shepherdess with no flock, dressed in pink.', where: 'On the shelf, just below the cows.' },
-        { id: 'two white cows', name: 'Two white cows', hint: 'Where the sheep should be, a pair of pale cattle stand instead.', where: 'Directly above Bo-Peep.' },
-        { id: 'yourself', name: 'Yourself', hint: 'Silver at the front, brown at the back, and you are in it. What shows you your own face?', where: 'Across the room from Bo-Peep, on the table.' }
+        { id: 'pink bo-peep', name: 'Pink Bo-Peep', photo: 'pink bopeep.jpeg', hint: 'A shepherdess with no flock, dressed in pink.', where: 'On the shelf, just below the two white cows.' },
+        { id: 'two white cows', name: 'Two white cows', hint: 'Where the sheep should be, a pair of pale cattle stand instead.', where: 'Directly above the Pink Bo-Peep.' },
+        { id: 'yourself', name: 'Yourself', hint: 'Silver at the front, brown at the back, and you are in it. What shows you your own face?', where: 'Across the room from the Pink Bo-Peep, on the table.' }
       ]
     },
     {
@@ -63,7 +68,7 @@
       items: [
         { id: 'plastic fruit', name: 'Bowl of plastic fruit', hint: 'It looks good enough to eat, but none of it is real.', where: 'On the table beside the mirror.' },
         { id: 'decongestant cough elixir', name: 'Decongestant cough elixir', hint: 'An old advertisement for medicine for a blocked nose and a tickly throat.', where: 'On the wall next to the mirror.' },
-        { id: 'pineapple sunday', name: 'Pineapple Sunday', hint: 'A sweet treat with a tropical name, spelled like the day of the week.', where: 'On the wall opposite the cough elixir.' }
+        { id: 'pineapple sunday', name: 'Pineapple Sunday', hint: 'A sweet treat with a tropical name, spelled like the day of the week.', where: 'On the wall opposite the decongestant cough elixir.' }
       ]
     },
     {
@@ -91,7 +96,7 @@
       items: [
         { id: 'Hanimexs Movielux', name: 'Hanimex’s Movielux', hint: 'Home movie gear from the days of film. Look for the Hanimex name.', where: 'On the middle wooden box, on top of the camera shelf.' },
         { id: 'argus previewer', name: 'Argus PreViewer', hint: 'A small viewer for checking slides before the show. Look for the Argus name.', where: 'Around the middle of the camera cabinet.' },
-        { id: 'scotts mower maker', name: 'Scott’s Mower Maker', hint: 'Something for the lawn, with Scott’s name on it.', where: 'On the wall, to the right of the Movielux.' },
+        { id: 'scotts mower maker', name: 'Scott’s Mower Maker', hint: 'Something for the lawn, with Scott’s name on it.', where: 'On the wall, to the right of Hanimex\u2019s Movielux.' },
         { id: 'porcelain lobster', name: 'Porcelain lobster', hint: 'A shellfish that will never see a pot, because it is made of china.', where: 'At the bottom of the wooden cabinet, diagonally opposite the camera cabinet.' }
       ]
     },
@@ -101,8 +106,8 @@
       items: [
         { id: 'wall climbing baby', name: 'Wall climbing baby', hint: 'A little one who has left the floor and is heading up the wall.', where: 'On top of the cabinet, above the Flumi\u2019s sign.' },
         { id: 'hide and seek', name: 'Hide and seek', hint: 'Someone here is hiding, or counting. Look for the game being played.', where: 'In the bottom right-hand corner of the cabinet, next to the Flumi\u2019s sign.' },
-        { id: 'barley', name: 'Barley', hint: 'A grain you might find in soup or a soothing drink. Look for the word on a label.', where: 'In the same cabinet as hide and seek.' },
-        { id: 'some flumis', name: 'Some Flumi’s', hint: 'An unusual name on a packet. The riddle says they help with sleep.', where: 'Down and to the right of the barley container, at about 45 degrees, towards the hide and seek packet.' }
+        { id: 'barley', name: 'Barley', photo: 'barley.jpg', hint: 'A grain you might find in soup or a soothing drink. Look for the word on a label.', where: 'In the same cabinet as hide and seek.' },
+        { id: 'some flumis', name: 'Some Flumi’s', hint: 'An unusual name on a packet. The riddle says they help with sleep.', where: 'Down and to the right of the barley, at about 45 degrees, towards hide and seek.' }
       ]
     },
     {
@@ -130,7 +135,7 @@
       items: [
         { id: 'she disinterestedly sat', name: 'She disinterestedly sat', hint: 'A woman seated on velvet, looking thoroughly bored.', where: 'The painting on the wall, behind the light fixture.' },
         { id: 'two chambermen', name: 'Two chambermen', hint: 'They sound like servants, but this pair is the kind once kept under the bed.', where: 'Under the wooden table at the end of the row.' },
-        { id: 'picked pack', name: 'The picked pack', hint: 'Opposite the chatting pair, look for a pack.', where: 'On the floor, at the other end of the row from the chamber pots.' }
+        { id: 'picked pack', name: 'The picked pack', hint: 'Opposite the chatting pair, look for a pack.', where: 'On the floor, at the other end of the row from the two chambermen.' }
       ]
     },
     {
@@ -149,7 +154,7 @@
       items: [
         { id: 'eagle', name: 'Eagle', hint: 'A bird of prey with its wings spread.', where: 'In the glass cabinet, on the top shelf, with a small wooden cabinet directly above.' },
         { id: 'beatles', name: 'Beatles', hint: 'Spelled like the band, not the insect.', where: 'On a small wooden shelf, next to the large red pot.' },
-        { id: 'gnome all alone', name: 'Gnome all alone', hint: 'A small garden character standing all by himself.', where: 'On the bottom shelf, directly below the eagle.' },
+        { id: 'gnome all alone', name: 'Gnome all alone', hint: 'A small garden character standing all by himself.', where: 'On the bottom shelf, directly below the Eagle.' },
         { id: 'blue hand', name: 'Blue hand', hint: 'A glossy hand in an unexpected colour, holding something cone-shaped.', where: 'Second shelf up, in the cabinet directly opposite the gnome.' }
       ]
     },
@@ -167,7 +172,7 @@
       riddle: '{whose head|Whose head} is that, to the left of the {hat|hat}, to the right of the {runners|runners}, above the {the plugs|plugs}, in front of the {the hugs|hugs}?',
       items: [
         { id: 'whose head', name: 'Whose head', hint: 'A head with no body, sitting on top of a stick.', where: 'Down the hallway, heading away from the front door.' },
-        { id: 'hat', name: 'Hat', hint: 'Headwear on a stick of its own.', where: 'To the right of the head on a stick.' },
+        { id: 'hat', name: 'Hat', hint: 'Headwear on a stick of its own.', where: 'To the right of the head.' },
         { id: 'runners', name: 'Runners', hint: 'Sports shoes, just to the left of the mystery head.', where: 'Top right of the shelf to the left of the hat.' },
         { id: 'the plugs', name: 'The plugs', hint: 'Look below the head for a set of plugs.', where: 'On the floor below the hat.' },
         { id: 'the hugs', name: 'The hugs', hint: 'Behind the head, someone is having a cuddle.', where: 'On the small shelf opposite the wooden shelf with the runners on it.' }
@@ -178,7 +183,7 @@
       riddle: 'When I rowed from {dimboola|Dimboola}, to {egypt etc|Egypt etc}, I wore my {akubra|Akubra} and spied a {tiger|tiger}, a {butterfly|butterfly}, and {horse head|horse head} to end it.',
       items: [
         { id: 'dimboola', name: 'Dimboola', hint: 'A town in western Victoria. Look for its name in a newspaper clipping.', where: 'To the right of the table in front of the two wooden shelves.' },
-        { id: 'egypt etc', name: 'Egypt etc', hint: 'Pyramids, pharaohs and more. Look for the land of the Nile.', where: 'On the second shelf, opposite the Dimboola clipping.' },
+        { id: 'egypt etc', name: 'Egypt etc', hint: 'Pyramids, pharaohs and more. Look for the land of the Nile.', where: 'On the second shelf, opposite Dimboola.' },
         { id: 'akubra', name: 'Akubra', hint: 'The classic Australian bush hat.', where: 'On the red case, to the right of the cross-stitch frame.' },
         { id: 'tiger', name: 'Tiger', hint: 'A big cat with stripes.', where: 'On the wall below the fish paintings, to the left.' },
         { id: 'butterfly', name: 'Butterfly', hint: 'Delicate wings, pinned or painted.', where: 'Next to the Scotch pendant.' },
@@ -190,12 +195,17 @@
   // Player names that are not allowed on the leaderboard. Checked after
   // turning look-alike numerals back into letters (4 -> a, 0 -> o, ...).
   // BLOCKED_EXACT must match the whole name, BLOCKED_PARTS anywhere inside it.
-  const BLOCKED_EXACT = ['ass', 'abo', 'bum', 'cok', 'coc', 'cnt', 'cun', 'cum', 'dik', 'dic', 'dck', 'fgt', 'gai', 'god',
-    'hoe', 'jew', 'jiz', 'kkk', 'kik', 'kyk', 'kys', 'naz', 'nig', 'ngr', 'nob', 'pis', 'poo', 'pus', 'rap', 'rape', 'sex',
-    'sht', 'spic', 'tit', 'twt', 'vag', 'wog', 'wtf', 'xxx'];
-  const BLOCKED_PARTS = ['fuck', 'fuk', 'fuc', 'fck', 'fuq', 'shit', 'cunt', 'cock', 'dick', 'fag', 'nigg', 'niga', 'kike',
-    'rapist', 'slut', 'whore', 'bitch', 'pussy', 'twat', 'wank', 'piss', 'tits', 'anus', 'arse', 'coon', 'chink', 'gook',
-    'nazi', 'hitler', 'penis', 'vagin', 'dildo', 'porn', 'jizz', 'retard', 'paedo', 'pedo'];
+  const BLOCKED_EXACT = ['anal', 'ass', 'abo', 'bum', 'cok', 'coc', 'cnt', 'cun', 'cum', 'dik', 'dic', 'dck', 'fgt', 'gai', 'gay', 'god',
+    'hoe', 'homo', 'jew', 'jiz', 'kkk', 'kik', 'kyk', 'kys', 'milf', 'mong', 'naz', 'nig', 'ngr', 'nob', 'nonce', 'nude',
+    'orgy', 'paki', 'pis', 'poo', 'poof', 'pus', 'rap', 'rape', 'sex', 'sht', 'smut', 'spaz', 'spic', 'tard', 'tit',
+    'twt', 'vag', 'wog', 'wtf', 'xxx'];
+  const BLOCKED_PARTS = ['fuck', 'fuk', 'fuc', 'fck', 'fuq', 'phuk', 'phuc', 'shit', 'cunt', 'kunt', 'cock', 'dick', 'fag', 'nigg',
+    'niga', 'negro', 'kike', 'rapist', 'molest', 'slut', 'skank', 'whore', 'hooker', 'bitch', 'bastard', 'pussy', 'twat',
+    'wank', 'tosser', 'bollock', 'piss', 'tits', 'titty', 'boob', 'clit', 'anus', 'arse', 'asshole', 'coon', 'chink',
+    'gook', 'beaner', 'darkie', 'honkey', 'jigaboo', 'jiggaboo', 'pikey', 'raghead', 'slanteye', 'wetback', 'towelhead',
+    'tranny', 'shemale', 'dyke', 'lesbo', 'poofter', 'queer', 'spastic', 'retard', 'cripple', 'fatso', 'lardass',
+    'nazi', 'hitler', 'swastika', 'penis', 'vagin', 'dildo', 'porn', 'hentai', 'incest', 'jailbait', 'lolita', 'nympho',
+    'horny', 'boner', 'blowjob', 'handjob', 'rimjob', 'orgasm', 'semen', 'jizz', 'queef', 'paedo', 'pedo'];
 
   // ---------------------------------------------------------------------------
   // SMALL HELPERS
@@ -268,6 +278,7 @@
     advancePending: false,
     currentSweep: '',
     arrivedAt: 0,
+    photoBase: '/media/3780//',
     clueSrc: {}
   };
 
@@ -368,6 +379,41 @@
         fetch(ASSET_BASE + encodeURIComponent(item.id + '.mp3'), { mode: 'no-cors' }).catch(() => {});
       }, 300 + i * 200);
     });
+  }
+
+  // MPEmbed serves a popup's photo from its media folder under the same file
+  // name every time, so asking for it early puts it in the browser's cache.
+  const preloaded = {};
+  function preloadLevelPhotos() {
+    const level = LEVELS[state.levelIndex];
+    if (!PRELOAD_PHOTOS || !level) return;
+    level.items.forEach((item, i) => {
+      if (state.found[item.id] || preloaded[item.id]) return;
+      setTimeout(() => {
+        const img = new Image();
+        img.onload = () => { preloaded[item.id] = 'ready'; };
+        img.onerror = () => { preloaded[item.id] = 'failed'; };
+        preloaded[item.id] = 'loading';
+        img.src = state.photoBase + (item.photo || item.id + '.jpeg');
+      }, 400 + i * 150);
+    });
+  }
+
+  // Reports how long a popup's photo took to appear once the popup opened.
+  function timePopupPhoto(img, item) {
+    if (!img) return;
+    const src = img.getAttribute('src') || '';
+    const cut = src.lastIndexOf('/');
+    if (cut > 0) state.photoBase = src.slice(0, cut + 1);
+    const started = performance.now();
+    const report = () => {
+      const ms = Math.round(performance.now() - started);
+      const note = 'photo ready in ' + ms + ' ms (preload ' + (PRELOAD_PHOTOS ? (item && preloaded[item.id]) || 'not requested' : 'off') + ')';
+      console.log('Eye Spy 3D: ' + (item ? item.name : src) + ', ' + note);
+      if (DEBUG_TIMING) toast(note);
+    };
+    if (img.complete && img.naturalWidth > 0) report();
+    else img.addEventListener('load', report, { once: true });
   }
 
   function mpeClueElement() {
@@ -1183,6 +1229,7 @@
       showEndPanel();
     } else {
       preloadLevelSounds();
+      preloadLevelPhotos();
       watchClueAudio();
     }
   }
@@ -1381,7 +1428,11 @@
         // an invisible popup blocking the screen.
         document.body.classList.toggle('es3d-show-audio-popup', isAudioClue);
         if (labelEl) stylePopup(overlay, labelEl, isAudioClue);
-        if (!isAudioClue) registerFind(labelEl ? labelEl.textContent : '', img ? img.getAttribute('src') : '');
+        if (!isAudioClue) {
+          const level = LEVELS[state.levelIndex];
+          timePopupPhoto(img, level ? matchItem(level, labelEl ? labelEl.textContent : '', img ? img.getAttribute('src') : '') : null);
+          registerFind(labelEl ? labelEl.textContent : '', img ? img.getAttribute('src') : '');
+        }
       });
     }
     if (!open) {
@@ -1443,12 +1494,14 @@
 
   // The hidden objects must not give themselves away by changing the mouse
   // cursor on hover, so the cursor is pinned to the plain arrow, both on this
-  // page and inside the tour's frame where the browser allows it. The pin is
-  // lifted whenever the tour itself is showing a busy cursor (the spinning
-  // wheel while something loads), so the player can see they need to wait.
+  // page and inside the tour's frame where the browser allows it. Whenever the
+  // tour itself asks for a busy cursor while something loads, the pin switches
+  // to the wait cursor: the spinning wheel alone, with no arrow, so the player
+  // can see they need to wait.
   const CURSOR_RULE_PAGE = 'html, body, body *:not(.es3d):not(.es3d *) { cursor: default !important; } ' +
     '#customBillboardFullOverlay [class*="close"] { cursor: pointer !important; }';
   const CURSOR_RULE_FRAME = '* { cursor: default !important; }';
+  const CURSOR_RULE_BUSY = '* { cursor: wait !important; }';
 
   function steadyCursor() {
     const docs = [[document, CURSOR_RULE_PAGE]];
@@ -1468,7 +1521,10 @@
       const hovered = doc.querySelectorAll(':hover');
       const probes = [doc.body, hovered[hovered.length - 1]].concat(Array.from(doc.querySelectorAll('canvas')).slice(0, 3));
       const view = doc.defaultView || window;
-      style.disabled = probes.some((node) => node && /wait|progress/.test(view.getComputedStyle(node).cursor));
+      const busy = probes.some((node) => node && /wait|progress/.test(view.getComputedStyle(node).cursor));
+      style.disabled = false;
+      const wanted = busy ? CURSOR_RULE_BUSY : rule;
+      if (style.textContent !== wanted) style.textContent = wanted;
     });
   }
 

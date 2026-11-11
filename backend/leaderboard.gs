@@ -9,16 +9,25 @@
 //   4. Copy the web app URL into BACKEND_URL at the top of mashup_es3d.js.
 //
 // The sheet gains three tabs: Scores, Signups and Feedback.
+//
+// To take a name off the leaderboard without deleting the score, type anything
+// (an "x" will do) in that row's "hidden" column on the Scores tab. Clear the
+// cell to show it again.
 // =============================================================================
 
 var TOTAL_ITEMS = 53;
 var BOARD_SIZE = 10;
-var BLOCKED_EXACT = ['ass', 'abo', 'bum', 'cok', 'coc', 'cnt', 'cun', 'cum', 'dik', 'dic', 'dck', 'fgt', 'gai', 'god',
-  'hoe', 'jew', 'jiz', 'kkk', 'kik', 'kyk', 'kys', 'naz', 'nig', 'ngr', 'nob', 'pis', 'poo', 'pus', 'rap', 'rape', 'sex',
-  'sht', 'spic', 'tit', 'twt', 'vag', 'wog', 'wtf', 'xxx'];
-var BLOCKED_PARTS = ['fuck', 'fuk', 'fuc', 'fck', 'fuq', 'shit', 'cunt', 'cock', 'dick', 'fag', 'nigg', 'niga', 'kike',
-  'rapist', 'slut', 'whore', 'bitch', 'pussy', 'twat', 'wank', 'piss', 'tits', 'anus', 'arse', 'coon', 'chink', 'gook',
-  'nazi', 'hitler', 'penis', 'vagin', 'dildo', 'porn', 'jizz', 'retard', 'paedo', 'pedo'];
+var BLOCKED_EXACT = ['anal', 'ass', 'abo', 'bum', 'cok', 'coc', 'cnt', 'cun', 'cum', 'dik', 'dic', 'dck', 'fgt', 'gai', 'gay', 'god',
+  'hoe', 'homo', 'jew', 'jiz', 'kkk', 'kik', 'kyk', 'kys', 'milf', 'mong', 'naz', 'nig', 'ngr', 'nob', 'nonce', 'nude',
+  'orgy', 'paki', 'pis', 'poo', 'poof', 'pus', 'rap', 'rape', 'sex', 'sht', 'smut', 'spaz', 'spic', 'tard', 'tit',
+  'twt', 'vag', 'wog', 'wtf', 'xxx'];
+var BLOCKED_PARTS = ['fuck', 'fuk', 'fuc', 'fck', 'fuq', 'phuk', 'phuc', 'shit', 'cunt', 'kunt', 'cock', 'dick', 'fag', 'nigg',
+  'niga', 'negro', 'kike', 'rapist', 'molest', 'slut', 'skank', 'whore', 'hooker', 'bitch', 'bastard', 'pussy', 'twat',
+  'wank', 'tosser', 'bollock', 'piss', 'tits', 'titty', 'boob', 'clit', 'anus', 'arse', 'asshole', 'coon', 'chink',
+  'gook', 'beaner', 'darkie', 'honkey', 'jigaboo', 'jiggaboo', 'pikey', 'raghead', 'slanteye', 'wetback', 'towelhead',
+  'tranny', 'shemale', 'dyke', 'lesbo', 'poofter', 'queer', 'spastic', 'retard', 'cripple', 'fatso', 'lardass',
+  'nazi', 'hitler', 'swastika', 'penis', 'vagin', 'dildo', 'porn', 'hentai', 'incest', 'jailbait', 'lolita', 'nympho',
+  'horny', 'boner', 'blowjob', 'handjob', 'rimjob', 'orgasm', 'semen', 'jizz', 'queef', 'paedo', 'pedo'];
 
 function sheet_(name, headers) {
   var book = SpreadsheetApp.getActiveSpreadsheet();
@@ -52,10 +61,10 @@ function plain_(value, maxLength) {
 }
 
 function readBoard_() {
-  var rows = sheet_('Scores', ['playerId', 'name', 'found', 'timeMs', 'hints', 'completed', 'updated']).getDataRange().getValues().slice(1);
+  var rows = sheet_('Scores', ['playerId', 'name', 'found', 'timeMs', 'hints', 'completed', 'updated', 'hidden']).getDataRange().getValues().slice(1);
   var entries = rows.map(function (row) {
-    return { playerId: row[0], name: row[1], found: Number(row[2]), total: TOTAL_ITEMS, timeMs: Number(row[3]), hints: Number(row[4]), completed: row[5] === true };
-  });
+    return { playerId: row[0], name: row[1], found: Number(row[2]), total: TOTAL_ITEMS, timeMs: Number(row[3]), hints: Number(row[4]), completed: row[5] === true, hidden: String(row[7] || '').trim() !== '' };
+  }).filter(function (entry) { return !entry.hidden; });
   // Finishers first, fastest at the top. The rest of the board is filled by
   // whoever has found the most.
   entries.sort(function (a, b) {
@@ -87,7 +96,7 @@ function doPost(e) {
     var lock = LockService.getScriptLock();
     lock.waitLock(10000);
     try {
-      var sheet = sheet_('Scores', ['playerId', 'name', 'found', 'timeMs', 'hints', 'completed', 'updated']);
+      var sheet = sheet_('Scores', ['playerId', 'name', 'found', 'timeMs', 'hints', 'completed', 'updated', 'hidden']);
       var ids = sheet.getRange(1, 1, sheet.getLastRow(), 1).getValues();
       var rowNumber = -1;
       for (var i = 1; i < ids.length; i++) {

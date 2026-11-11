@@ -11,15 +11,15 @@ The **Pink Bo-Peep** has lost her sheep, and **two white cows** had taken over. 
 
 1. **Pink Bo-Peep**
    - Nudge: A shepherdess with no flock, dressed in pink.
-   - Where: On the shelf, just below the cows.
+   - Where: On the shelf, just below the two white cows.
    - Name: Pink Bo-Peep.
 2. **Two white cows**
    - Nudge: Where the sheep should be, a pair of pale cattle stand instead.
-   - Where: Directly above Bo-Peep.
+   - Where: Directly above the Pink Bo-Peep.
    - Name: Two white cows.
 3. **Yourself**
    - Nudge: Silver at the front, brown at the back, and you are in it. What shows you your own face?
-   - Where: Across the room from Bo-Peep, on the table.
+   - Where: Across the room from the Pink Bo-Peep, on the table.
    - Name: Yourself.
 
 ## Level 2
@@ -36,7 +36,7 @@ From a **bowl of plastic fruit**, to a **decongestant cough elixir**, if nothing
    - Name: Decongestant cough elixir.
 3. **Pineapple Sunday**
    - Nudge: A sweet treat with a tropical name, spelled like the day of the week.
-   - Where: On the wall opposite the cough elixir.
+   - Where: On the wall opposite the decongestant cough elixir.
    - Name: Pineapple Sunday.
    - **CHECK:** nudge is a guess
 
@@ -94,7 +94,7 @@ Do you have any idea what **Hanimex’s Movielux**, the **Argus PreViewer**, **S
    - Name: Argus PreViewer.
 3. **Scott’s Mower Maker**
    - Nudge: Something for the lawn, with Scott’s name on it.
-   - Where: On the wall, to the right of the Movielux.
+   - Where: On the wall, to the right of Hanimex’s Movielux.
    - Name: Scott’s Mower Maker.
    - **CHECK:** nudge is a guess
 4. **Porcelain lobster**
@@ -122,7 +122,7 @@ Watch the **wall climbing baby** as they play **hide and seek**, searching for t
    - **CHECK:** location was unclear in your notes
 4. **Some Flumi’s**
    - Nudge: An unusual name on a packet. The riddle says they help with sleep.
-   - Where: Down and to the right of the barley container, at about 45 degrees, towards the hide and seek packet.
+   - Where: Down and to the right of the barley, at about 45 degrees, towards hide and seek.
    - Name: Some Flumi’s.
    - **CHECK:** nudge is a guess
 
@@ -180,7 +180,7 @@ On fine velvet, **she disinterestedly sat**, while below **two chambermen** chat
    - Name: Two chambermen.
 3. **The picked pack**
    - Nudge: Opposite the chatting pair, look for a pack.
-   - Where: On the floor, at the other end of the row from the chamber pots.
+   - Where: On the floor, at the other end of the row from the two chambermen.
    - Name: The picked pack.
    - **CHECK:** nudge is a guess
 
@@ -221,7 +221,7 @@ As the **Eagle** soars, and **Beatles** cascade, a lone **gnome** spies a shiny 
    - Name: Beatles.
 3. **Gnome all alone**
    - Nudge: A small garden character standing all by himself.
-   - Where: On the bottom shelf, directly below the eagle.
+   - Where: On the bottom shelf, directly below the Eagle.
    - Name: Gnome all alone.
 4. **Blue hand**
    - Nudge: A glossy hand in an unexpected colour, holding something cone-shaped.
@@ -256,7 +256,7 @@ The flock of **mock ducks** hang out far from the **wooden goanna**, and halfway
    - Name: Whose head.
 2. **Hat**
    - Nudge: Headwear on a stick of its own.
-   - Where: To the right of the head on a stick.
+   - Where: To the right of the head.
    - Name: Hat.
 3. **Runners**
    - Nudge: Sports shoes, just to the left of the mystery head.
@@ -281,7 +281,7 @@ When I rowed from **Dimboola**, to **Egypt etc**, I wore my **Akubra** and spied
    - Name: Dimboola.
 2. **Egypt etc**
    - Nudge: Pyramids, pharaohs and more. Look for the land of the Nile.
-   - Where: On the second shelf, opposite the Dimboola clipping.
+   - Where: On the second shelf, opposite Dimboola.
    - Name: Egypt etc.
 3. **Akubra**
    - Nudge: The classic Australian bush hat.
