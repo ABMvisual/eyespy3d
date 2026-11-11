@@ -26,8 +26,12 @@ https://mpembed.com/show/?m=xqbmbKAYgu6&mpu=3780&customjs=https://cdn.jsdelivr.n
 
 - **Website:** the Eye Spy 3D page on abmvisual.com should be purely about the game and its AVCon Indie Games Room feature. It is original IP shared freely with anyone who wants to play, not a promotion for ABM Visual's services. A separate case study can cover the technology and how it was applied.
 - **Backend:** deploy `backend/leaderboard.gs` and put its web app URL in `BACKEND_URL`. Until then the leaderboard is per device and sign-ups are not stored.
-- **Hints:** proofread `HINTS.md`; two objects on level 7 still need a location.
-- **Share link:** set `SHARE_URL` to the game's public page.
+- **Hints:** proofread `HINTS.md`. Still open:
+  - Level 7: "a third more time" and "a round thing" have no location.
+  - Level 6, barley: the location note was unclear; it currently reads "In the same cabinet as hide and seek".
+  - Level 12, goanna: the note said "on the floor below the wooden goanna"; what is it below?
+  - About a dozen first hints (nudges) are guesses from the riddle wording.
+- **Design:** every visual change is shown as options and chosen before it is built. Open choices: overall palette and type, popup label bar, square riddle discs for the floor, and a more playful name for the Checklist.
 - **Intro video:** to be replaced (`YOUTUBE_VIDEO_ID`).
 - **Phones:** tall popup images are a first attempt and untested on a real phone.
 - **Multiplayer:** shared rooms so friends in different places can play together and talk, most likely as a Discord Activity.

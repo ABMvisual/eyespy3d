@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4001)
+// EYE SPY 3D - ENGINE (V4002)
 // Rewrite of V3031. Still loaded into MPEmbed as a custom script, still uses
 // MPEmbed's popups and per-pano clue audio, but the game itself (levels,
 // progress, hints, skipping, scores) now lives here, with its own HUD.
@@ -14,7 +14,7 @@
   if (window.__ES3D_LOADED__) return;
   window.__ES3D_LOADED__ = true;
 
-  const VERSION = 'V4001';
+  const VERSION = 'V4002';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -33,7 +33,7 @@
   // discs' clickable area is a square, so stray clicks on the corners are common.
   const DISC_CLICK_REPLAYS = false;
   // Page the Share button hands out. Empty = the page that embeds the game.
-  const SHARE_URL = '';
+  const SHARE_URL = 'https://abmvisual.com/eye-spy-3d';
   const SAVE_KEY = 'es3d_save_v1';
   const BOARD_KEY = 'es3d_board_v1';
   const BOARD_SIZE = 10;
@@ -417,10 +417,6 @@
   const CSS = `
     * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
 
-    /* The hidden objects must not change the mouse cursor on hover. */
-    html, body, body *:not(.es3d):not(.es3d *) { cursor: default !important; }
-    #customBillboardFullOverlay [class*="close"] { cursor: pointer !important; }
-
     /* A V3031 copy of this script may still be loaded by MPEmbed's saved
        settings. Its screens must never show alongside this version's. */
     #eye-spy-start-ui, #eye-spy-image-cover, #eye-spy-dark-overlay, #eye-spy-video-overlay { display: none !important; }
@@ -596,6 +592,12 @@
       background: var(--es-maroon-deep); border: 1px solid var(--es-line); border-radius: 0.35em;
     }
     #es3d-panel textarea { min-height: 4.5em; resize: vertical; }
+    .es3d-share-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5em, 1fr)); gap: 0.5em; margin: 0 0 0.8em; }
+    .es3d-share-grid .es3d-btn { margin: 0 !important; text-align: center; text-decoration: none; display: block; cursor: pointer !important; }
+    #es3d-share-link {
+      width: 100%; padding: 0.6em; font: inherit; font-size: max(16px, 0.95em); color: var(--es-cream);
+      background: var(--es-maroon-deep); border: 1px solid var(--es-line); border-radius: 0.35em;
+    }
     .es3d-consent { display: flex; gap: 0.6em; align-items: flex-start; margin: 0 0 0.6em; font-size: 0.92em; line-height: 1.4; }
     .es3d-consent input { width: 1.2em; height: 1.2em; margin-top: 0.15em; flex: 0 0 auto; accent-color: var(--es-gold); }
 
@@ -711,16 +713,66 @@
     toastTimer = setTimeout(() => ui.toast.classList.remove('es3d-show'), 2600);
   }
 
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).catch(() => legacyCopy(text));
+    }
+    return legacyCopy(text);
+  }
+
+  // Works inside an embedded frame, where the modern clipboard is often blocked.
+  function legacyCopy(text) {
+    const box = document.createElement('textarea');
+    box.value = text;
+    box.style.cssText = 'position:fixed;left:-9999px;top:0;';
+    document.body.appendChild(box);
+    box.select();
+    let copied = false;
+    try { copied = document.execCommand('copy'); } catch (e) {}
+    box.remove();
+    return copied ? Promise.resolve() : Promise.reject(new Error('copy failed'));
+  }
+
+  // Our own menu, in the order people actually pass a game around, instead of
+  // the browser's share sheet (which on a computer offers Notes and Reminders).
   function shareGame() {
     const url = SHARE_URL || document.referrer || location.href;
-    const done = () => toast('Link copied. Paste it anywhere to share.');
-    if (navigator.share) {
-      navigator.share({ title: 'Eye Spy 3D', text: 'Can you find everything hidden in the store?', url: url }).catch(() => {});
-    } else if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(url).then(done).catch(() => toast(url));
-    } else {
-      toast(url);
-    }
+    const message = 'Can you find everything hidden in the store? Play Eye Spy 3D: ' + url;
+    const u = encodeURIComponent(url);
+    const m = encodeURIComponent(message);
+    const links = [
+      ['Facebook', 'https://www.facebook.com/sharer/sharer.php?u=' + u],
+      ['Discord', 'copy:Link copied. Paste it into any Discord chat.'],
+      ['Text message', 'sms:?&body=' + m],
+      ['Email', 'mailto:?subject=' + encodeURIComponent('Eye Spy 3D') + '&body=' + m],
+      ['WhatsApp', 'https://wa.me/?text=' + m],
+      ['X', 'https://twitter.com/intent/tweet?text=' + m],
+      ['Reddit', 'https://www.reddit.com/submit?url=' + u + '&title=' + encodeURIComponent('Eye Spy 3D')],
+      ['Copy link', 'copy:Link copied.']
+    ];
+    if (navigator.share) links.push(['More\u2026', 'native:']);
+    openPanel(`
+      <h2>Share Eye Spy 3D</h2>
+      <p>Send the game to someone who would enjoy the hunt.</p>
+      <div class="es3d-share-grid">
+        ${links.map(([label, target], i) => target.startsWith('copy:') || target.startsWith('native:')
+          ? '<button class="es3d-btn es3d-quiet" type="button" data-share="' + i + '">' + esc(label) + '</button>'
+          : '<a class="es3d-btn es3d-quiet" href="' + esc(target) + '" target="_blank" rel="noopener">' + esc(label) + '</a>').join('')}
+      </div>
+      <input type="text" id="es3d-share-link" readonly value="${esc(url)}" aria-label="Link to the game">`);
+    document.getElementById('es3d-panel-body').querySelectorAll('button[data-share]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = links[Number(btn.dataset.share)][1];
+        if (target.startsWith('native:')) {
+          navigator.share({ title: 'Eye Spy 3D', text: 'Can you find everything hidden in the store?', url: url }).catch(() => {});
+          return;
+        }
+        copyText(url).then(() => toast(target.slice(5))).catch(() => {
+          document.getElementById('es3d-share-link').select();
+          toast('Copy the link shown below.');
+        });
+      });
+    });
   }
 
   function renderWelcome() {
@@ -1317,6 +1369,8 @@
       requestAnimationFrame(() => {
         popupPending = false;
         if (!isOverlayOpen(overlay)) return;
+        // Still flying to a level: look again shortly rather than lose the click.
+        if (state.busy) { setTimeout(handleOverlayState, 300); return; }
         handledSignature = popupSignature(overlay);
         const labelEl = overlay.querySelector('.tag-text-content');
         const img = overlay.querySelector('img.tag-image') || overlay.querySelector('.tag-media-content img');
@@ -1388,18 +1442,33 @@
   }
 
   // The hidden objects must not give themselves away by changing the mouse
-  // cursor on hover. The page's own rule is in the stylesheet; this repeats it
-  // inside the tour's frame where the browser allows it.
-  function steadyCursorInFrames() {
+  // cursor on hover, so the cursor is pinned to the plain arrow, both on this
+  // page and inside the tour's frame where the browser allows it. The pin is
+  // lifted whenever the tour itself is showing a busy cursor (the spinning
+  // wheel while something loads), so the player can see they need to wait.
+  const CURSOR_RULE_PAGE = 'html, body, body *:not(.es3d):not(.es3d *) { cursor: default !important; } ' +
+    '#customBillboardFullOverlay [class*="close"] { cursor: pointer !important; }';
+  const CURSOR_RULE_FRAME = '* { cursor: default !important; }';
+
+  function steadyCursor() {
+    const docs = [[document, CURSOR_RULE_PAGE]];
     document.querySelectorAll('iframe').forEach((frame) => {
-      try {
-        const doc = frame.contentDocument;
-        if (!doc || !doc.head || doc.getElementById('es3d-cursor')) return;
-        const style = doc.createElement('style');
+      try { if (frame.contentDocument && frame.contentDocument.head) docs.push([frame.contentDocument, CURSOR_RULE_FRAME]); } catch (e) {}
+    });
+    docs.forEach(([doc, rule]) => {
+      let style = doc.getElementById('es3d-cursor');
+      if (!style) {
+        style = doc.createElement('style');
         style.id = 'es3d-cursor';
-        style.textContent = '* { cursor: default !important; }';
+        style.textContent = rule;
         doc.head.appendChild(style);
-      } catch (e) {}
+      }
+      // Look at the cursor the tour would show without the pin.
+      style.disabled = true;
+      const hovered = doc.querySelectorAll(':hover');
+      const probes = [doc.body, hovered[hovered.length - 1]].concat(Array.from(doc.querySelectorAll('canvas')).slice(0, 3));
+      const view = doc.defaultView || window;
+      style.disabled = probes.some((node) => node && /wait|progress/.test(view.getComputedStyle(node).cursor));
     });
   }
 
@@ -1416,13 +1485,13 @@
     sdk.Sweep.current.subscribe((sweep) => onSweepChanged(sweep && (sweep.sid || sweep.id)));
     attachOverlayObserver();
     attachPanoAudioChromeHider();
-    steadyCursorInFrames();
-    setInterval(steadyCursorInFrames, 3000);
+    setInterval(steadyCursor, 250);
     state.tourReady = true;
     checkReadyToReveal();
   }
 
   function waitForTour() {
+    steadyCursor();
     let subscribed = false;
     let started = false;
     const timer = setInterval(() => {
