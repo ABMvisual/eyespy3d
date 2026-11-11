@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4003)
+// EYE SPY 3D - ENGINE (V4004)
 // Rewrite of V3031. Still loaded into MPEmbed as a custom script, still uses
 // MPEmbed's popups and per-pano clue audio, but the game itself (levels,
 // progress, hints, skipping, scores) now lives here, with its own HUD.
@@ -14,7 +14,7 @@
   if (window.__ES3D_LOADED__) return;
   window.__ES3D_LOADED__ = true;
 
-  const VERSION = 'V4003';
+  const VERSION = 'V4004';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -272,7 +272,7 @@
     busy: false,
     tourReady: false,
     started: false,
-    introDone: false,
+    muted: (() => { try { return localStorage.getItem('es3d_muted') === '1'; } catch (e) { return false; } })(),
     revealed: false,
     resume: false,
     advancePending: false,
@@ -456,9 +456,9 @@
 
   // ---------------------------------------------------------------------------
   // STYLES
-  // One antique palette, taken from the riddle discs on the floor: maroon
-  // leather, gold lettering, cream for the words that matter. To restyle the
-  // whole game, change the five --es variables.
+  // Bright yellow panels with dark burgundy text, in a plain sans-serif, for
+  // the highest readability over a busy scene (burgundy on this yellow is
+  // about 11 to 1). To restyle the whole game, change the --es variables.
   // ---------------------------------------------------------------------------
   const CSS = `
     * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
@@ -500,17 +500,18 @@
     }
 
     .es3d {
-      --es-maroon: #4a1418; --es-maroon-deep: #2e0c0f; --es-gold: #d4aa3a; --es-cream: #f7eed6; --es-line: rgba(212,170,58,0.45);
-      font-size: clamp(14px, 0.5vw + 8.5px, 26px); color: var(--es-cream);
+      --es-yellow: #f2c230; --es-yellow-soft: #f7d566; --es-ink: #2b070c; --es-cream: #fbf3dc; --es-line: rgba(43,7,12,0.4);
+      font-size: clamp(15px, 0.62vw + 9px, 30px); color: var(--es-ink);
     }
-    .es3d, .es3d * { box-sizing: border-box; font-family: Georgia, "Times New Roman", serif; }
+    .es3d, .es3d * { box-sizing: border-box; font-family: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
     .es3d-hidden { display: none !important; }
-    .es3d button { cursor: pointer !important; font: inherit; }
+    .es3d button, .es3d a { cursor: pointer !important; font: inherit; }
     .es3d button *, .es3d label, .es3d label * { cursor: pointer !important; }
     .es3d input, .es3d textarea { cursor: text !important; }
     .es3d input[type="checkbox"] { cursor: pointer !important; }
-    .es3d svg { width: 1.5em; height: 1.5em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .es3d svg { width: 1.7em; height: 1.7em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
+    /* Screens that sit over the dark cover photo: yellow and cream on dark. */
     #es3d-dim, #es3d-cover, #es3d-welcome, #es3d-video { position: fixed; inset: 0; }
     #es3d-dim { background: rgba(0,0,0,0.55); z-index: 2147483640; }
     #es3d-cover {
@@ -520,144 +521,171 @@
     #es3d-cover::after { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,0.45); }
     @keyframes es3d-punch { from { transform: scale(1); } to { transform: scale(1.08); } }
     #es3d-loading {
-      position: fixed; left: 0; right: 0; top: 46%; z-index: 2147483642; text-align: center; font-size: 1.4em;
+      position: fixed; left: 0; right: 0; top: 46%; z-index: 2147483642; text-align: center; font-size: 1.4em; color: var(--es-cream);
       animation: es3d-fade 2s infinite ease-in-out;
     }
     @keyframes es3d-fade { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
     #es3d-welcome {
       z-index: 2147483643; display: flex; flex-direction: column; justify-content: center; align-items: center;
-      padding: 1.5em; text-align: center; overflow-y: auto;
+      padding: 1.5em; text-align: center; overflow-y: auto; color: var(--es-cream);
     }
-    #es3d-welcome h1 { margin: 0 0 0.3em; font-size: 2.8em; color: var(--es-gold); text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+    #es3d-welcome h1 { margin: 0 0 0.3em; font-size: 2.8em; color: var(--es-yellow); text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
     #es3d-welcome p { margin: 0 0 1.3em; font-size: 1.25em; text-shadow: 0 1px 3px rgba(0,0,0,0.8); max-width: 30em; }
     #es3d-name-row { margin: 0 0 1.4em; display: flex; flex-direction: column; align-items: center; gap: 0.5em; }
     #es3d-name {
       width: 11em; padding: 0.35em 0.4em; font-size: 1.6em; font-weight: 700; letter-spacing: 0.08em; text-align: center;
-      text-transform: uppercase; color: var(--es-cream); background: rgba(0,0,0,0.6); border: 2px solid var(--es-gold); border-radius: 0.3em;
+      text-transform: uppercase; color: var(--es-cream); background: rgba(0,0,0,0.6); border: 2px solid var(--es-yellow); border-radius: 0.3em;
     }
-    #es3d-name::placeholder { color: rgba(247,238,214,0.35); }
-    #es3d-name-note { min-height: 1.3em; font-size: 0.9em; color: var(--es-gold); }
+    #es3d-name::placeholder { color: rgba(251,243,220,0.35); }
+    #es3d-name-note { min-height: 1.3em; font-size: 0.9em; color: var(--es-yellow); }
+
+    /* Buttons: burgundy on the yellow panels, yellow on the dark screens. */
     .es3d-btn {
-      padding: 0.65em 1.7em; font-size: 1.3em; font-weight: 700; background: var(--es-gold); color: var(--es-maroon-deep);
-      border: 2px solid var(--es-gold); border-radius: 0.35em; box-shadow: 0 4px 15px rgba(0,0,0,0.5); margin: 0.3em;
+      display: inline-block; padding: 0.6em 1.5em; font-size: 1.2em; font-weight: 700; text-decoration: none;
+      background: var(--es-ink); color: var(--es-yellow); border: 2px solid var(--es-ink); border-radius: 0.35em; margin: 0.3em;
     }
-    .es3d-btn:hover { filter: brightness(1.12); }
-    .es3d-btn.es3d-quiet { background: transparent; color: var(--es-cream); border-color: var(--es-line); font-size: 1em; box-shadow: none; }
-    .es3d-btn.es3d-small { font-size: 0.95em; padding: 0.45em 1em; margin: 0.2em 0; box-shadow: none; }
+    .es3d-btn:hover { filter: brightness(1.25); }
+    .es3d-btn.es3d-quiet { background: transparent; color: var(--es-ink); font-size: 1em; }
+    .es3d-btn.es3d-small { font-size: 0.95em; padding: 0.45em 1em; margin: 0.2em 0; }
+    #es3d-welcome .es3d-btn, #es3d-video .es3d-btn {
+      background: var(--es-yellow); color: var(--es-ink); border-color: var(--es-yellow); box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+    #es3d-welcome .es3d-btn:hover, #es3d-video .es3d-btn:hover { filter: brightness(1.1); }
+    #es3d-welcome .es3d-btn.es3d-quiet, #es3d-video .es3d-btn.es3d-quiet { background: rgba(0,0,0,0.5); color: var(--es-cream); border-color: var(--es-cream); box-shadow: none; }
 
     #es3d-video { background: #000; z-index: 2147483644; }
     #es3d-video-frame, #es3d-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
-    #es3d-video-skip { position: absolute; right: 1.5em; bottom: 1.5em; z-index: 2; background: rgba(0,0,0,0.6); }
+    #es3d-video-skip { position: absolute; right: 1.5em; bottom: 1.5em; z-index: 2; }
 
-    .es3d-card { background: var(--es-maroon); border: 2px solid var(--es-gold); border-radius: 0.8em; box-shadow: 0 6px 24px rgba(0,0,0,0.55); }
+    .es3d-card { background: var(--es-yellow); border: 2px solid var(--es-ink); border-radius: 0.45em; box-shadow: 0 6px 24px rgba(0,0,0,0.55); }
     #es3d-prompt {
       position: fixed; left: 50%; bottom: 14%; transform: translateX(-50%); z-index: 9000; width: min(27em, calc(100vw - 32px));
-      padding: 1.2em; text-align: center;
+      padding: 1.1em; text-align: center;
     }
-    #es3d-prompt p { margin: 0 0 0.8em; font-size: 1.15em; }
+    #es3d-prompt p { margin: 0 0 0.7em; font-size: 1.15em; font-weight: 600; }
 
     #es3d-hud { position: fixed; inset: 0; z-index: 9000; pointer-events: none; transition: opacity 0.2s ease; }
-    body.es3d-popup-open #es3d-hud, body.es3d-popup-open #es3d-panel, body.es3d-popup-open #es3d-prompt { opacity: 0; pointer-events: none !important; }
-    body.es3d-popup-open #es3d-hud *, body.es3d-popup-open #es3d-panel * { pointer-events: none !important; }
+    body.es3d-popup-open #es3d-hud, body.es3d-popup-open #es3d-panel, body.es3d-popup-open #es3d-prompt,
+    body.es3d-popup-open #es3d-corner { opacity: 0; pointer-events: none !important; }
+    body.es3d-popup-open #es3d-hud *, body.es3d-popup-open #es3d-panel *, body.es3d-popup-open #es3d-corner * { pointer-events: none !important; }
     #es3d-top {
-      position: absolute; top: max(10px, env(safe-area-inset-top)); left: 10px; width: min(29em, calc(100vw - 20px));
-      padding: 0.7em 0.85em; pointer-events: auto;
+      position: absolute; top: max(10px, env(safe-area-inset-top)); left: 10px; width: min(31em, calc(100vw - 20px));
+      padding: 0.6em 0.8em 0.7em; pointer-events: auto;
     }
-    #es3d-status { display: flex; justify-content: space-between; align-items: baseline; gap: 0.7em; font-size: 0.95em; font-weight: 700; }
-    #es3d-timer { font-variant-numeric: tabular-nums; color: var(--es-gold); }
-    #es3d-bar { height: 0.4em; margin: 0.55em 0; background: var(--es-maroon-deep); border-radius: 0.2em; overflow: hidden; }
-    #es3d-bar-fill { height: 100%; width: 0; background: var(--es-gold); transition: width 0.4s ease; }
+    #es3d-status { display: flex; justify-content: space-between; align-items: baseline; gap: 0.7em; font-weight: 700; }
+    #es3d-timer { font-variant-numeric: tabular-nums; }
+    #es3d-bar { height: 0.5em; margin: 0.45em 0; background: rgba(43,7,12,0.18); border-radius: 0.25em; overflow: hidden; }
+    #es3d-bar-fill { height: 100%; width: 0; background: var(--es-ink); transition: width 0.4s ease; }
     #es3d-riddle {
-      display: block; width: 100%; padding: 0; margin: 0; text-align: left; background: none; border: none; color: var(--es-gold);
-      font-size: 1.05em; line-height: 1.45;
+      display: block; width: 100%; padding: 0; margin: 0; text-align: left; background: none; border: none; color: var(--es-ink);
+      font-size: 1.2em; line-height: 1.35;
     }
     #es3d-riddle.es3d-collapsed { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #es3d-riddle .es3d-item { color: var(--es-cream); }
-    #es3d-riddle .es3d-item.es3d-found { text-decoration: underline; text-decoration-color: var(--es-gold); text-underline-offset: 0.2em; }
-    #es3d-riddle .es3d-item.es3d-found::after { content: " \\2713"; color: var(--es-gold); }
+    #es3d-riddle .es3d-item { font-weight: 800; }
+    #es3d-riddle .es3d-item.es3d-found { text-decoration: underline; text-decoration-thickness: 0.12em; text-underline-offset: 0.18em; }
     #es3d-slots { display: flex; gap: 0.4em; margin-top: 0.55em; flex-wrap: wrap; }
     .es3d-slot {
-      min-width: 1.9em; height: 1.9em; padding: 0 0.6em; display: inline-flex; align-items: center; justify-content: center;
-      font-size: 0.85em; border-radius: 1em; border: 1px dashed var(--es-gold); color: var(--es-cream);
+      min-width: 2.1em; height: 2.1em; padding: 0 0.7em; display: inline-flex; align-items: center; justify-content: center; gap: 0.4em;
+      font-size: 0.95em; font-weight: 700; border-radius: 1.05em; border: 2px dashed var(--es-ink); color: var(--es-ink); background: transparent;
     }
-    .es3d-slot.es3d-found { border: 1px solid var(--es-gold); background: var(--es-gold); color: var(--es-maroon-deep); font-weight: 700; }
+    button.es3d-slot:hover { background: var(--es-yellow-soft); }
+    .es3d-slot.es3d-found { border: 2px solid var(--es-ink); background: var(--es-ink); color: var(--es-yellow); padding-left: 0.3em; }
+    .es3d-tick {
+      width: 1.5em; height: 1.5em; flex: 0 0 auto; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+      background: var(--es-yellow); color: var(--es-ink); font-weight: 900; line-height: 1;
+    }
+    .es3d-tick.es3d-on-yellow { background: var(--es-ink); color: var(--es-yellow); }
+    #es3d-riddle .es3d-tick { width: 1.05em; height: 1.05em; font-size: 0.85em; margin-left: 0.25em; vertical-align: 0.08em; }
 
     #es3d-controls {
       position: absolute; left: 50%; bottom: max(12px, env(safe-area-inset-bottom)); transform: translateX(-50%);
-      display: flex; gap: 0.35em; padding: 0.4em; pointer-events: auto; max-width: calc(100vw - 16px);
+      display: flex; gap: 0.25em; padding: 0.3em; pointer-events: auto; max-width: calc(100vw - 16px);
     }
     #es3d-controls button {
-      min-width: 4.2em; min-height: 44px; padding: 0.4em 0.6em; display: flex; flex-direction: column; align-items: center; gap: 0.15em;
-      font-size: 0.8em; color: var(--es-cream); background: transparent; border: 1px solid transparent; border-radius: 0.5em; white-space: nowrap;
+      min-width: 4.6em; min-height: 44px; padding: 0.35em 0.5em; display: flex; flex-direction: column; align-items: center; gap: 0.1em;
+      font-size: 0.85em; font-weight: 600; color: var(--es-ink); background: transparent; border: none; border-radius: 0.35em; white-space: nowrap;
     }
-    #es3d-controls button:hover { border-color: var(--es-line); color: var(--es-gold); }
+    #es3d-controls button:hover:not(:disabled) { background: var(--es-ink); color: var(--es-yellow); }
     #es3d-controls button:disabled { opacity: 0.3; cursor: default !important; }
+
+    #es3d-corner { position: fixed; right: 12px; bottom: max(56px, calc(env(safe-area-inset-bottom) + 56px)); z-index: 9000; display: flex; flex-direction: column; gap: 0.5em; transition: opacity 0.2s ease; }
+    #es3d-corner button {
+      width: 3em; height: 3em; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; padding: 0;
+      color: var(--es-ink); background: var(--es-yellow); border: 2px solid var(--es-ink); border-radius: 50%; box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+    }
+    #es3d-corner button:hover, #es3d-corner button.es3d-muted { background: var(--es-ink); color: var(--es-yellow); border-color: var(--es-yellow); }
 
     #es3d-panel {
       position: fixed; inset: 0; z-index: 9500; display: flex; align-items: center; justify-content: center; padding: 16px;
       background: rgba(0,0,0,0.55);
     }
-    #es3d-panel-card { position: relative; width: min(34em, 100%); max-height: min(88vh, 100%); overflow-y: auto; padding: 1.4em 1.3em 1.3em; }
+    #es3d-panel-card { position: relative; width: min(34em, 100%); max-height: min(90vh, 100%); overflow-y: auto; padding: 1.1em 1.1em 1em; }
     #es3d-panel-close {
-      position: absolute; top: 0.3em; right: 0.3em; width: 2em; height: 2em; font-size: 1.6em; line-height: 1; color: var(--es-cream);
-      background: none; border: none;
+      position: absolute; top: 0.2em; right: 0.2em; width: 1.9em; height: 1.9em; font-size: 1.7em; font-weight: 700; line-height: 1;
+      color: var(--es-ink); background: none; border: none;
     }
-    #es3d-panel h2 { margin: 0 2em 0.5em 0; font-size: 1.5em; color: var(--es-gold); }
-    #es3d-panel h3 { margin: 1.2em 0 0.4em; font-size: 1.15em; color: var(--es-gold); }
-    #es3d-panel p { margin: 0 0 0.7em; line-height: 1.5; }
-    #es3d-panel .es3d-note { font-size: 0.88em; opacity: 0.75; }
-    #es3d-panel .es3d-btn { font-size: 1em; padding: 0.55em 1.2em; margin: 0.25em 0.4em 0.25em 0; box-shadow: none; }
-    .es3d-section { padding: 0.9em 0 0.2em; margin-top: 0.9em; border-top: 1px solid var(--es-line); }
+    #es3d-panel h2 { margin: 0 2em 0.45em 0; font-size: 1.5em; }
+    #es3d-panel h3 { margin: 1em 0 0.35em; font-size: 1.15em; }
+    #es3d-panel p { margin: 0 0 0.6em; line-height: 1.45; }
+    #es3d-panel ol { margin: 0 0 0.7em 1.3em; padding: 0; line-height: 1.5; }
+    #es3d-panel .es3d-note { font-size: 0.88em; opacity: 0.85; }
+    #es3d-panel .es3d-btn { font-size: 1em; padding: 0.5em 1.1em; margin: 0.25em 0.4em 0.25em 0; }
+    .es3d-section { padding: 0.8em 0 0.1em; margin-top: 0.8em; border-top: 2px solid var(--es-line); }
     .es3d-section h3 { margin-top: 0 !important; }
 
-    .es3d-hint-card { padding: 0.8em 0.9em; margin: 0 0 0.7em; background: var(--es-maroon-deep); border: 1px solid var(--es-line); border-radius: 0.5em; }
-    .es3d-hint-title { display: flex; justify-content: space-between; gap: 0.6em; font-size: 1.1em; font-weight: 700; color: var(--es-gold); margin-bottom: 0.4em; }
-    .es3d-hint-title span { font-size: 0.8em; font-weight: 400; color: var(--es-cream); }
+    .es3d-hint-card { padding: 0.7em 0.8em; margin: 0 0 0.6em; background: var(--es-yellow-soft); border-radius: 0.4em; }
+    .es3d-hint-title { display: flex; justify-content: space-between; align-items: center; gap: 0.6em; font-size: 1.1em; font-weight: 800; margin-bottom: 0.35em; }
+    .es3d-hint-title span { font-size: 0.8em; font-weight: 400; }
     .es3d-hint-card.es3d-found .es3d-hint-title { margin-bottom: 0; }
-    .es3d-hint { margin: 0 0 0.55em; line-height: 1.45; }
-    .es3d-hint b { display: block; font-size: 0.8em; letter-spacing: 0.04em; text-transform: uppercase; color: var(--es-gold); }
+    .es3d-hint { margin: 0 0 0.5em; line-height: 1.4; }
+    .es3d-hint b { display: block; font-size: 0.75em; letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.85; }
 
-    .es3d-list-level { padding: 0.65em 0; border-top: 1px solid var(--es-line); display: flex; gap: 0.7em; align-items: flex-start; }
-    .es3d-list-level.es3d-current .es3d-list-title { color: var(--es-gold); }
-    .es3d-list-title { flex: 0 0 5em; font-weight: 700; padding-top: 0.2em; }
+    .es3d-list-level { padding: 0.55em 0; border-top: 2px solid var(--es-line); display: flex; gap: 0.7em; align-items: flex-start; }
+    .es3d-list-level.es3d-current .es3d-list-title { text-decoration: underline; }
+    .es3d-list-title { flex: 0 0 5em; font-weight: 800; padding-top: 0.2em; }
     .es3d-list-items { flex: 1; display: flex; flex-wrap: wrap; gap: 0.4em; }
-    .es3d-list-go { flex: 0 0 auto; padding: 0.3em 0.9em; color: var(--es-cream); background: transparent; border: 1px solid var(--es-line); border-radius: 0.35em; }
-    .es3d-list-go:hover { color: var(--es-gold); border-color: var(--es-gold); }
+    .es3d-list-go { flex: 0 0 auto; padding: 0.3em 0.9em; font-weight: 700; color: var(--es-yellow); background: var(--es-ink); border: none; border-radius: 0.3em; }
 
     table.es3d-board { width: 100%; border-collapse: collapse; font-size: 0.95em; font-variant-numeric: tabular-nums; }
-    table.es3d-board th { text-align: left; font-size: 0.85em; font-weight: 400; opacity: 0.75; padding: 0.3em 0.4em; }
+    table.es3d-board th { text-align: left; font-size: 0.85em; font-weight: 600; padding: 0.3em 0.4em; }
     table.es3d-board td { padding: 0.4em; border-top: 1px solid var(--es-line); }
-    table.es3d-board tr.es3d-me td { color: var(--es-gold); font-weight: 700; }
+    table.es3d-board tr.es3d-me td { font-weight: 800; background: var(--es-yellow-soft); }
     .es3d-stats { display: flex; gap: 0.5em; margin: 0 0 0.8em; }
-    .es3d-stat { flex: 1; padding: 0.6em 0.4em; text-align: center; background: var(--es-maroon-deep); border-radius: 0.5em; }
-    .es3d-stat b { display: block; font-size: 1.4em; color: var(--es-gold); font-variant-numeric: tabular-nums; }
-    .es3d-stat span { font-size: 0.82em; opacity: 0.8; }
-    #es3d-panel input[type="email"], #es3d-panel textarea {
-      width: 100%; padding: 0.6em; margin: 0 0 0.5em; font: inherit; font-size: max(16px, 1em); color: var(--es-cream);
-      background: var(--es-maroon-deep); border: 1px solid var(--es-line); border-radius: 0.35em;
+    .es3d-stat { flex: 1; padding: 0.5em 0.4em; text-align: center; background: var(--es-yellow-soft); border-radius: 0.4em; }
+    .es3d-stat b { display: block; font-size: 1.4em; font-variant-numeric: tabular-nums; }
+    .es3d-stat span { font-size: 0.82em; }
+    #es3d-panel input[type="email"], #es3d-panel input[type="text"], #es3d-panel textarea {
+      width: 100%; padding: 0.55em; margin: 0 0 0.5em; font: inherit; font-size: max(16px, 1em); color: var(--es-ink);
+      background: var(--es-cream); border: 2px solid var(--es-ink); border-radius: 0.3em;
     }
     #es3d-panel textarea { min-height: 4.5em; resize: vertical; }
     .es3d-share-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5em, 1fr)); gap: 0.5em; margin: 0 0 0.8em; }
-    .es3d-share-grid .es3d-btn { margin: 0 !important; text-align: center; text-decoration: none; display: block; cursor: pointer !important; }
-    #es3d-share-link {
-      width: 100%; padding: 0.6em; font: inherit; font-size: max(16px, 0.95em); color: var(--es-cream);
-      background: var(--es-maroon-deep); border: 1px solid var(--es-line); border-radius: 0.35em;
-    }
+    .es3d-share-grid .es3d-btn { margin: 0 !important; text-align: center; display: block; }
     .es3d-consent { display: flex; gap: 0.6em; align-items: flex-start; margin: 0 0 0.6em; font-size: 0.92em; line-height: 1.4; }
-    .es3d-consent input { width: 1.2em; height: 1.2em; margin-top: 0.15em; flex: 0 0 auto; accent-color: var(--es-gold); }
+    .es3d-consent input { width: 1.3em; height: 1.3em; margin-top: 0.1em; flex: 0 0 auto; accent-color: var(--es-ink); }
 
     #es3d-toast {
       position: fixed; left: 50%; bottom: 7em; transform: translateX(-50%); z-index: 9600; max-width: calc(100vw - 32px);
-      padding: 0.7em 1.3em; font-size: 1.1em; font-weight: 700; color: var(--es-maroon-deep); background: var(--es-gold); border-radius: 0.5em;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: opacity 0.25s ease; text-align: center;
+      padding: 0.6em 1.2em; font-size: 1.15em; font-weight: 700; color: var(--es-yellow); background: var(--es-ink);
+      border: 2px solid var(--es-yellow); border-radius: 0.4em; box-shadow: 0 4px 18px rgba(0,0,0,0.5);
+      opacity: 0; pointer-events: none; transition: opacity 0.25s ease; text-align: center;
     }
     #es3d-toast.es3d-show { opacity: 1; }
 
+    /* Stands in for the mouse pointer while the tour is loading something. */
+    #es3d-spinner {
+      position: fixed; left: 0; top: 0; width: 30px; height: 30px; margin: -15px 0 0 -15px; z-index: 2147483647; pointer-events: none;
+      border-radius: 50%; border: 5px solid var(--es-ink); border-top-color: var(--es-yellow); box-shadow: 0 0 0 2px var(--es-yellow);
+      animation: es3d-spin 0.8s linear infinite;
+    }
+    @keyframes es3d-spin { to { rotate: 360deg; } }
+
     @media (max-width: 560px) {
       #es3d-welcome h1 { font-size: 2em; }
-      #es3d-controls { gap: 0.1em; }
-      #es3d-controls button { min-width: 3.5em; padding: 0.4em 0.3em; }
+      #es3d-controls { gap: 0; }
+      #es3d-controls button { min-width: 3.6em; padding: 0.35em 0.2em; }
+      #es3d-corner { bottom: 5.8em; }
     }
   `;
 
@@ -667,7 +695,9 @@
     riddle: '<path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12"/>',
     hints: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 115 0c0 1.7-2.5 2-2.5 4M12 17h.01"/>',
     list: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12l3 3 5-6"/>',
-    share: '<path d="M12 15V4M8 8l4-4 4 4M5 12v7h14v-7"/>'
+    share: '<path d="M12 15V4M8 8l4-4 4 4M5 12v7h14v-7"/>',
+    soundOff: '<path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l5 6M22 9l-5 6"/>',
+    help: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>'
   };
 
   function icon(name) {
@@ -698,8 +728,6 @@
     ui.loading = el('div', 'es3d-loading', 'Opening the store…');
     ui.loading.classList.add('es3d-hidden');
     ui.welcome = el('div', 'es3d-welcome');
-    ui.video = el('div', 'es3d-video', '<div id="es3d-video-frame"></div><button id="es3d-video-skip" class="es3d-btn es3d-quiet" type="button">Skip &gt;</button>');
-    ui.video.classList.add('es3d-hidden');
     ui.prompt = el('div', 'es3d-prompt', '<p>Welcome to the store. Watch the short intro and the hunt begins.</p><button class="es3d-btn" type="button" id="es3d-prompt-go">Watch the intro</button>');
     ui.prompt.classList.add('es3d-card', 'es3d-hidden');
     const control = (act, iconName, label, hint) =>
@@ -715,23 +743,40 @@
         ${control('prev', 'back', 'Back', 'Go back a level')}
         ${control('riddle', 'riddle', 'Riddle', 'Hear the riddle again')}
         ${control('hints', 'hints', 'Hints', 'Hints for each object in this riddle')}
-        ${control('list', 'list', 'Checklist', 'Everything found so far')}
+        ${control('list', 'list', 'Finds', 'Everything found so far')}
         ${control('share', 'share', 'Share', 'Share the game')}
         ${control('next', 'skip', 'Skip', 'Skip to the next level')}
       </div>`);
     ui.hud.classList.add('es3d-hidden');
     ui.panel = el('div', 'es3d-panel', '<div id="es3d-panel-card" class="es3d-card"><button id="es3d-panel-close" type="button" aria-label="Close">&times;</button><div id="es3d-panel-body"></div></div>');
     ui.panel.classList.add('es3d-hidden');
+    ui.corner = el('div', 'es3d-corner', '<button type="button" data-corner="mute"></button>' +
+      '<button type="button" data-corner="help" title="How to play" aria-label="How to play">' + icon('help') + '</button>');
+    ui.corner.classList.add('es3d-hidden');
+    ui.spinner = el('div', 'es3d-spinner');
+    ui.spinner.classList.add('es3d-hidden');
     ui.toast = el('div', 'es3d-toast');
     ui.toast.setAttribute('role', 'status');
 
-    document.getElementById('es3d-video-skip').addEventListener('click', finishIntro);
     document.getElementById('es3d-prompt-go').addEventListener('click', () => {
       unlockAudio();
       state.phase = 'intro';
       renderHud();
-      playIntroVideo();
+      playIntroVideo(() => goToLevel(0));
     });
+    ui.corner.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-corner]');
+      if (!btn) return;
+      if (btn.dataset.corner === 'mute') setMuted(!state.muted);
+      else showHelpPanel();
+    });
+    // A "?" slot opens the hints for that object.
+    document.getElementById('es3d-slots').addEventListener('click', (e) => {
+      const slot = e.target.closest('button[data-slot]');
+      if (slot) showHintPanel(Number(slot.dataset.slot));
+    });
+    setMuted(state.muted);
+    setInterval(applyMute, 700);
     document.getElementById('es3d-panel-close').addEventListener('click', closePanel);
     ui.panel.addEventListener('click', (e) => { if (e.target === ui.panel) closePanel(); });
     document.getElementById('es3d-riddle').addEventListener('click', (e) => e.currentTarget.classList.toggle('es3d-collapsed'));
@@ -803,7 +848,7 @@
       <div class="es3d-share-grid">
         ${links.map(([label, target], i) => target.startsWith('copy:') || target.startsWith('native:')
           ? '<button class="es3d-btn es3d-quiet" type="button" data-share="' + i + '">' + esc(label) + '</button>'
-          : '<a class="es3d-btn es3d-quiet" href="' + esc(target) + '" target="_blank" rel="noopener">' + esc(label) + '</a>').join('')}
+          : '<a class="es3d-btn es3d-quiet" href="' + esc(target) + '"' + (/^https:/.test(target) ? ' target="_blank" rel="noopener"' : '') + '>' + esc(label) + '</a>').join('')}
       </div>
       <input type="text" id="es3d-share-link" readonly value="${esc(url)}" aria-label="Link to the game">`);
     document.getElementById('es3d-panel-body').querySelectorAll('button[data-share]').forEach((btn) => {
@@ -877,36 +922,67 @@
     checkReadyToReveal();
   }
 
-  // --- INTRO VIDEO (own overlay, no MPEmbed involvement) ---
-  // Watched from the lobby. When it ends or is skipped, the player is taken
-  // straight to level 1.
-  function finishIntro() {
-    if (state.introDone) return;
-    state.introDone = true;
-    ui.video.remove();
-    goToLevel(0);
+  // --- SOUND ---
+  const MUTE_KEY = 'es3d_muted';
+  let introPlayer = null;
+
+  // One switch for every sound: the riddle, MPEmbed's own players and the
+  // intro video. MPEmbed makes new audio elements as the player moves, so
+  // this is re-applied on a timer.
+  function applyMute() {
+    sfxPool.concat(clueAudio).forEach((node) => { node.muted = state.muted; });
+    document.querySelectorAll('audio, video').forEach((node) => { node.muted = state.muted; });
+    try {
+      if (introPlayer && introPlayer.mute) { if (state.muted) introPlayer.mute(); else introPlayer.unMute(); }
+    } catch (e) {}
   }
 
-  function playIntroVideo() {
-    const frame = document.getElementById('es3d-video-frame');
-    if (!YOUTUBE_VIDEO_ID || !frame) { finishIntro(); return; }
-    ui.video.classList.remove('es3d-hidden');
+  function setMuted(muted) {
+    state.muted = muted;
+    try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch (e) {}
+    applyMute();
+    const btn = ui.corner.querySelector('[data-corner="mute"]');
+    btn.innerHTML = icon(muted ? 'soundOff' : 'riddle');
+    btn.classList.toggle('es3d-muted', muted);
+    btn.title = muted ? 'Sound is off. Click to turn it on.' : 'Sound is on. Click to mute.';
+    btn.setAttribute('aria-label', btn.title);
+    btn.setAttribute('aria-pressed', String(muted));
+  }
+
+  // --- INTRO VIDEO (own overlay, no MPEmbed involvement) ---
+  // First watched from the lobby, where finishing or skipping it takes the
+  // player to level 1. It can be watched again at any time from Help.
+  function playIntroVideo(onDone) {
+    const overlay = el('div', 'es3d-video', '<div id="es3d-video-frame"></div><button id="es3d-video-skip" class="es3d-btn es3d-quiet" type="button">Skip &gt;</button>');
+    let done = false;
+    let fallbackTimer = null;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      clearTimeout(fallbackTimer);
+      introPlayer = null;
+      overlay.remove();
+      onDone();
+    };
+    overlay.querySelector('#es3d-video-skip').addEventListener('click', finish);
+    if (!YOUTUBE_VIDEO_ID) { finish(); return; }
 
     // If the YouTube API never loads, do not leave the player stuck.
-    const fallbackTimer = setTimeout(() => {
+    fallbackTimer = setTimeout(() => {
       console.warn('Intro video API did not load after 90s, continuing without it.');
-      finishIntro();
+      finish();
     }, 90000);
 
     function createPlayer() {
       clearTimeout(fallbackTimer);
-      if (state.introDone) return;
-      new YT.Player(frame, {
+      if (done) return;
+      introPlayer = new YT.Player(overlay.querySelector('#es3d-video-frame'), {
         videoId: YOUTUBE_VIDEO_ID,
         playerVars: { autoplay: 1, controls: 1, rel: 0, modestbranding: 1, playsinline: 1 },
         events: {
-          onStateChange: (event) => { if (event.data === YT.PlayerState.ENDED) finishIntro(); },
-          onError: (event) => { console.warn('Intro video error, code:', event.data); finishIntro(); }
+          onReady: applyMute,
+          onStateChange: (event) => { if (event.data === YT.PlayerState.ENDED) finish(); },
+          onError: (event) => { console.warn('Intro video error, code:', event.data); finish(); }
         }
       });
     }
@@ -926,13 +1002,15 @@
   // ---------------------------------------------------------------------------
   function riddleHtml(level) {
     return esc(level.riddle).replace(/\{([^|}]+)\|([^}]+)\}/g, (m, id, words) =>
-      '<span class="es3d-item' + (state.found[id] ? ' es3d-found' : '') + '">' + words + '</span>');
+      '<span class="es3d-item' + (state.found[id] ? ' es3d-found' : '') + '">' + words + '</span>' +
+      (state.found[id] ? '<span class="es3d-tick es3d-on-yellow" aria-label="found">&#10003;</span>' : ''));
   }
 
   function renderHud() {
     const inGame = state.phase === 'playing' || state.phase === 'end';
     ui.hud.classList.toggle('es3d-hidden', !inGame);
     ui.prompt.classList.toggle('es3d-hidden', state.phase !== 'lobby');
+    ui.corner.classList.toggle('es3d-hidden', !inGame && state.phase !== 'lobby');
     if (!inGame) return;
 
     const level = LEVELS[state.levelIndex];
@@ -945,9 +1023,9 @@
     const slots = document.getElementById('es3d-slots');
     if (level) {
       riddle.innerHTML = riddleHtml(level);
-      slots.innerHTML = level.items.map((item) => state.found[item.id]
-        ? '<span class="es3d-slot es3d-found">' + esc(item.name) + '</span>'
-        : '<span class="es3d-slot" aria-label="Not found yet">?</span>').join('');
+      slots.innerHTML = level.items.map((item, i) => state.found[item.id]
+        ? '<span class="es3d-slot es3d-found"><span class="es3d-tick">&#10003;</span>' + esc(item.name) + '</span>'
+        : '<button type="button" class="es3d-slot" data-slot="' + i + '" title="Hints for this object" aria-label="Not found yet. Open hints for object ' + (i + 1) + '">?</button>').join('');
     } else {
       riddle.innerHTML = foundCount() === TOTAL_ITEMS ? 'You found everything.' : 'You have reached the end. Go back to find what you missed.';
       slots.innerHTML = '';
@@ -995,7 +1073,7 @@
   // One card per object in the riddle, in riddle order. Each object has its
   // own ladder of hints, revealed one press at a time: a nudge, where to look,
   // then its name. The player still has to find and click it.
-  function showHintPanel() {
+  function showHintPanel(focusIndex) {
     const level = LEVELS[state.levelIndex];
     if (!level) return;
     const card = document.getElementById('es3d-panel-card');
@@ -1003,11 +1081,11 @@
     const cards = level.items.map((item, i) => {
       const title = 'Object ' + (i + 1);
       if (state.found[item.id]) {
-        return '<div class="es3d-hint-card es3d-found"><div class="es3d-hint-title">' + title + ': ' + esc(item.name) + '<span>Found &#10003;</span></div></div>';
+        return '<div class="es3d-hint-card es3d-found"><div class="es3d-hint-title">' + title + ': ' + esc(item.name) + '<span class="es3d-tick es3d-on-yellow" aria-label="found">&#10003;</span></div></div>';
       }
       const steps = hintSteps(item);
       const stage = Math.min(state.hintStage[item.id] || 0, steps.length);
-      return `<div class="es3d-hint-card">
+      return `<div class="es3d-hint-card" data-card="${i}">
         <div class="es3d-hint-title">${title}<span>${stage} of ${steps.length} hints shown</span></div>
         ${steps.slice(0, stage).map((step, n) => '<div class="es3d-hint"><b>Hint ' + (n + 1) + ': ' + esc(step.label) + '</b>' + esc(step.text) + '</div>').join('')}
         ${stage < steps.length
@@ -1020,6 +1098,8 @@
       <p class="es3d-note">This riddle hides ${level.items.length} objects, listed in the order the riddle mentions them. Each has its own hints. Hints used so far: ${state.hintsUsed}.</p>
       ${cards}`);
     card.scrollTop = keepScroll;
+    const focus = typeof focusIndex === 'number' ? card.querySelector('[data-card="' + focusIndex + '"]') : null;
+    if (focus) card.scrollTop = Math.max(0, focus.offsetTop - 16);
     document.getElementById('es3d-panel-body').querySelectorAll('button[data-hint]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const item = level.items[Number(btn.dataset.hint)];
@@ -1031,16 +1111,34 @@
     });
   }
 
+  function showHelpPanel() {
+    openPanel(`
+      <h2>How to play</h2>
+      <ol>
+        <li>At each stop a riddle plays. It names several objects hidden around you.</li>
+        <li>Look around and click each object when you spot it.</li>
+        <li>Find them all and you move on to the next stop. There are ${LEVELS.length} stops.</li>
+      </ol>
+      <h3>The buttons</h3>
+      <p><b>Riddle</b> plays the riddle again. <b>Hints</b> gives up to three hints for each object, or click a <b>?</b> at the top. <b>Finds</b> shows everything you have found and lets you jump between stops. <b>Back</b> and <b>Skip</b> move a stop at a time. The round speaker button turns all sound on or off.</p>
+      <button class="es3d-btn" type="button" id="es3d-rewatch">Watch the intro again</button>`);
+    document.getElementById('es3d-rewatch').addEventListener('click', () => {
+      closePanel();
+      clueAudio.pause();
+      playIntroVideo(() => {});
+    });
+  }
+
   function showListPanel() {
     const rows = LEVELS.map((level, i) => `
       <div class="es3d-list-level ${i === state.levelIndex ? 'es3d-current' : ''}">
         <div class="es3d-list-title">Level ${i + 1}<br><span class="es3d-note">${levelFoundCount(level)} / ${level.items.length}</span></div>
         <div class="es3d-list-items">${level.items.map((item) => state.found[item.id]
-          ? '<span class="es3d-slot es3d-found">' + esc(item.name) + '</span>'
+          ? '<span class="es3d-slot es3d-found"><span class="es3d-tick">&#10003;</span>' + esc(item.name) + '</span>'
           : '<span class="es3d-slot">?</span>').join('')}</div>
         ${i === state.levelIndex ? '' : '<button class="es3d-list-go" type="button" data-go="' + i + '">Go</button>'}
       </div>`).join('');
-    openPanel(`<h2>Checklist</h2><p>${foundCount()} of ${TOTAL_ITEMS} found.</p>${rows}`);
+    openPanel(`<h2>Finds</h2><p>${foundCount()} of ${TOTAL_ITEMS} found.</p>${rows}`);
     document.getElementById('es3d-panel-body').querySelectorAll('button[data-go]').forEach((btn) => {
       btn.addEventListener('click', () => goToLevel(Number(btn.dataset.go)));
     });
@@ -1321,7 +1419,7 @@
   // positioning on these elements and that must survive.
   function stylePopup(overlay, labelEl, isAudioClue) {
     ['position', 'display', 'width', 'max-width', 'box-sizing', 'text-align', 'font-size',
-      'color', 'margin', 'background-color', 'padding', 'white-space', 'overflow', 'font-family']
+      'color', 'margin', 'background-color', 'padding', 'white-space', 'overflow', 'font-family', 'font-weight']
       .forEach((prop) => labelEl.style.removeProperty(prop));
     const backgroundEl = overlay.querySelector('.customBillboardBackground') || overlay.querySelector('.customBillboardBG');
     if (backgroundEl) {
@@ -1329,17 +1427,17 @@
     }
     const set = (node, props) => Object.keys(props).forEach((prop) => node.style.setProperty(prop, props[prop], 'important'));
     if (isAudioClue) {
-      if (backgroundEl) set(backgroundEl, { 'background-color': '#4a1418', display: 'flex', 'align-items': 'center', 'justify-content': 'center' });
+      if (backgroundEl) set(backgroundEl, { 'background-color': '#f2c230', display: 'flex', 'align-items': 'center', 'justify-content': 'center' });
       set(labelEl, {
         position: 'static', display: 'block', width: '85%', 'max-width': '85%', 'box-sizing': 'border-box', 'text-align': 'center',
-        'font-size': '150%', color: '#f7eed6', margin: 'auto', 'background-color': 'transparent', padding: '20px',
+        'font-size': '150%', color: '#2b070c', margin: 'auto', 'background-color': 'transparent', padding: '20px',
         'white-space': 'normal', overflow: 'visible'
       });
     } else {
       set(labelEl, {
         display: 'block', width: '100%', 'box-sizing': 'border-box', 'text-align': 'center', 'font-size': '240%',
-        color: '#f7eed6', margin: '0', 'background-color': '#4a1418', padding: '14px 24px',
-        'font-family': 'Georgia, "Times New Roman", serif'
+        color: '#2b070c', margin: '0', 'background-color': '#f2c230', padding: '14px 24px',
+        'font-weight': '800', 'font-family': 'system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif'
       });
     }
   }
@@ -1495,20 +1593,33 @@
   // The hidden objects must not give themselves away by changing the mouse
   // cursor on hover, so the cursor is pinned to the plain arrow, both on this
   // page and inside the tour's frame where the browser allows it. Whenever the
-  // tour itself asks for a busy cursor while something loads, the pin switches
-  // to the wait cursor: the spinning wheel alone, with no arrow, so the player
-  // can see they need to wait.
+  // tour itself asks for a busy cursor while something loads, the arrow is
+  // hidden altogether and our own spinning wheel follows the mouse instead,
+  // so the player can see they need to wait.
   const CURSOR_RULE_PAGE = 'html, body, body *:not(.es3d):not(.es3d *) { cursor: default !important; } ' +
     '#customBillboardFullOverlay [class*="close"] { cursor: pointer !important; }';
   const CURSOR_RULE_FRAME = '* { cursor: default !important; }';
-  const CURSOR_RULE_BUSY = '* { cursor: wait !important; }';
+  const CURSOR_RULE_BUSY = '* { cursor: none !important; }';
+  let mouseSeen = false;
+
+  function trackMouse(doc, frame) {
+    if (doc.__es3dMouse) return;
+    doc.__es3dMouse = true;
+    doc.addEventListener('mousemove', (e) => {
+      const box = frame ? frame.getBoundingClientRect() : { left: 0, top: 0 };
+      mouseSeen = true;
+      ui.spinner.style.transform = 'translate(' + (box.left + e.clientX) + 'px, ' + (box.top + e.clientY) + 'px)';
+    }, { passive: true });
+  }
 
   function steadyCursor() {
-    const docs = [[document, CURSOR_RULE_PAGE]];
+    const docs = [[document, CURSOR_RULE_PAGE, null]];
     document.querySelectorAll('iframe').forEach((frame) => {
-      try { if (frame.contentDocument && frame.contentDocument.head) docs.push([frame.contentDocument, CURSOR_RULE_FRAME]); } catch (e) {}
+      try { if (frame.contentDocument && frame.contentDocument.head) docs.push([frame.contentDocument, CURSOR_RULE_FRAME, frame]); } catch (e) {}
     });
-    docs.forEach(([doc, rule]) => {
+    let anyBusy = false;
+    const styles = docs.map(([doc, rule, frame]) => {
+      if (ui.spinner) trackMouse(doc, frame);
       let style = doc.getElementById('es3d-cursor');
       if (!style) {
         style = doc.createElement('style');
@@ -1521,11 +1632,17 @@
       const hovered = doc.querySelectorAll(':hover');
       const probes = [doc.body, hovered[hovered.length - 1]].concat(Array.from(doc.querySelectorAll('canvas')).slice(0, 3));
       const view = doc.defaultView || window;
-      const busy = probes.some((node) => node && /wait|progress/.test(view.getComputedStyle(node).cursor));
+      if (probes.some((node) => node && /wait|progress/.test(view.getComputedStyle(node).cursor))) anyBusy = true;
       style.disabled = false;
-      const wanted = busy ? CURSOR_RULE_BUSY : rule;
+      return [style, rule];
+    });
+    // Only swap the arrow for our wheel once we know where the mouse is.
+    const showWheel = anyBusy && mouseSeen && !!ui.spinner;
+    styles.forEach(([style, rule]) => {
+      const wanted = showWheel ? CURSOR_RULE_BUSY : rule;
       if (style.textContent !== wanted) style.textContent = wanted;
     });
+    if (ui.spinner) ui.spinner.classList.toggle('es3d-hidden', !showWheel);
   }
 
   async function initTour(mpSdk) {
