@@ -7,7 +7,7 @@ Lines marked **CHECK** need your eye: the nudges were written from the riddle wo
 
 ## Level 1
 
-The **Pink Bo-Peep** has lost her sheep, and **two white cows** had taken over. The front is silver and the back is brown: once you find **yourself**, it’s time to move around.
+The **pink Bo-Peep** has lost her sheep, and **two white cows** have taken over, the front is silver and the back is brown, once you find **yourself**, it’s time to move around
 
 1. **Pink Bo-Peep**
    - Nudge: A shepherdess with no flock, dressed in pink.
@@ -273,7 +273,7 @@ The flock of **mock ducks** hang out far from the **wooden goanna**, and halfway
 
 ## Level 14
 
-When I rowed from **Dimboola**, to **Egypt etc**, I wore my **Akubra** and spied a **tiger**, a **butterfly**, and **horse head** to end it.
+When I rowed from **Dimboola**, to **Egypt etc**, I wore my **Akubra** and spotted a **tiger**, a **butterfly**, and **horse head** to end it
 
 1. **Dimboola**
    - Nudge: A town in western Victoria. Look for its name in a newspaper clipping.

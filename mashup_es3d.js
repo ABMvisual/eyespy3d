@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4005)
+// EYE SPY 3D - ENGINE (V4006)
 // Rewrite of V3031. Still loaded into MPEmbed as a custom script, still uses
 // MPEmbed's popups and per-pano clue audio, but the game itself (levels,
 // progress, hints, skipping, scores) now lives here, with its own HUD.
@@ -14,7 +14,7 @@
   if (window.__ES3D_LOADED__) return;
   window.__ES3D_LOADED__ = true;
 
-  const VERSION = 'V4005';
+  const VERSION = 'V4006';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -39,9 +39,12 @@
   // address to turn it off, and &es3ddebug=1 to show how long each photo took.
   const PRELOAD_PHOTOS = !/[?&]es3dpreload=0/.test(location.search);
   const DEBUG_TIMING = /[?&]es3ddebug=1/.test(location.search);
-  const THEME = /[?&]es3dtheme=b/.test(location.search)
-    ? { name: 'b', bar: '#1a1714', barText: '#f2c230', burst: '#f2c230', burstEdge: '#1a1714' }
-    : { name: 'd', bar: '#f2c230', barText: '#2b070c', burst: '#f2c230', burstEdge: '#2b070c' };
+  const THEMES = {
+    b: { name: 'b', bar: '#1a1714', barText: '#f2c230' }, // charcoal panels, warm yellow accents
+    e: { name: 'e', bar: '#1a1714', barText: '#ccff00' }, // charcoal panels, electric yellow accents
+    d: { name: 'd', bar: '#f2c230', barText: '#2b070c' }  // yellow panels, burgundy text
+  };
+  const THEME = THEMES[(location.search.match(/[?&]es3dtheme=([a-z])/) || [])[1]] || THEMES.b;
   const SAVE_KEY = 'es3d_save_v1';
   const BOARD_KEY = 'es3d_board_v1';
   const BOARD_SIZE = 10;
@@ -58,7 +61,7 @@
   const LEVELS = [
     {
       sweep: 'cwckxx365uimbeqk6ngp0t5ud', clue: 'pink bopeep.mp3',
-      riddle: 'The {pink bo-peep|Pink Bo-Peep} has lost her sheep, and {two white cows|two white cows} had taken over. The front is silver and the back is brown: once you find {yourself|yourself}, it’s time to move around.',
+      riddle: 'The {pink bo-peep|pink Bo-Peep} has lost her sheep, and {two white cows|two white cows} have taken over, the front is silver and the back is brown, once you find {yourself|yourself}, it\u2019s time to move around',
       items: [
         { id: 'pink bo-peep', name: 'Pink Bo-Peep', photo: 'pink bopeep.jpeg', hint: 'A shepherdess with no flock, dressed in pink.', where: 'On the shelf, just below the two white cows.' },
         { id: 'two white cows', name: 'Two white cows', hint: 'Where the sheep should be, a pair of pale cattle stand instead.', where: 'Directly above the Pink Bo-Peep.' },
@@ -183,7 +186,7 @@
     },
     {
       sweep: 'aty78ze3y9ddyg8702gmncdma', clue: '',
-      riddle: 'When I rowed from {dimboola|Dimboola}, to {egypt etc|Egypt etc}, I wore my {akubra|Akubra} and spied a {tiger|tiger}, a {butterfly|butterfly}, and {horse head|horse head} to end it.',
+      riddle: 'When I rowed from {dimboola|Dimboola}, to {egypt etc|Egypt etc}, I wore my {akubra|Akubra} and spotted a {tiger|tiger}, a {butterfly|butterfly}, and {horse head|horse head} to end it',
       items: [
         { id: 'dimboola', name: 'Dimboola', hint: 'A town in western Victoria. Look for its name in a newspaper clipping.', where: 'To the right of the table in front of the two wooden shelves.' },
         { id: 'egypt etc', name: 'Egypt etc', hint: 'Pyramids, pharaohs and more. Look for the land of the Nile.', where: 'On the second shelf, opposite Dimboola.' },
@@ -283,6 +286,7 @@
     revealed: false,
     resume: false,
     advancePending: false,
+    returnLevel: null, // where a jump from the Found list came from
     currentSweep: '',
     arrivedAt: 0,
     photoBase: '/media/3780//',
@@ -360,10 +364,43 @@
   function unlockAudio() {
     if (audioUnlocked) return;
     audioUnlocked = true;
+    soundContext();
     const url = silentWavUrl();
     sfxPool.concat(clueAudio).forEach((el) => {
       el.src = url;
       el.play().catch(() => {});
+    });
+  }
+
+  let audioCtx = null;
+  function soundContext() {
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch (e) {}
+    return audioCtx;
+  }
+
+  // Made in code, so there is no file to download.
+  function playFoundSound() {
+    const ctx = state.muted ? null : soundContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const out = ctx.createGain();
+    out.gain.setValueAtTime(0.0001, now);
+    out.gain.exponentialRampToValueAtTime(0.5, now + 0.012);
+    out.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
+    out.connect(ctx.destination);
+    [[1, 1], [2, 0.3]].forEach(([multiple, level]) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.frequency.setValueAtTime(150 * multiple, now);
+      osc.frequency.exponentialRampToValueAtTime(205 * multiple, now + 0.09);
+      gain.gain.value = level;
+      osc.connect(gain);
+      gain.connect(out);
+      osc.start(now);
+      osc.stop(now + 0.45);
     });
   }
 
@@ -463,10 +500,10 @@
 
   // ---------------------------------------------------------------------------
   // STYLES
-  // Plain sans-serif on solid panels, for readability over a busy scene. Two
-  // palettes share one stylesheet: "d" is yellow panels with burgundy text,
-  // "b" is charcoal panels with cream text and yellow accents. Add
-  // &es3dtheme=b to the page address to see the second one.
+  // Plain sans-serif on solid panels, for readability over a busy scene.
+  // Three palettes share one stylesheet (see THEMES). Charcoal with warm
+  // yellow is the default; add &es3dtheme=e or &es3dtheme=d to the page
+  // address to see the others.
   // ---------------------------------------------------------------------------
   const CSS = `
     * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
@@ -517,8 +554,9 @@
       --es-edge: #2b070c; --es-line: rgba(43,7,12,0.4); --es-track: rgba(43,7,12,0.18);
       font-size: clamp(15px, 0.62vw + 9px, 30px); color: var(--es-text);
     }
-    .es3d.es3d-theme-b {
-      --es-panel: #1a1714; --es-panel-soft: #2d2924; --es-text: #fbf3dc; --es-accent: #f2c230; --es-on-accent: #1a1714;
+    .es3d.es3d-theme-e { --es-sun: #ccff00; }
+    .es3d.es3d-theme-b, .es3d.es3d-theme-e {
+      --es-panel: #1a1714; --es-panel-soft: #2d2924; --es-text: #fbf3dc; --es-accent: var(--es-sun); --es-on-accent: #1a1714;
       --es-edge: rgba(251,243,220,0.45); --es-line: rgba(251,243,220,0.25); --es-track: rgba(251,243,220,0.2);
     }
     .es3d, .es3d * { box-sizing: border-box; font-family: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
@@ -600,11 +638,10 @@
       font-size: 1.2em; line-height: 1.35;
     }
     #es3d-riddle.es3d-collapsed { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #es3d-riddle .es3d-item { font-weight: 800; }
-    /* Found words are shown as a solid highlight: the text colour becomes the
-       background and the panel colour becomes the text. */
+    #es3d-riddle .es3d-item { font-weight: 800; color: var(--es-accent); }
+    /* Found words are shown as a solid highlight, like the found pills below. */
     #es3d-riddle .es3d-item.es3d-found {
-      background: var(--es-text); color: var(--es-panel); padding: 0.02em 0.3em; border-radius: 0.2em;
+      background: var(--es-accent); color: var(--es-on-accent); padding: 0.02em 0.3em; border-radius: 0.2em;
       -webkit-box-decoration-break: clone; box-decoration-break: clone;
     }
     #es3d-slots { display: flex; gap: 0.4em; margin-top: 0.55em; flex-wrap: wrap; }
@@ -706,8 +743,6 @@
     }
     #es3d-more span { display: inline-block; padding: 0.25em 0.9em; border-radius: 1em; background: var(--es-accent); color: var(--es-on-accent); }
 
-    #es3d-burst { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 2147483646; pointer-events: none; }
-
     @media (max-width: 560px) {
       #es3d-welcome h1 { font-size: 2em; }
       #es3d-controls { gap: 0; }
@@ -723,6 +758,7 @@
     hints: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 115 0c0 1.7-2.5 2-2.5 4M12 17h.01"/>',
     list: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12l3 3 5-6"/>',
     share: '<path d="M12 15V4M8 8l4-4 4 4M5 12v7h14v-7"/>',
+    undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/>',
     soundOff: '<path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l5 6M22 9l-5 6"/>',
     help: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>'
   };
@@ -777,7 +813,8 @@
     ui.hud.classList.add('es3d-hidden');
     ui.panel = el('div', 'es3d-panel', '<div id="es3d-panel-card" class="es3d-card"><button id="es3d-panel-close" type="button" aria-label="Close">&times;</button><div id="es3d-panel-body"></div><div id="es3d-more" class="es3d-hidden"><span>More below &#8595;</span></div></div>');
     ui.panel.classList.add('es3d-hidden');
-    ui.corner = el('div', 'es3d-corner', '<button type="button" data-corner="mute"></button>' +
+    ui.corner = el('div', 'es3d-corner', '<button type="button" data-corner="return" class="es3d-hidden">' + icon('undo') + '</button>' +
+      '<button type="button" data-corner="mute"></button>' +
       '<button type="button" data-corner="help" title="How to play" aria-label="How to play">' + icon('help') + '</button>');
     ui.corner.classList.add('es3d-hidden');
     ui.toast = el('div', 'es3d-toast');
@@ -793,6 +830,7 @@
       const btn = e.target.closest('button[data-corner]');
       if (!btn) return;
       if (btn.dataset.corner === 'mute') setMuted(!state.muted);
+      else if (btn.dataset.corner === 'return') goToLevel(state.returnLevel);
       else showHelpPanel();
     });
     // A "?" slot opens the hints for that object.
@@ -1035,6 +1073,13 @@
     ui.hud.classList.toggle('es3d-hidden', !inGame);
     ui.prompt.classList.toggle('es3d-hidden', state.phase !== 'lobby');
     ui.corner.classList.toggle('es3d-hidden', !inGame && state.phase !== 'lobby');
+    const back = ui.corner.querySelector('[data-corner="return"]');
+    const canReturn = inGame && state.returnLevel !== null && state.returnLevel !== state.levelIndex;
+    back.classList.toggle('es3d-hidden', !canReturn);
+    if (canReturn) {
+      back.title = 'Return to level ' + (state.returnLevel + 1);
+      back.setAttribute('aria-label', back.title);
+    }
     if (!inGame) return;
 
     const level = LEVELS[state.levelIndex];
@@ -1155,7 +1200,7 @@
         <li>Find them all and you move on to the next stop. There are ${LEVELS.length} stops.</li>
       </ol>
       <h3>The buttons</h3>
-      <p><b>Riddle</b> plays the riddle again. <b>Hints</b> gives up to three hints for each object, or click a <b>?</b> at the top. <b>Found</b> shows everything you have found and lets you jump between stops. <b>Back</b> and <b>Skip</b> move a stop at a time. The round speaker button turns all sound on or off.</p>
+      <p><b>Riddle</b> plays the riddle again. <b>Hints</b> gives up to three hints for each object, or click a <b>?</b> at the top. <b>Found</b> shows everything you have found and lets you jump between stops. <b>Back</b> and <b>Skip</b> move a stop at a time. The round speaker button turns all sound on or off. After jumping to another stop from <b>Found</b>, a round arrow button takes you back.</p>
       <button class="es3d-btn" type="button" id="es3d-rewatch">Watch the intro again</button>`);
     document.getElementById('es3d-rewatch').addEventListener('click', () => {
       closePanel();
@@ -1176,7 +1221,7 @@
     openPanel(`<h2>Found</h2><p>${foundCount()} of ${TOTAL_ITEMS} found. Click a <b>?</b> for hints.</p>${rows}`);
     const body = document.getElementById('es3d-panel-body');
     body.querySelectorAll('button[data-go]').forEach((btn) => {
-      btn.addEventListener('click', () => goToLevel(Number(btn.dataset.go)));
+      btn.addEventListener('click', () => goToLevel(Number(btn.dataset.go), state.levelIndex));
     });
     // A "?" opens that object's hints, moving to its level first if needed.
     body.querySelectorAll('button[data-slot]').forEach((btn) => {
@@ -1184,7 +1229,7 @@
         const levelIndex = Number(btn.dataset.level);
         const slot = Number(btn.dataset.slot);
         if (levelIndex === state.levelIndex) { showHintPanel(slot); return; }
-        goToLevel(levelIndex).then(() => { if (state.levelIndex === levelIndex) showHintPanel(slot); });
+        goToLevel(levelIndex, state.levelIndex).then(() => { if (state.levelIndex === levelIndex) showHintPanel(slot); });
       });
     });
   }
@@ -1358,7 +1403,8 @@
     }
   }
 
-  function arriveAtLevel(index) {
+  function arriveAtLevel(index, returnTo) {
+    state.returnLevel = typeof returnTo === 'number' && returnTo !== index ? returnTo : null;
     state.levelIndex = index;
     state.phase = index >= LEVELS.length ? 'end' : 'playing';
     state.advancePending = false;
@@ -1377,13 +1423,14 @@
     }
   }
 
-  async function goToLevel(index) {
-    if (state.busy || !sdk || index < 0 || index > LEVELS.length) return;
+  // returnTo: the level to offer a way back to (set by jumps from the Found list).
+  async function goToLevel(index, returnTo) {
+    if (state.busy || !sdk || typeof index !== 'number' || index < 0 || index > LEVELS.length) return;
     state.busy = true;
     closePanel();
     try {
       await moveToSweep(sweepFor(index));
-      arriveAtLevel(index);
+      arriveAtLevel(index, returnTo);
     } catch (error) {
       console.error('Eye Spy 3D: could not move to level ' + (index + 1), error);
       toast('Could not move there. Please try again.');
@@ -1501,78 +1548,6 @@
     return true;
   }
 
-  // The found object's name, drawn as particles that fly together, hold, then
-  // scatter. Pure code on a canvas, so it adds no files to download.
-  function burstName(text) {
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const old = document.getElementById('es3d-burst');
-    if (old) old.remove();
-    const W = window.innerWidth;
-    const H = window.innerHeight;
-    const size = Math.max(28, Math.min(H * 0.16, (W * 0.86) / (text.length * 0.56)));
-    const font = '900 ' + size + 'px system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif';
-    const sample = document.createElement('canvas');
-    sample.width = W;
-    sample.height = Math.ceil(size * 1.5);
-    const sctx = sample.getContext('2d');
-    sctx.font = font;
-    sctx.textAlign = 'center';
-    sctx.textBaseline = 'middle';
-    sctx.fillText(text, W / 2, sample.height / 2);
-    const data = sctx.getImageData(0, 0, sample.width, sample.height).data;
-    const step = Math.max(3, Math.round(size / 22));
-    const top = H * 0.5 - sample.height / 2;
-    const dots = [];
-    for (let y = 0; y < sample.height; y += step) {
-      for (let x = 0; x < sample.width; x += step) {
-        if (data[(y * sample.width + x) * 4 + 3] < 128) continue;
-        const angle = Math.random() * Math.PI * 2;
-        const far = Math.max(W, H) * (0.35 + Math.random() * 0.4);
-        dots.push({
-          tx: x, ty: top + y, sx: x + Math.cos(angle) * far, sy: top + y + Math.sin(angle) * far,
-          vx: (Math.random() - 0.5) * 9, vy: -Math.random() * 7 - 1, delay: Math.random() * 0.12
-        });
-      }
-    }
-    const canvas = document.createElement('canvas');
-    canvas.id = 'es3d-burst';
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = W * ratio;
-    canvas.height = H * ratio;
-    document.body.appendChild(canvas);
-    const ctx = canvas.getContext('2d');
-    ctx.scale(ratio, ratio);
-    const IN = 0.45, HOLD = 0.55, OUT = 0.6;
-    const start = performance.now();
-    const frame = (now) => {
-      const t = (now - start) / 1000;
-      if (t > IN + HOLD + OUT || !canvas.isConnected) { canvas.remove(); return; }
-      ctx.clearRect(0, 0, W, H);
-      dots.forEach((d) => {
-        let x, y, alpha = 1;
-        if (t < IN + HOLD) {
-          const k = Math.min(1, Math.max(0, (t - d.delay) / IN));
-          const ease = 1 - Math.pow(1 - k, 3);
-          x = d.sx + (d.tx - d.sx) * ease;
-          y = d.sy + (d.ty - d.sy) * ease;
-          alpha = k;
-        } else {
-          const o = t - IN - HOLD;
-          x = d.tx + d.vx * o * 60;
-          y = d.ty + d.vy * o * 60 + 0.5 * 26 * o * o * 60;
-          alpha = Math.max(0, 1 - o / OUT);
-        }
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = THEME.burstEdge;
-        ctx.fillRect(x - 1, y - 1, step + 1, step + 1);
-        ctx.fillStyle = THEME.burst;
-        ctx.fillRect(x, y, step - 1, step - 1);
-      });
-      requestAnimationFrame(frame);
-    };
-    requestAnimationFrame(frame);
-  }
-
   function registerFind(label, imageSrc) {
     const level = LEVELS[state.levelIndex];
     if (state.phase !== 'playing' || state.busy || !level) return;
@@ -1584,7 +1559,7 @@
     if (state.found[item.id]) return;
     state.found[item.id] = true;
     playItemSound(item);
-    burstName(item.name);
+    playFoundSound();
     if (isLevelComplete(level)) state.advancePending = true;
     if (foundCount() === TOTAL_ITEMS) state.finished = true;
     save();

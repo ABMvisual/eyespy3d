@@ -32,7 +32,8 @@ https://mpembed.com/show/?m=xqbmbKAYgu6&mpu=3780&customjs=https://cdn.jsdelivr.n
   - Level 6, barley: the location note was unclear; it currently reads "In the same cabinet as hide and seek".
   - Level 12, goanna: the note said "on the floor below the wooden goanna"; what is it below?
   - About a dozen first hints (nudges) are guesses from the riddle wording.
-- **Design:** every visual change is shown as options and chosen before it is built. Chosen so far: yellow panels with burgundy text in a plain sans-serif. Open choices: the "found" sound, square riddle discs for the floor (drafts in `nadirs/`), a "Found!" moment, and phone-framed or moving photos.
+- **Riddle wording:** the floor discs are the master copy, because the recordings follow them. Levels 1 and 14 now match their discs word for word. Levels 2 to 13 still use a typed version and need checking against the disc images.
+- **Design:** every visual change is shown as options and chosen before it is built. Current look: charcoal panels, cream text, yellow accents, plain sans-serif. Open choices: warm or electric yellow, square riddle discs for the floor (drafts in `nadirs/`), and phone-framed or moving photos.
 - **Intro video:** to be replaced (`YOUTUBE_VIDEO_ID`).
 - **Phones:** tall popup images are a first attempt and untested on a real phone.
 - **Multiplayer:** shared rooms so friends in different places can play together and talk, most likely as a Discord Activity.
