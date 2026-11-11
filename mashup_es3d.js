@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4004)
+// EYE SPY 3D - ENGINE (V4005)
 // Rewrite of V3031. Still loaded into MPEmbed as a custom script, still uses
 // MPEmbed's popups and per-pano clue audio, but the game itself (levels,
 // progress, hints, skipping, scores) now lives here, with its own HUD.
@@ -14,7 +14,7 @@
   if (window.__ES3D_LOADED__) return;
   window.__ES3D_LOADED__ = true;
 
-  const VERSION = 'V4004';
+  const VERSION = 'V4005';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -39,6 +39,9 @@
   // address to turn it off, and &es3ddebug=1 to show how long each photo took.
   const PRELOAD_PHOTOS = !/[?&]es3dpreload=0/.test(location.search);
   const DEBUG_TIMING = /[?&]es3ddebug=1/.test(location.search);
+  const THEME = /[?&]es3dtheme=b/.test(location.search)
+    ? { name: 'b', bar: '#1a1714', barText: '#f2c230', burst: '#f2c230', burstEdge: '#1a1714' }
+    : { name: 'd', bar: '#f2c230', barText: '#2b070c', burst: '#f2c230', burstEdge: '#2b070c' };
   const SAVE_KEY = 'es3d_save_v1';
   const BOARD_KEY = 'es3d_board_v1';
   const BOARD_SIZE = 10;
@@ -59,7 +62,7 @@
       items: [
         { id: 'pink bo-peep', name: 'Pink Bo-Peep', photo: 'pink bopeep.jpeg', hint: 'A shepherdess with no flock, dressed in pink.', where: 'On the shelf, just below the two white cows.' },
         { id: 'two white cows', name: 'Two white cows', hint: 'Where the sheep should be, a pair of pale cattle stand instead.', where: 'Directly above the Pink Bo-Peep.' },
-        { id: 'yourself', name: 'Yourself', hint: 'Silver at the front, brown at the back, and you are in it. What shows you your own face?', where: 'Across the room from the Pink Bo-Peep, on the table.' }
+        { id: 'yourself', name: 'Yourself', reveal: 'It is you, in the mirror.', hint: 'Silver at the front, brown at the back, and you are in it. What shows you your own face?', where: 'Across the room from the Pink Bo-Peep, on the table.' }
       ]
     },
     {
@@ -251,8 +254,12 @@
   }
 
   LEVELS.forEach((level) => {
+    const words = {};
+    level.riddle.replace(/\{([^|}]+)\|([^}]+)\}/g, (m, id, text) => { words[id] = text; return m; });
     level.items.forEach((item) => {
       item.keys = [item.id, item.name].concat(item.aliases || []).map(norm);
+      // The riddle's own words for this object, used as its heading in Hints.
+      item.riddleWords = (words[item.id] || item.name).replace(/^./, (ch) => ch.toUpperCase());
     });
   });
 
@@ -456,9 +463,10 @@
 
   // ---------------------------------------------------------------------------
   // STYLES
-  // Bright yellow panels with dark burgundy text, in a plain sans-serif, for
-  // the highest readability over a busy scene (burgundy on this yellow is
-  // about 11 to 1). To restyle the whole game, change the --es variables.
+  // Plain sans-serif on solid panels, for readability over a busy scene. Two
+  // palettes share one stylesheet: "d" is yellow panels with burgundy text,
+  // "b" is charcoal panels with cream text and yellow accents. Add
+  // &es3dtheme=b to the page address to see the second one.
   // ---------------------------------------------------------------------------
   const CSS = `
     * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
@@ -490,6 +498,10 @@
     #customBillboardFull, #customBillboardFull * { transition: none !important; animation: none !important; }
     /* MPEmbed's replay-audio popup is closed by script the moment it opens. */
     body:not(.es3d-show-audio-popup) #customBillboardFull.audio { opacity: 0 !important; }
+    /* MPEmbed colours the label's inner text itself, so it is set here too. */
+    #customBillboardFull.photo .tag-text-content, #customBillboardFull.photo .tag-text-content * {
+      color: ${THEME.barText} !important; text-shadow: none !important;
+    }
 
     /* Tall screens: fill the popup's height and crop the wide photo's sides. */
     @media (orientation: portrait) {
@@ -500,8 +512,14 @@
     }
 
     .es3d {
-      --es-yellow: #f2c230; --es-yellow-soft: #f7d566; --es-ink: #2b070c; --es-cream: #fbf3dc; --es-line: rgba(43,7,12,0.4);
-      font-size: clamp(15px, 0.62vw + 9px, 30px); color: var(--es-ink);
+      --es-sun: #f2c230; --es-night: #2b070c; --es-cream: #fbf3dc;
+      --es-panel: #f2c230; --es-panel-soft: #f7d566; --es-text: #2b070c; --es-accent: #2b070c; --es-on-accent: #f2c230;
+      --es-edge: #2b070c; --es-line: rgba(43,7,12,0.4); --es-track: rgba(43,7,12,0.18);
+      font-size: clamp(15px, 0.62vw + 9px, 30px); color: var(--es-text);
+    }
+    .es3d.es3d-theme-b {
+      --es-panel: #1a1714; --es-panel-soft: #2d2924; --es-text: #fbf3dc; --es-accent: #f2c230; --es-on-accent: #1a1714;
+      --es-edge: rgba(251,243,220,0.45); --es-line: rgba(251,243,220,0.25); --es-track: rgba(251,243,220,0.2);
     }
     .es3d, .es3d * { box-sizing: border-box; font-family: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
     .es3d-hidden { display: none !important; }
@@ -530,26 +548,26 @@
       z-index: 2147483643; display: flex; flex-direction: column; justify-content: center; align-items: center;
       padding: 1.5em; text-align: center; overflow-y: auto; color: var(--es-cream);
     }
-    #es3d-welcome h1 { margin: 0 0 0.3em; font-size: 2.8em; color: var(--es-yellow); text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+    #es3d-welcome h1 { margin: 0 0 0.3em; font-size: 2.8em; color: var(--es-sun); text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
     #es3d-welcome p { margin: 0 0 1.3em; font-size: 1.25em; text-shadow: 0 1px 3px rgba(0,0,0,0.8); max-width: 30em; }
     #es3d-name-row { margin: 0 0 1.4em; display: flex; flex-direction: column; align-items: center; gap: 0.5em; }
     #es3d-name {
       width: 11em; padding: 0.35em 0.4em; font-size: 1.6em; font-weight: 700; letter-spacing: 0.08em; text-align: center;
-      text-transform: uppercase; color: var(--es-cream); background: rgba(0,0,0,0.6); border: 2px solid var(--es-yellow); border-radius: 0.3em;
+      text-transform: uppercase; color: var(--es-cream); background: rgba(0,0,0,0.6); border: 2px solid var(--es-sun); border-radius: 0.3em;
     }
     #es3d-name::placeholder { color: rgba(251,243,220,0.35); }
-    #es3d-name-note { min-height: 1.3em; font-size: 0.9em; color: var(--es-yellow); }
+    #es3d-name-note { min-height: 1.3em; font-size: 0.9em; color: var(--es-sun); }
 
     /* Buttons: burgundy on the yellow panels, yellow on the dark screens. */
     .es3d-btn {
       display: inline-block; padding: 0.6em 1.5em; font-size: 1.2em; font-weight: 700; text-decoration: none;
-      background: var(--es-ink); color: var(--es-yellow); border: 2px solid var(--es-ink); border-radius: 0.35em; margin: 0.3em;
+      background: var(--es-accent); color: var(--es-on-accent); border: 2px solid var(--es-accent); border-radius: 0.35em; margin: 0.3em;
     }
     .es3d-btn:hover { filter: brightness(1.25); }
-    .es3d-btn.es3d-quiet { background: transparent; color: var(--es-ink); font-size: 1em; }
+    .es3d-btn.es3d-quiet { background: transparent; color: var(--es-text); font-size: 1em; }
     .es3d-btn.es3d-small { font-size: 0.95em; padding: 0.45em 1em; margin: 0.2em 0; }
     #es3d-welcome .es3d-btn, #es3d-video .es3d-btn {
-      background: var(--es-yellow); color: var(--es-ink); border-color: var(--es-yellow); box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      background: var(--es-sun); color: var(--es-night); border-color: var(--es-sun); box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
     #es3d-welcome .es3d-btn:hover, #es3d-video .es3d-btn:hover { filter: brightness(1.1); }
     #es3d-welcome .es3d-btn.es3d-quiet, #es3d-video .es3d-btn.es3d-quiet { background: rgba(0,0,0,0.5); color: var(--es-cream); border-color: var(--es-cream); box-shadow: none; }
@@ -558,7 +576,7 @@
     #es3d-video-frame, #es3d-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
     #es3d-video-skip { position: absolute; right: 1.5em; bottom: 1.5em; z-index: 2; }
 
-    .es3d-card { background: var(--es-yellow); border: 2px solid var(--es-ink); border-radius: 0.45em; box-shadow: 0 6px 24px rgba(0,0,0,0.55); }
+    .es3d-card { background: var(--es-panel); border: 2px solid var(--es-edge); border-radius: 0.45em; box-shadow: 0 6px 24px rgba(0,0,0,0.55); }
     #es3d-prompt {
       position: fixed; left: 50%; bottom: 14%; transform: translateX(-50%); z-index: 9000; width: min(27em, calc(100vw - 32px));
       padding: 1.1em; text-align: center;
@@ -575,28 +593,32 @@
     }
     #es3d-status { display: flex; justify-content: space-between; align-items: baseline; gap: 0.7em; font-weight: 700; }
     #es3d-timer { font-variant-numeric: tabular-nums; }
-    #es3d-bar { height: 0.5em; margin: 0.45em 0; background: rgba(43,7,12,0.18); border-radius: 0.25em; overflow: hidden; }
-    #es3d-bar-fill { height: 100%; width: 0; background: var(--es-ink); transition: width 0.4s ease; }
+    #es3d-bar { height: 0.5em; margin: 0.45em 0; background: var(--es-track); border-radius: 0.25em; overflow: hidden; }
+    #es3d-bar-fill { height: 100%; width: 0; background: var(--es-accent); transition: width 0.4s ease; }
     #es3d-riddle {
-      display: block; width: 100%; padding: 0; margin: 0; text-align: left; background: none; border: none; color: var(--es-ink);
+      display: block; width: 100%; padding: 0; margin: 0; text-align: left; background: none; border: none; color: var(--es-text);
       font-size: 1.2em; line-height: 1.35;
     }
     #es3d-riddle.es3d-collapsed { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #es3d-riddle .es3d-item { font-weight: 800; }
-    #es3d-riddle .es3d-item.es3d-found { text-decoration: underline; text-decoration-thickness: 0.12em; text-underline-offset: 0.18em; }
+    /* Found words are shown as a solid highlight: the text colour becomes the
+       background and the panel colour becomes the text. */
+    #es3d-riddle .es3d-item.es3d-found {
+      background: var(--es-text); color: var(--es-panel); padding: 0.02em 0.3em; border-radius: 0.2em;
+      -webkit-box-decoration-break: clone; box-decoration-break: clone;
+    }
     #es3d-slots { display: flex; gap: 0.4em; margin-top: 0.55em; flex-wrap: wrap; }
     .es3d-slot {
       min-width: 2.1em; height: 2.1em; padding: 0 0.7em; display: inline-flex; align-items: center; justify-content: center; gap: 0.4em;
-      font-size: 0.95em; font-weight: 700; border-radius: 1.05em; border: 2px dashed var(--es-ink); color: var(--es-ink); background: transparent;
+      font-size: 0.95em; font-weight: 700; border-radius: 1.05em; border: 2px dashed var(--es-text); color: var(--es-text); background: transparent;
     }
-    button.es3d-slot:hover { background: var(--es-yellow-soft); }
-    .es3d-slot.es3d-found { border: 2px solid var(--es-ink); background: var(--es-ink); color: var(--es-yellow); padding-left: 0.3em; }
+    button.es3d-slot:hover { background: var(--es-panel-soft); }
+    .es3d-slot.es3d-found { border: 2px solid var(--es-accent); background: var(--es-accent); color: var(--es-on-accent); padding-left: 0.3em; }
     .es3d-tick {
       width: 1.5em; height: 1.5em; flex: 0 0 auto; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
-      background: var(--es-yellow); color: var(--es-ink); font-weight: 900; line-height: 1;
+      background: var(--es-on-accent); color: var(--es-accent); font-weight: 900; line-height: 1;
     }
-    .es3d-tick.es3d-on-yellow { background: var(--es-ink); color: var(--es-yellow); }
-    #es3d-riddle .es3d-tick { width: 1.05em; height: 1.05em; font-size: 0.85em; margin-left: 0.25em; vertical-align: 0.08em; }
+    .es3d-tick.es3d-on-yellow { background: var(--es-accent); color: var(--es-on-accent); }
 
     #es3d-controls {
       position: absolute; left: 50%; bottom: max(12px, env(safe-area-inset-bottom)); transform: translateX(-50%);
@@ -604,17 +626,17 @@
     }
     #es3d-controls button {
       min-width: 4.6em; min-height: 44px; padding: 0.35em 0.5em; display: flex; flex-direction: column; align-items: center; gap: 0.1em;
-      font-size: 0.85em; font-weight: 600; color: var(--es-ink); background: transparent; border: none; border-radius: 0.35em; white-space: nowrap;
+      font-size: 0.85em; font-weight: 600; color: var(--es-text); background: transparent; border: none; border-radius: 0.35em; white-space: nowrap;
     }
-    #es3d-controls button:hover:not(:disabled) { background: var(--es-ink); color: var(--es-yellow); }
+    #es3d-controls button:hover:not(:disabled) { background: var(--es-accent); color: var(--es-on-accent); }
     #es3d-controls button:disabled { opacity: 0.3; cursor: default !important; }
 
     #es3d-corner { position: fixed; right: 12px; bottom: max(56px, calc(env(safe-area-inset-bottom) + 56px)); z-index: 9000; display: flex; flex-direction: column; gap: 0.5em; transition: opacity 0.2s ease; }
     #es3d-corner button {
       width: 3em; height: 3em; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; padding: 0;
-      color: var(--es-ink); background: var(--es-yellow); border: 2px solid var(--es-ink); border-radius: 50%; box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+      color: var(--es-text); background: var(--es-panel); border: 2px solid var(--es-edge); border-radius: 50%; box-shadow: 0 4px 14px rgba(0,0,0,0.5);
     }
-    #es3d-corner button:hover, #es3d-corner button.es3d-muted { background: var(--es-ink); color: var(--es-yellow); border-color: var(--es-yellow); }
+    #es3d-corner button:hover, #es3d-corner button.es3d-muted { background: var(--es-accent); color: var(--es-on-accent); border-color: var(--es-on-accent); }
 
     #es3d-panel {
       position: fixed; inset: 0; z-index: 9500; display: flex; align-items: center; justify-content: center; padding: 16px;
@@ -623,7 +645,7 @@
     #es3d-panel-card { position: relative; width: min(34em, 100%); max-height: min(90vh, 100%); overflow-y: auto; padding: 1.1em 1.1em 1em; }
     #es3d-panel-close {
       position: absolute; top: 0.2em; right: 0.2em; width: 1.9em; height: 1.9em; font-size: 1.7em; font-weight: 700; line-height: 1;
-      color: var(--es-ink); background: none; border: none;
+      color: var(--es-text); background: none; border: none;
     }
     #es3d-panel h2 { margin: 0 2em 0.45em 0; font-size: 1.5em; }
     #es3d-panel h3 { margin: 1em 0 0.35em; font-size: 1.15em; }
@@ -634,7 +656,7 @@
     .es3d-section { padding: 0.8em 0 0.1em; margin-top: 0.8em; border-top: 2px solid var(--es-line); }
     .es3d-section h3 { margin-top: 0 !important; }
 
-    .es3d-hint-card { padding: 0.7em 0.8em; margin: 0 0 0.6em; background: var(--es-yellow-soft); border-radius: 0.4em; }
+    .es3d-hint-card { padding: 0.7em 0.8em; margin: 0 0 0.6em; background: var(--es-panel-soft); border-radius: 0.4em; }
     .es3d-hint-title { display: flex; justify-content: space-between; align-items: center; gap: 0.6em; font-size: 1.1em; font-weight: 800; margin-bottom: 0.35em; }
     .es3d-hint-title span { font-size: 0.8em; font-weight: 400; }
     .es3d-hint-card.es3d-found .es3d-hint-title { margin-bottom: 0; }
@@ -645,41 +667,46 @@
     .es3d-list-level.es3d-current .es3d-list-title { text-decoration: underline; }
     .es3d-list-title { flex: 0 0 5em; font-weight: 800; padding-top: 0.2em; }
     .es3d-list-items { flex: 1; display: flex; flex-wrap: wrap; gap: 0.4em; }
-    .es3d-list-go { flex: 0 0 auto; padding: 0.3em 0.9em; font-weight: 700; color: var(--es-yellow); background: var(--es-ink); border: none; border-radius: 0.3em; }
+    .es3d-list-go { flex: 0 0 auto; padding: 0.3em 0.9em; font-weight: 700; color: var(--es-on-accent); background: var(--es-accent); border: none; border-radius: 0.3em; }
 
     table.es3d-board { width: 100%; border-collapse: collapse; font-size: 0.95em; font-variant-numeric: tabular-nums; }
     table.es3d-board th { text-align: left; font-size: 0.85em; font-weight: 600; padding: 0.3em 0.4em; }
     table.es3d-board td { padding: 0.4em; border-top: 1px solid var(--es-line); }
-    table.es3d-board tr.es3d-me td { font-weight: 800; background: var(--es-yellow-soft); }
+    table.es3d-board tr.es3d-me td { font-weight: 800; background: var(--es-panel-soft); }
     .es3d-stats { display: flex; gap: 0.5em; margin: 0 0 0.8em; }
-    .es3d-stat { flex: 1; padding: 0.5em 0.4em; text-align: center; background: var(--es-yellow-soft); border-radius: 0.4em; }
+    .es3d-stat { flex: 1; padding: 0.5em 0.4em; text-align: center; background: var(--es-panel-soft); border-radius: 0.4em; }
     .es3d-stat b { display: block; font-size: 1.4em; font-variant-numeric: tabular-nums; }
     .es3d-stat span { font-size: 0.82em; }
     #es3d-panel input[type="email"], #es3d-panel input[type="text"], #es3d-panel textarea {
-      width: 100%; padding: 0.55em; margin: 0 0 0.5em; font: inherit; font-size: max(16px, 1em); color: var(--es-ink);
-      background: var(--es-cream); border: 2px solid var(--es-ink); border-radius: 0.3em;
+      width: 100%; padding: 0.55em; margin: 0 0 0.5em; font: inherit; font-size: max(16px, 1em); color: var(--es-night);
+      background: var(--es-cream); border: 2px solid var(--es-night); border-radius: 0.3em;
     }
     #es3d-panel textarea { min-height: 4.5em; resize: vertical; }
     .es3d-share-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5em, 1fr)); gap: 0.5em; margin: 0 0 0.8em; }
     .es3d-share-grid .es3d-btn { margin: 0 !important; text-align: center; display: block; }
     .es3d-consent { display: flex; gap: 0.6em; align-items: flex-start; margin: 0 0 0.6em; font-size: 0.92em; line-height: 1.4; }
-    .es3d-consent input { width: 1.3em; height: 1.3em; margin-top: 0.1em; flex: 0 0 auto; accent-color: var(--es-ink); }
+    .es3d-consent input { width: 1.3em; height: 1.3em; margin-top: 0.1em; flex: 0 0 auto; accent-color: var(--es-accent); }
 
     #es3d-toast {
       position: fixed; left: 50%; bottom: 7em; transform: translateX(-50%); z-index: 9600; max-width: calc(100vw - 32px);
-      padding: 0.6em 1.2em; font-size: 1.15em; font-weight: 700; color: var(--es-yellow); background: var(--es-ink);
-      border: 2px solid var(--es-yellow); border-radius: 0.4em; box-shadow: 0 4px 18px rgba(0,0,0,0.5);
+      padding: 0.6em 1.2em; font-size: 1.15em; font-weight: 700; color: var(--es-on-accent); background: var(--es-accent);
+      border: 2px solid var(--es-on-accent); border-radius: 0.4em; box-shadow: 0 4px 18px rgba(0,0,0,0.5);
       opacity: 0; pointer-events: none; transition: opacity 0.25s ease; text-align: center;
     }
     #es3d-toast.es3d-show { opacity: 1; }
 
-    /* Stands in for the mouse pointer while the tour is loading something. */
-    #es3d-spinner {
-      position: fixed; left: 0; top: 0; width: 30px; height: 30px; margin: -15px 0 0 -15px; z-index: 2147483647; pointer-events: none;
-      border-radius: 50%; border: 5px solid var(--es-ink); border-top-color: var(--es-yellow); box-shadow: 0 0 0 2px var(--es-yellow);
-      animation: es3d-spin 0.8s linear infinite;
+    /* Tells the player a panel has more below than fits on screen. */
+    #es3d-panel-card { scrollbar-width: auto; scrollbar-color: var(--es-accent) var(--es-track); }
+    #es3d-panel-card::-webkit-scrollbar { width: 14px; }
+    #es3d-panel-card::-webkit-scrollbar-track { background: var(--es-track); }
+    #es3d-panel-card::-webkit-scrollbar-thumb { background: var(--es-accent); border-radius: 7px; }
+    #es3d-more {
+      position: sticky; bottom: -1em; margin: 0 -1.1em -1em; padding: 1.6em 0 0.6em; text-align: center; font-weight: 800;
+      background: linear-gradient(to bottom, transparent, var(--es-panel) 55%); pointer-events: none;
     }
-    @keyframes es3d-spin { to { rotate: 360deg; } }
+    #es3d-more span { display: inline-block; padding: 0.25em 0.9em; border-radius: 1em; background: var(--es-accent); color: var(--es-on-accent); }
+
+    #es3d-burst { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 2147483646; pointer-events: none; }
 
     @media (max-width: 560px) {
       #es3d-welcome h1 { font-size: 2em; }
@@ -712,7 +739,7 @@
   function el(tag, id, html) {
     const node = document.createElement(tag);
     if (id) node.id = id;
-    node.classList.add('es3d');
+    node.classList.add('es3d', 'es3d-theme-' + THEME.name);
     if (html) node.innerHTML = html;
     document.body.appendChild(node);
     return node;
@@ -743,18 +770,16 @@
         ${control('prev', 'back', 'Back', 'Go back a level')}
         ${control('riddle', 'riddle', 'Riddle', 'Hear the riddle again')}
         ${control('hints', 'hints', 'Hints', 'Hints for each object in this riddle')}
-        ${control('list', 'list', 'Finds', 'Everything found so far')}
+        ${control('list', 'list', 'Found', 'Everything found so far')}
         ${control('share', 'share', 'Share', 'Share the game')}
         ${control('next', 'skip', 'Skip', 'Skip to the next level')}
       </div>`);
     ui.hud.classList.add('es3d-hidden');
-    ui.panel = el('div', 'es3d-panel', '<div id="es3d-panel-card" class="es3d-card"><button id="es3d-panel-close" type="button" aria-label="Close">&times;</button><div id="es3d-panel-body"></div></div>');
+    ui.panel = el('div', 'es3d-panel', '<div id="es3d-panel-card" class="es3d-card"><button id="es3d-panel-close" type="button" aria-label="Close">&times;</button><div id="es3d-panel-body"></div><div id="es3d-more" class="es3d-hidden"><span>More below &#8595;</span></div></div>');
     ui.panel.classList.add('es3d-hidden');
     ui.corner = el('div', 'es3d-corner', '<button type="button" data-corner="mute"></button>' +
       '<button type="button" data-corner="help" title="How to play" aria-label="How to play">' + icon('help') + '</button>');
     ui.corner.classList.add('es3d-hidden');
-    ui.spinner = el('div', 'es3d-spinner');
-    ui.spinner.classList.add('es3d-hidden');
     ui.toast = el('div', 'es3d-toast');
     ui.toast.setAttribute('role', 'status');
 
@@ -1002,8 +1027,7 @@
   // ---------------------------------------------------------------------------
   function riddleHtml(level) {
     return esc(level.riddle).replace(/\{([^|}]+)\|([^}]+)\}/g, (m, id, words) =>
-      '<span class="es3d-item' + (state.found[id] ? ' es3d-found' : '') + '">' + words + '</span>' +
-      (state.found[id] ? '<span class="es3d-tick es3d-on-yellow" aria-label="found">&#10003;</span>' : ''));
+      '<span class="es3d-item' + (state.found[id] ? ' es3d-found' : '') + '">' + words + '</span>');
   }
 
   function renderHud() {
@@ -1054,9 +1078,19 @@
   // PANELS
   // ---------------------------------------------------------------------------
   function openPanel(html) {
+    const card = document.getElementById('es3d-panel-card');
     document.getElementById('es3d-panel-body').innerHTML = html;
     ui.panel.classList.remove('es3d-hidden');
-    document.getElementById('es3d-panel-card').scrollTop = 0;
+    card.scrollTop = 0;
+    card.onscroll = updateMoreCue;
+    updateMoreCue();
+  }
+
+  // "More below" stays pinned to the bottom of a panel until it is scrolled to the end.
+  function updateMoreCue() {
+    const card = document.getElementById('es3d-panel-card');
+    const more = card.scrollHeight - card.clientHeight - card.scrollTop > 24;
+    document.getElementById('es3d-more').classList.toggle('es3d-hidden', !more);
   }
 
   function closePanel() {
@@ -1066,7 +1100,7 @@
   function hintSteps(item) {
     const steps = [{ label: 'A nudge', text: item.hint }];
     if (item.where) steps.push({ label: 'Where to look', text: item.where });
-    steps.push({ label: 'What it is', text: item.name + '.' });
+    steps.push({ label: 'What it is', text: item.reveal || item.name + '.' });
     return steps;
   }
 
@@ -1079,9 +1113,9 @@
     const card = document.getElementById('es3d-panel-card');
     const keepScroll = ui.panel.classList.contains('es3d-hidden') ? 0 : card.scrollTop;
     const cards = level.items.map((item, i) => {
-      const title = 'Object ' + (i + 1);
+      const title = esc(item.riddleWords);
       if (state.found[item.id]) {
-        return '<div class="es3d-hint-card es3d-found"><div class="es3d-hint-title">' + title + ': ' + esc(item.name) + '<span class="es3d-tick es3d-on-yellow" aria-label="found">&#10003;</span></div></div>';
+        return '<div class="es3d-hint-card es3d-found"><div class="es3d-hint-title">' + title + '<span class="es3d-tick es3d-on-yellow" aria-label="found">&#10003;</span></div></div>';
       }
       const steps = hintSteps(item);
       const stage = Math.min(state.hintStage[item.id] || 0, steps.length);
@@ -1095,11 +1129,12 @@
     }).join('');
     openPanel(`
       <h2>Hints for level ${state.levelIndex + 1}</h2>
-      <p class="es3d-note">This riddle hides ${level.items.length} objects, listed in the order the riddle mentions them. Each has its own hints. Hints used so far: ${state.hintsUsed}.</p>
+      <p class="es3d-note">This riddle hides ${level.items.length} objects. Each has its own hints. Hints used so far: ${state.hintsUsed}.</p>
       ${cards}`);
     card.scrollTop = keepScroll;
     const focus = typeof focusIndex === 'number' ? card.querySelector('[data-card="' + focusIndex + '"]') : null;
     if (focus) card.scrollTop = Math.max(0, focus.offsetTop - 16);
+    updateMoreCue();
     document.getElementById('es3d-panel-body').querySelectorAll('button[data-hint]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const item = level.items[Number(btn.dataset.hint)];
@@ -1120,7 +1155,7 @@
         <li>Find them all and you move on to the next stop. There are ${LEVELS.length} stops.</li>
       </ol>
       <h3>The buttons</h3>
-      <p><b>Riddle</b> plays the riddle again. <b>Hints</b> gives up to three hints for each object, or click a <b>?</b> at the top. <b>Finds</b> shows everything you have found and lets you jump between stops. <b>Back</b> and <b>Skip</b> move a stop at a time. The round speaker button turns all sound on or off.</p>
+      <p><b>Riddle</b> plays the riddle again. <b>Hints</b> gives up to three hints for each object, or click a <b>?</b> at the top. <b>Found</b> shows everything you have found and lets you jump between stops. <b>Back</b> and <b>Skip</b> move a stop at a time. The round speaker button turns all sound on or off.</p>
       <button class="es3d-btn" type="button" id="es3d-rewatch">Watch the intro again</button>`);
     document.getElementById('es3d-rewatch').addEventListener('click', () => {
       closePanel();
@@ -1133,14 +1168,24 @@
     const rows = LEVELS.map((level, i) => `
       <div class="es3d-list-level ${i === state.levelIndex ? 'es3d-current' : ''}">
         <div class="es3d-list-title">Level ${i + 1}<br><span class="es3d-note">${levelFoundCount(level)} / ${level.items.length}</span></div>
-        <div class="es3d-list-items">${level.items.map((item) => state.found[item.id]
+        <div class="es3d-list-items">${level.items.map((item, n) => state.found[item.id]
           ? '<span class="es3d-slot es3d-found"><span class="es3d-tick">&#10003;</span>' + esc(item.name) + '</span>'
-          : '<span class="es3d-slot">?</span>').join('')}</div>
+          : '<button type="button" class="es3d-slot" data-level="' + i + '" data-slot="' + n + '" title="Hints for this object" aria-label="Not found yet. Open hints for this object">?</button>').join('')}</div>
         ${i === state.levelIndex ? '' : '<button class="es3d-list-go" type="button" data-go="' + i + '">Go</button>'}
       </div>`).join('');
-    openPanel(`<h2>Finds</h2><p>${foundCount()} of ${TOTAL_ITEMS} found.</p>${rows}`);
-    document.getElementById('es3d-panel-body').querySelectorAll('button[data-go]').forEach((btn) => {
+    openPanel(`<h2>Found</h2><p>${foundCount()} of ${TOTAL_ITEMS} found. Click a <b>?</b> for hints.</p>${rows}`);
+    const body = document.getElementById('es3d-panel-body');
+    body.querySelectorAll('button[data-go]').forEach((btn) => {
       btn.addEventListener('click', () => goToLevel(Number(btn.dataset.go)));
+    });
+    // A "?" opens that object's hints, moving to its level first if needed.
+    body.querySelectorAll('button[data-slot]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const levelIndex = Number(btn.dataset.level);
+        const slot = Number(btn.dataset.slot);
+        if (levelIndex === state.levelIndex) { showHintPanel(slot); return; }
+        goToLevel(levelIndex).then(() => { if (state.levelIndex === levelIndex) showHintPanel(slot); });
+      });
     });
   }
 
@@ -1427,16 +1472,16 @@
     }
     const set = (node, props) => Object.keys(props).forEach((prop) => node.style.setProperty(prop, props[prop], 'important'));
     if (isAudioClue) {
-      if (backgroundEl) set(backgroundEl, { 'background-color': '#f2c230', display: 'flex', 'align-items': 'center', 'justify-content': 'center' });
+      if (backgroundEl) set(backgroundEl, { 'background-color': THEME.bar, display: 'flex', 'align-items': 'center', 'justify-content': 'center' });
       set(labelEl, {
         position: 'static', display: 'block', width: '85%', 'max-width': '85%', 'box-sizing': 'border-box', 'text-align': 'center',
-        'font-size': '150%', color: '#2b070c', margin: 'auto', 'background-color': 'transparent', padding: '20px',
+        'font-size': '150%', color: THEME.barText, margin: 'auto', 'background-color': 'transparent', padding: '20px',
         'white-space': 'normal', overflow: 'visible'
       });
     } else {
       set(labelEl, {
         display: 'block', width: '100%', 'box-sizing': 'border-box', 'text-align': 'center', 'font-size': '240%',
-        color: '#2b070c', margin: '0', 'background-color': '#f2c230', padding: '14px 24px',
+        color: THEME.barText, margin: '0', 'background-color': THEME.bar, padding: '14px 24px',
         'font-weight': '800', 'font-family': 'system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif'
       });
     }
@@ -1456,6 +1501,78 @@
     return true;
   }
 
+  // The found object's name, drawn as particles that fly together, hold, then
+  // scatter. Pure code on a canvas, so it adds no files to download.
+  function burstName(text) {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const old = document.getElementById('es3d-burst');
+    if (old) old.remove();
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    const size = Math.max(28, Math.min(H * 0.16, (W * 0.86) / (text.length * 0.56)));
+    const font = '900 ' + size + 'px system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif';
+    const sample = document.createElement('canvas');
+    sample.width = W;
+    sample.height = Math.ceil(size * 1.5);
+    const sctx = sample.getContext('2d');
+    sctx.font = font;
+    sctx.textAlign = 'center';
+    sctx.textBaseline = 'middle';
+    sctx.fillText(text, W / 2, sample.height / 2);
+    const data = sctx.getImageData(0, 0, sample.width, sample.height).data;
+    const step = Math.max(3, Math.round(size / 22));
+    const top = H * 0.5 - sample.height / 2;
+    const dots = [];
+    for (let y = 0; y < sample.height; y += step) {
+      for (let x = 0; x < sample.width; x += step) {
+        if (data[(y * sample.width + x) * 4 + 3] < 128) continue;
+        const angle = Math.random() * Math.PI * 2;
+        const far = Math.max(W, H) * (0.35 + Math.random() * 0.4);
+        dots.push({
+          tx: x, ty: top + y, sx: x + Math.cos(angle) * far, sy: top + y + Math.sin(angle) * far,
+          vx: (Math.random() - 0.5) * 9, vy: -Math.random() * 7 - 1, delay: Math.random() * 0.12
+        });
+      }
+    }
+    const canvas = document.createElement('canvas');
+    canvas.id = 'es3d-burst';
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = W * ratio;
+    canvas.height = H * ratio;
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    ctx.scale(ratio, ratio);
+    const IN = 0.45, HOLD = 0.55, OUT = 0.6;
+    const start = performance.now();
+    const frame = (now) => {
+      const t = (now - start) / 1000;
+      if (t > IN + HOLD + OUT || !canvas.isConnected) { canvas.remove(); return; }
+      ctx.clearRect(0, 0, W, H);
+      dots.forEach((d) => {
+        let x, y, alpha = 1;
+        if (t < IN + HOLD) {
+          const k = Math.min(1, Math.max(0, (t - d.delay) / IN));
+          const ease = 1 - Math.pow(1 - k, 3);
+          x = d.sx + (d.tx - d.sx) * ease;
+          y = d.sy + (d.ty - d.sy) * ease;
+          alpha = k;
+        } else {
+          const o = t - IN - HOLD;
+          x = d.tx + d.vx * o * 60;
+          y = d.ty + d.vy * o * 60 + 0.5 * 26 * o * o * 60;
+          alpha = Math.max(0, 1 - o / OUT);
+        }
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = THEME.burstEdge;
+        ctx.fillRect(x - 1, y - 1, step + 1, step + 1);
+        ctx.fillStyle = THEME.burst;
+        ctx.fillRect(x, y, step - 1, step - 1);
+      });
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  }
+
   function registerFind(label, imageSrc) {
     const level = LEVELS[state.levelIndex];
     if (state.phase !== 'playing' || state.busy || !level) return;
@@ -1467,6 +1584,7 @@
     if (state.found[item.id]) return;
     state.found[item.id] = true;
     playItemSound(item);
+    burstName(item.name);
     if (isLevelComplete(level)) state.advancePending = true;
     if (foundCount() === TOTAL_ITEMS) state.finished = true;
     save();
@@ -1592,34 +1710,19 @@
 
   // The hidden objects must not give themselves away by changing the mouse
   // cursor on hover, so the cursor is pinned to the plain arrow, both on this
-  // page and inside the tour's frame where the browser allows it. Whenever the
-  // tour itself asks for a busy cursor while something loads, the arrow is
-  // hidden altogether and our own spinning wheel follows the mouse instead,
-  // so the player can see they need to wait.
+  // page and inside the tour's frame where the browser allows it. The pin is
+  // lifted whenever the tour itself is showing a busy cursor, so the player
+  // can still see the loading wheel.
   const CURSOR_RULE_PAGE = 'html, body, body *:not(.es3d):not(.es3d *) { cursor: default !important; } ' +
     '#customBillboardFullOverlay [class*="close"] { cursor: pointer !important; }';
   const CURSOR_RULE_FRAME = '* { cursor: default !important; }';
-  const CURSOR_RULE_BUSY = '* { cursor: none !important; }';
-  let mouseSeen = false;
-
-  function trackMouse(doc, frame) {
-    if (doc.__es3dMouse) return;
-    doc.__es3dMouse = true;
-    doc.addEventListener('mousemove', (e) => {
-      const box = frame ? frame.getBoundingClientRect() : { left: 0, top: 0 };
-      mouseSeen = true;
-      ui.spinner.style.transform = 'translate(' + (box.left + e.clientX) + 'px, ' + (box.top + e.clientY) + 'px)';
-    }, { passive: true });
-  }
 
   function steadyCursor() {
-    const docs = [[document, CURSOR_RULE_PAGE, null]];
+    const docs = [[document, CURSOR_RULE_PAGE]];
     document.querySelectorAll('iframe').forEach((frame) => {
-      try { if (frame.contentDocument && frame.contentDocument.head) docs.push([frame.contentDocument, CURSOR_RULE_FRAME, frame]); } catch (e) {}
+      try { if (frame.contentDocument && frame.contentDocument.head) docs.push([frame.contentDocument, CURSOR_RULE_FRAME]); } catch (e) {}
     });
-    let anyBusy = false;
-    const styles = docs.map(([doc, rule, frame]) => {
-      if (ui.spinner) trackMouse(doc, frame);
+    docs.forEach(([doc, rule]) => {
       let style = doc.getElementById('es3d-cursor');
       if (!style) {
         style = doc.createElement('style');
@@ -1632,17 +1735,8 @@
       const hovered = doc.querySelectorAll(':hover');
       const probes = [doc.body, hovered[hovered.length - 1]].concat(Array.from(doc.querySelectorAll('canvas')).slice(0, 3));
       const view = doc.defaultView || window;
-      if (probes.some((node) => node && /wait|progress/.test(view.getComputedStyle(node).cursor))) anyBusy = true;
-      style.disabled = false;
-      return [style, rule];
+      style.disabled = probes.some((node) => node && /wait|progress/.test(view.getComputedStyle(node).cursor));
     });
-    // Only swap the arrow for our wheel once we know where the mouse is.
-    const showWheel = anyBusy && mouseSeen && !!ui.spinner;
-    styles.forEach(([style, rule]) => {
-      const wanted = showWheel ? CURSOR_RULE_BUSY : rule;
-      if (style.textContent !== wanted) style.textContent = wanted;
-    });
-    if (ui.spinner) ui.spinner.classList.toggle('es3d-hidden', !showWheel);
   }
 
   async function initTour(mpSdk) {
