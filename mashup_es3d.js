@@ -537,7 +537,7 @@
     #es3d-slots { display: flex; gap: 0.4em; margin-top: 0.55em; flex-wrap: wrap; }
     .es3d-slot {
       min-width: 1.9em; height: 1.9em; padding: 0 0.6em; display: inline-flex; align-items: center; justify-content: center;
-      font-size: 0.85em; border-radius: 1em; border: 1px dashed var(--es-line); color: var(--es-line);
+      font-size: 0.85em; border-radius: 1em; border: 1px dashed var(--es-gold); color: var(--es-cream);
     }
     .es3d-slot.es3d-found { border: 1px solid var(--es-gold); background: var(--es-gold); color: var(--es-maroon-deep); font-weight: 700; }
 
