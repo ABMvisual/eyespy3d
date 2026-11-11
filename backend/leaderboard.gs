@@ -13,9 +13,12 @@
 
 var TOTAL_ITEMS = 53;
 var BOARD_SIZE = 10;
-var BLOCKED_NAMES = ['ass', 'abo', 'bum', 'cok', 'coc', 'cnt', 'cum', 'dik', 'dic', 'dck', 'fag', 'fgt', 'fuk',
-  'fuc', 'fck', 'fuq', 'fux', 'gai', 'gay', 'god', 'hoe', 'jew', 'jiz', 'kkk', 'kik', 'kyk', 'kys', 'naz', 'nig',
-  'ngr', 'nob', 'pis', 'poo', 'pus', 'rap', 'sex', 'sht', 'sic', 'tit', 'twt', 'vag', 'wog', 'wtf', 'xxx'];
+var BLOCKED_EXACT = ['ass', 'abo', 'bum', 'cok', 'coc', 'cnt', 'cun', 'cum', 'dik', 'dic', 'dck', 'fgt', 'gai', 'god',
+  'hoe', 'jew', 'jiz', 'kkk', 'kik', 'kyk', 'kys', 'naz', 'nig', 'ngr', 'nob', 'pis', 'poo', 'pus', 'rap', 'rape', 'sex',
+  'sht', 'spic', 'tit', 'twt', 'vag', 'wog', 'wtf', 'xxx'];
+var BLOCKED_PARTS = ['fuck', 'fuk', 'fuc', 'fck', 'fuq', 'shit', 'cunt', 'cock', 'dick', 'fag', 'nigg', 'niga', 'kike',
+  'rapist', 'slut', 'whore', 'bitch', 'pussy', 'twat', 'wank', 'piss', 'tits', 'anus', 'arse', 'coon', 'chink', 'gook',
+  'nazi', 'hitler', 'penis', 'vagin', 'dildo', 'porn', 'jizz', 'retard', 'paedo', 'pedo'];
 
 function sheet_(name, headers) {
   var book = SpreadsheetApp.getActiveSpreadsheet();
@@ -32,10 +35,14 @@ function json_(data) {
 }
 
 function nameAllowed_(name) {
-  if (!/^[A-Z0-9]{3}$/.test(name)) return false;
+  if (!/^[A-Z0-9_]{2,10}$/.test(name)) return false;
   var map = { '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '8': 'b' };
-  var plain = name.toLowerCase().replace(/[0134578]/g, function (d) { return map[d]; });
-  return BLOCKED_NAMES.indexOf(plain) === -1 && BLOCKED_NAMES.indexOf(name.toLowerCase()) === -1;
+  var plain = name.toLowerCase().replace(/_/g, '').replace(/[0134578]/g, function (d) { return map[d]; });
+  if (BLOCKED_EXACT.indexOf(plain) !== -1) return false;
+  for (var i = 0; i < BLOCKED_PARTS.length; i++) {
+    if (plain.indexOf(BLOCKED_PARTS[i]) !== -1) return false;
+  }
+  return true;
 }
 
 // Text typed by players must never be run as a spreadsheet formula.
@@ -95,13 +102,22 @@ function doPost(e) {
     return json_({ ok: true });
   }
 
+  // Sign-ups are only stored with the player's explicit consent to be
+  // emailed, and the moment they gave it, so there is a record of permission.
   if (body.action === 'signup') {
     var email = String(body.email || '').trim().slice(0, 200);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json_({ ok: false, error: 'bad email' });
+    if (body.consent !== true) return json_({ ok: false, error: 'no consent' });
+    sheet_('Signups', ['email', 'consented', 'name', 'playerId', 'when'])
+      .appendRow([plain_(email, 200), 'yes', plain_(body.name, 10), plain_(body.playerId, 40), new Date()]);
+    return json_({ ok: true });
+  }
+
+  if (body.action === 'feedback') {
     var feedback = String(body.feedback || '').trim();
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json_({ ok: false, error: 'bad email' });
-    if (!email && !feedback) return json_({ ok: false, error: 'empty' });
-    if (email) sheet_('Signups', ['email', 'name', 'playerId', 'when']).appendRow([plain_(email, 200), plain_(body.name, 3), plain_(body.playerId, 40), new Date()]);
-    if (feedback) sheet_('Feedback', ['feedback', 'name', 'playerId', 'when']).appendRow([plain_(feedback, 2000), plain_(body.name, 3), plain_(body.playerId, 40), new Date()]);
+    if (!feedback) return json_({ ok: false, error: 'empty' });
+    sheet_('Feedback', ['feedback', 'name', 'playerId', 'when'])
+      .appendRow([plain_(feedback, 2000), plain_(body.name, 10), plain_(body.playerId, 40), new Date()]);
     return json_({ ok: true });
   }
 

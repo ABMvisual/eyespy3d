@@ -68,7 +68,9 @@
     full.classList.remove('photo', 'audio');
     full.classList.add(kind || 'photo');
     overlay.querySelector('.tag-text-content').textContent = label;
-    overlay.querySelector('.tag-media-content').innerHTML = file ? '<img class="tag-image" src="/media/3780//' + file + '">' : '';
+    overlay.querySelector('.tag-media-content').innerHTML = kind === 'audio'
+      ? '<audio src="/media/3780/' + file + '"></audio>'
+      : (file ? '<img class="tag-image" src="/media/3780//' + file + '">' : '');
     overlay.style.display = 'block';
   };
   mock.closePopup = () => { overlay.style.display = 'none'; };
