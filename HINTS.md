@@ -7,7 +7,7 @@ Lines marked **CHECK** need your eye: the nudges were written from the riddle wo
 
 ## Level 1
 
-The **pink Bo-Peep** has lost her sheep, and **two white cows** have taken over, the front is silver and the back is brown, once you find **yourself**, it’s time to move around
+The **pink Bo-Peep** has lost her sheep, and **two white cows** have taken over, **the front is silver and the back is brown**, once you find yourself, it’s time to move around
 
 1. **Pink Bo-Peep**
    - Nudge: A shepherdess with no flock, dressed in pink.
@@ -59,7 +59,7 @@ Should you put the box of **Aztec chocolate**, or the **explosive coffee maker**
 
 ## Level 4
 
-We all know **a crow in the bag** is worth **a hand in two**. Would **vitreous china** played on the **musical tyre** sound like a loo?
+We all know a **crow in the bag**, is worth a **hand in two**, but would **vitreous china** (when played on a **musical tyre**) sound like a loo?
 
 1. **A crow in the bag**
    - Nudge: A black bird that has ended up inside a bag.
@@ -104,7 +104,7 @@ Do you have any idea what **Hanimex’s Movielux**, the **Argus PreViewer**, **S
 
 ## Level 6
 
-Watch the **wall climbing baby** as they play **hide and seek**, searching for the **barley** and some **Flumi’s** to put them to sleep.
+Watch the **wall climbing baby** as they play **hide and seek**, searching for the **barley** and some **Flumi’s** to put them to sleep
 
 1. **Wall climbing baby**
    - Nudge: A little one who has left the floor and is heading up the wall.
@@ -128,7 +128,7 @@ Watch the **wall climbing baby** as they play **hide and seek**, searching for t
 
 ## Level 7
 
-**A pair of old jugs**, **an odd Purves terms**, **a third more time**, and **a round thing** that serves.
+A **pair of old jugs**, an **odd purves terms**, a **third more time**, and a **round thing that serves**
 
 1. **A pair of old jugs**
    - Nudge: Two pourers that have seen better days, side by side.
@@ -151,7 +151,7 @@ Watch the **wall climbing baby** as they play **hide and seek**, searching for t
 
 ## Level 8
 
-**Three wooden discs** aren’t floating for certain, with **Australia in stitches** by a **cat in a turban**.
+**Three wooden discs** are not floating for certain, but **Australia is in stitches** across from a **cat in a turban**
 
 1. **Three wooden discs**
    - Nudge: Count three flat circles made of timber.
@@ -168,7 +168,7 @@ Watch the **wall climbing baby** as they play **hide and seek**, searching for t
 
 ## Level 9
 
-On fine velvet, **she disinterestedly sat**, while below **two chambermen** chatted, opposing the **pack**.
+On fine velvet, **she disinterestedly sat**, while below **two chambermen chatted**, opposing the **pack**
 
 1. **She disinterestedly sat**
    - Nudge: A woman seated on velvet, looking thoroughly bored.
@@ -186,7 +186,7 @@ On fine velvet, **she disinterestedly sat**, while below **two chambermen** chat
 
 ## Level 10
 
-**Viking preserves**, and **two box of confetti**, a **drinking urn**, and one more **confetti**.
+The **Viking preserves**, and **two box of confetti**, a **drinking urn**, and **one more confetti**
 
 1. **Viking preserves**
    - Nudge: Something preserved in a jar or tin, with a Norse name on it.
@@ -209,7 +209,7 @@ On fine velvet, **she disinterestedly sat**, while below **two chambermen** chat
 
 ## Level 11
 
-As the **Eagle** soars, and **Beatles** cascade, a lone **gnome** spies a shiny **blue hand** holding a cone. He might make his home.
+As the **Eagle soars**, and **Beatles cascade**, a **lone gnome** spies a **shiny blue hand holding a cone**, he might make his home
 
 1. **Eagle**
    - Nudge: A bird of prey with its wings spread.
@@ -230,7 +230,7 @@ As the **Eagle** soars, and **Beatles** cascade, a lone **gnome** spies a shiny 
 
 ## Level 12
 
-The flock of **mock ducks** hang out far from the **wooden goanna**, and halfway across, an **unarmed man** wears a red bandana.
+The **flock of mock ducks** hang out far from the **wooden goanna**, and halfway across, an **unarmed man wears a red bandana**
 
 1. **Mock ducks**
    - Nudge: A group of birds that aren’t the real thing.
@@ -248,7 +248,7 @@ The flock of **mock ducks** hang out far from the **wooden goanna**, and halfway
 
 ## Level 13
 
-**Whose head** is that, to the left of the **hat**, to the right of the **runners**, above the **plugs**, in front of the **hugs**?
+Whose **head** is that, to the left of the **hat**, to the right of the **runners**, above the **plugs**, in front of the **hugs**?
 
 1. **Whose head**
    - Nudge: A head with no body, sitting on top of a stick.
@@ -273,7 +273,7 @@ The flock of **mock ducks** hang out far from the **wooden goanna**, and halfway
 
 ## Level 14
 
-When I rowed from **Dimboola**, to **Egypt etc**, I wore my **Akubra** and spotted a **tiger**, a **butterfly**, and **horse head** to end it
+When I **rowed from Dimboola**, to **Egypt etc**, I wore my **Akubra** and spotted a **tiger**, a **butterfly**, and **horse head** to end it
 
 1. **Dimboola**
    - Nudge: A town in western Victoria. Look for its name in a newspaper clipping.

@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4006)
+// EYE SPY 3D - ENGINE (V4007)
 // Rewrite of V3031. Still loaded into MPEmbed as a custom script, still uses
 // MPEmbed's popups and per-pano clue audio, but the game itself (levels,
 // progress, hints, skipping, scores) now lives here, with its own HUD.
@@ -14,7 +14,7 @@
   if (window.__ES3D_LOADED__) return;
   window.__ES3D_LOADED__ = true;
 
-  const VERSION = 'V4006';
+  const VERSION = 'V4007';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -51,6 +51,8 @@
 
   // ---------------------------------------------------------------------------
   // CONTENT
+  // Riddle wording, and which words are marked as objects, are copied word
+  // for word from the riddle discs on the floor, which the recordings follow.
   // hint  = first hint, elaborates on the riddle
   // where = second hint, roughly where to look (leave '' to skip that step)
   // The last hint always names the item. Nothing is ever found for the player.
@@ -61,7 +63,7 @@
   const LEVELS = [
     {
       sweep: 'cwckxx365uimbeqk6ngp0t5ud', clue: 'pink bopeep.mp3',
-      riddle: 'The {pink bo-peep|pink Bo-Peep} has lost her sheep, and {two white cows|two white cows} have taken over, the front is silver and the back is brown, once you find {yourself|yourself}, it\u2019s time to move around',
+      riddle: 'The {pink bo-peep|pink Bo-Peep} has lost her sheep, and {two white cows|two white cows} have taken over, {yourself|the front is silver and the back is brown}, once you find yourself, it\u2019s time to move around',
       items: [
         { id: 'pink bo-peep', name: 'Pink Bo-Peep', photo: 'pink bopeep.jpeg', hint: 'A shepherdess with no flock, dressed in pink.', where: 'On the shelf, just below the two white cows.' },
         { id: 'two white cows', name: 'Two white cows', hint: 'Where the sheep should be, a pair of pale cattle stand instead.', where: 'Directly above the Pink Bo-Peep.' },
@@ -88,7 +90,7 @@
     },
     {
       sweep: '2cngsqh5q4t1ep85y5ky0h49d', clue: 'crowin the bag.mp3',
-      riddle: 'We all know {a crow in the bag|a crow in the bag} is worth {a hand in two|a hand in two}. Would {vitreous china|vitreous china} played on the {musical tyre|musical tyre} sound like a loo?',
+      riddle: 'We all know a {a crow in the bag|crow in the bag}, is worth a {a hand in two|hand in two}, but would {vitreous china|vitreous china} (when played on a {musical tyre|musical tyre}) sound like a loo?',
       items: [
         { id: 'a crow in the bag', name: 'A crow in the bag', hint: 'A black bird that has ended up inside a bag.', where: 'On a Coke cooler in the hallway.' },
         { id: 'a hand in two', name: 'A hand in two', hint: 'The old saying about a bird in the hand has been twisted. Look for a hand, and count to two.', where: 'On the corner of the crockery shelf.' },
@@ -98,7 +100,7 @@
     },
     {
       sweep: '66yna1yh5e2ig14bmzzf1sn2c', clue: 'hanimex.mp3',
-      riddle: 'Do you have any idea what {Hanimexs Movielux|Hanimex’s Movielux}, the {argus previewer|Argus PreViewer}, {scotts mower maker|Scott’s Mower Maker}, and a {porcelain lobster|Porcelain Lobster} have in common?',
+      riddle: 'Do you have any idea what {Hanimexs Movielux|Hanimex\u2019s Movielux}, the {argus previewer|Argus PreViewer}, {scotts mower maker|Scott\u2019s Mower Maker}, and a {porcelain lobster|Porcelain Lobster} have in common?',
       items: [
         { id: 'Hanimexs Movielux', name: 'Hanimex’s Movielux', hint: 'Home movie gear from the days of film. Look for the Hanimex name.', where: 'On the middle wooden box, on top of the camera shelf.' },
         { id: 'argus previewer', name: 'Argus PreViewer', hint: 'A small viewer for checking slides before the show. Look for the Argus name.', where: 'Around the middle of the camera cabinet.' },
@@ -108,7 +110,7 @@
     },
     {
       sweep: '3hdk0cskxw0apbr2iw8016htb', clue: 'wall climbing baby.mp3',
-      riddle: 'Watch the {wall climbing baby|wall climbing baby} as they play {hide and seek|hide and seek}, searching for the {barley|barley} and some {some flumis|Flumi’s} to put them to sleep.',
+      riddle: 'Watch the {wall climbing baby|wall climbing baby} as they play {hide and seek|hide and seek}, searching for the {barley|barley} and some {some flumis|Flumi\u2019s} to put them to sleep',
       items: [
         { id: 'wall climbing baby', name: 'Wall climbing baby', hint: 'A little one who has left the floor and is heading up the wall.', where: 'On top of the cabinet, above the Flumi\u2019s sign.' },
         { id: 'hide and seek', name: 'Hide and seek', hint: 'Someone here is hiding, or counting. Look for the game being played.', where: 'In the bottom right-hand corner of the cabinet, next to the Flumi\u2019s sign.' },
@@ -118,7 +120,7 @@
     },
     {
       sweep: 'r7sd2g426fhbfa2wdh5dfxy5d', clue: 'an odd purves terms.mp3',
-      riddle: '{a pair of old jugs|A pair of old jugs}, {odd purves terms|an odd Purves terms}, {a third more time|a third more time}, and {round thing|a round thing} that serves.',
+      riddle: 'A {a pair of old jugs|pair of old jugs}, an {odd purves terms|odd purves terms}, a {a third more time|third more time}, and a {round thing|round thing that serves}',
       items: [
         { id: 'a pair of old jugs', name: 'A pair of old jugs', hint: 'Two pourers that have seen better days, side by side.', where: 'Third shelf up, in the cabinet to the left of the clock.' },
         { id: 'odd purves terms', name: 'An odd Purves terms', hint: 'Look for the name Purves in print.', where: 'Written on the Bridge Estate sign, to the right of the clock and the solar cabinet.' },
@@ -128,7 +130,7 @@
     },
     {
       sweep: '20qckty5qi20t39838cq274rc', clue: '',
-      riddle: '{three wooden discs|Three wooden discs} aren’t floating for certain, with {australia in stitches|Australia in stitches} by a {cat in a turban|cat in a turban}.',
+      riddle: '{three wooden discs|Three wooden discs} are not floating for certain, but {australia in stitches|Australia is in stitches} across from a {cat in a turban|cat in a turban}',
       items: [
         { id: 'three wooden discs', name: 'Three wooden discs', hint: 'Count three flat circles made of timber.', where: 'To the left of the lamp, which is to the left of the typewriter.' },
         { id: 'australia in stitches', name: 'Australia in stitches', aliases: ['embroidered australia'], hint: 'The shape of the country, made with needle and thread.', where: 'On the right shoulder of the jacket on the mannequin.' },
@@ -137,7 +139,7 @@
     },
     {
       sweep: 'dy113u49qt5s7y38ms7ibmd9b', clue: 'she disinterestedly sat.mp3',
-      riddle: 'On fine velvet, {she disinterestedly sat|she disinterestedly sat}, while below {two chambermen|two chambermen} chatted, opposing the {picked pack|pack}.',
+      riddle: 'On fine velvet, {she disinterestedly sat|she disinterestedly sat}, while below {two chambermen|two chambermen chatted}, opposing the {picked pack|pack}',
       items: [
         { id: 'she disinterestedly sat', name: 'She disinterestedly sat', hint: 'A woman seated on velvet, looking thoroughly bored.', where: 'The painting on the wall, behind the light fixture.' },
         { id: 'two chambermen', name: 'Two chambermen', hint: 'They sound like servants, but this pair is the kind once kept under the bed.', where: 'Under the wooden table at the end of the row.' },
@@ -146,7 +148,7 @@
     },
     {
       sweep: 'rxgziepm3g4e0fgdgnwwk6efd', clue: '',
-      riddle: '{viking preserve|Viking preserves}, and {two box of confetti|two box of confetti}, a {drinking urn|drinking urn}, and one more {confetti|confetti}.',
+      riddle: 'The {viking preserve|Viking preserves}, and {two box of confetti|two box of confetti}, a {drinking urn|drinking urn}, and {confetti|one more confetti}',
       items: [
         { id: 'viking preserve', name: 'Viking preserves', hint: 'Something preserved in a jar or tin, with a Norse name on it.', where: 'On the red carpet, at the bottom of the cabinet.' },
         { id: 'two box of confetti', name: 'Two box of confetti', hint: 'Party paper for throwing, two boxes together.', where: 'To the right of the gramophone horn.' },
@@ -156,7 +158,7 @@
     },
     {
       sweep: 'w2bre69ufwyaywn11ch032aaa', clue: '',
-      riddle: 'As the {eagle|Eagle} soars, and {beatles|Beatles} cascade, a lone {gnome all alone|gnome} spies a shiny {blue hand|blue hand} holding a cone. He might make his home.',
+      riddle: 'As the {eagle|Eagle soars}, and {beatles|Beatles cascade}, a {gnome all alone|lone gnome} spies a {blue hand|shiny blue hand holding a cone}, he might make his home',
       items: [
         { id: 'eagle', name: 'Eagle', hint: 'A bird of prey with its wings spread.', where: 'In the glass cabinet, on the top shelf, with a small wooden cabinet directly above.' },
         { id: 'beatles', name: 'Beatles', hint: 'Spelled like the band, not the insect.', where: 'On a small wooden shelf, next to the large red pot.' },
@@ -166,7 +168,7 @@
     },
     {
       sweep: 'dimg015tts6u2b30hh0pndaqd', clue: '',
-      riddle: 'The flock of {mock ducks|mock ducks} hang out far from the {wooden goanna|wooden goanna}, and halfway across, an {unarmed man|unarmed man} wears a red bandana.',
+      riddle: 'The {mock ducks|flock of mock ducks} hang out far from the {wooden goanna|wooden goanna}, and halfway across, an {unarmed man|unarmed man wears a red bandana}',
       items: [
         { id: 'mock ducks', name: 'Mock ducks', hint: 'A group of birds that aren’t the real thing.', where: 'On the wall behind Phil.' },
         { id: 'wooden goanna', name: 'Wooden goanna', hint: 'An Australian lizard carved from timber, a long way from the ducks.', where: 'On the floor.' },
@@ -175,7 +177,7 @@
     },
     {
       sweep: 'iwaxrd4g1gki6i64y6dk1iuhd', clue: '',
-      riddle: '{whose head|Whose head} is that, to the left of the {hat|hat}, to the right of the {runners|runners}, above the {the plugs|plugs}, in front of the {the hugs|hugs}?',
+      riddle: 'Whose {whose head|head} is that, to the left of the {hat|hat}, to the right of the {runners|runners}, above the {the plugs|plugs}, in front of the {the hugs|hugs}?',
       items: [
         { id: 'whose head', name: 'Whose head', hint: 'A head with no body, sitting on top of a stick.', where: 'Down the hallway, heading away from the front door.' },
         { id: 'hat', name: 'Hat', hint: 'Headwear on a stick of its own.', where: 'To the right of the head.' },
@@ -186,7 +188,7 @@
     },
     {
       sweep: 'aty78ze3y9ddyg8702gmncdma', clue: '',
-      riddle: 'When I rowed from {dimboola|Dimboola}, to {egypt etc|Egypt etc}, I wore my {akubra|Akubra} and spotted a {tiger|tiger}, a {butterfly|butterfly}, and {horse head|horse head} to end it',
+      riddle: 'When I {dimboola|rowed from Dimboola}, to {egypt etc|Egypt etc}, I wore my {akubra|Akubra} and spotted a {tiger|tiger}, a {butterfly|butterfly}, and {horse head|horse head} to end it',
       items: [
         { id: 'dimboola', name: 'Dimboola', hint: 'A town in western Victoria. Look for its name in a newspaper clipping.', where: 'To the right of the table in front of the two wooden shelves.' },
         { id: 'egypt etc', name: 'Egypt etc', hint: 'Pyramids, pharaohs and more. Look for the land of the Nile.', where: 'On the second shelf, opposite Dimboola.' },
@@ -719,8 +721,9 @@
       background: var(--es-cream); border: 2px solid var(--es-night); border-radius: 0.3em;
     }
     #es3d-panel textarea { min-height: 4.5em; resize: vertical; }
-    .es3d-share-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5em, 1fr)); gap: 0.5em; margin: 0 0 0.8em; }
-    .es3d-share-grid .es3d-btn { margin: 0 !important; text-align: center; display: block; }
+    .es3d-share-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5em, 1fr)); gap: 0.5em; margin: 0 0 0.8em; }
+    .es3d-share-grid .es3d-btn { margin: 0 !important; display: flex; align-items: center; gap: 0.6em; padding-left: 0.8em !important; text-align: left; }
+    .es3d-share-grid .es3d-btn svg { flex: 0 0 auto; color: var(--es-accent); }
     .es3d-consent { display: flex; gap: 0.6em; align-items: flex-start; margin: 0 0 0.6em; font-size: 0.92em; line-height: 1.4; }
     .es3d-consent input { width: 1.3em; height: 1.3em; margin-top: 0.1em; flex: 0 0 auto; accent-color: var(--es-accent); }
 
@@ -758,6 +761,15 @@
     hints: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 115 0c0 1.7-2.5 2-2.5 4M12 17h.01"/>',
     list: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12l3 3 5-6"/>',
     share: '<path d="M12 15V4M8 8l4-4 4 4M5 12v7h14v-7"/>',
+    facebook: '<path fill="currentColor" stroke="none" d="M9 8H6v4h3v12h5V12h3.6l.4-4h-4V6.3c0-1 .2-1.3 1.2-1.3H18V0h-3.8C10.6 0 9 1.6 9 4.6V8z"/>',
+    discord: '<path d="M7 6.5c3-1.3 7-1.3 10 0 1.8 2.8 2.7 6 2.5 9.8-1.3 1-2.7 1.7-4 2l-1-1.8M7 6.5C5.2 9.3 4.3 12.5 4.5 16.3c1.3 1 2.7 1.7 4 2l1-1.8M8.5 16.5c2.2 1 4.8 1 7 0"/><circle cx="9.5" cy="12" r="1.2"/><circle cx="14.5" cy="12" r="1.2"/>',
+    sms: '<path d="M4 5h16v11H9l-5 4z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/>',
+    email: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+    whatsapp: '<path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-.8.8c-.9-.4-1.6-1.1-2-2l.8-.8-1-2z"/>',
+    x: '<path fill="currentColor" stroke="none" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>',
+    reddit: '<circle cx="12" cy="14" r="6.5"/><circle cx="9.5" cy="13" r="1"/><circle cx="14.5" cy="13" r="1"/><path d="M9.5 16.5c1.5 1 3.5 1 5 0M12 7.5l1-4 3.5.8"/><circle cx="18" cy="4.5" r="1.3"/>',
+    copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
+    more: '<path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3.5"/>',
     undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/>',
     soundOff: '<path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l5 6M22 9l-5 6"/>',
     help: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>'
@@ -895,23 +907,23 @@
     const u = encodeURIComponent(url);
     const m = encodeURIComponent(message);
     const links = [
-      ['Facebook', 'https://www.facebook.com/sharer/sharer.php?u=' + u],
-      ['Discord', 'copy:Link copied. Paste it into any Discord chat.'],
-      ['Text message', 'sms:?&body=' + m],
-      ['Email', 'mailto:?subject=' + encodeURIComponent('Eye Spy 3D') + '&body=' + m],
-      ['WhatsApp', 'https://wa.me/?text=' + m],
-      ['X', 'https://twitter.com/intent/tweet?text=' + m],
-      ['Reddit', 'https://www.reddit.com/submit?url=' + u + '&title=' + encodeURIComponent('Eye Spy 3D')],
-      ['Copy link', 'copy:Link copied.']
+      ['Facebook', 'https://www.facebook.com/sharer/sharer.php?u=' + u, 'facebook'],
+      ['Discord', 'copy:Link copied. Paste it into any Discord chat.', 'discord'],
+      ['Text message', 'sms:?&body=' + m, 'sms'],
+      ['Email', 'mailto:?subject=' + encodeURIComponent('Eye Spy 3D') + '&body=' + m, 'email'],
+      ['WhatsApp', 'https://wa.me/?text=' + m, 'whatsapp'],
+      ['X', 'https://twitter.com/intent/tweet?text=' + m, 'x'],
+      ['Reddit', 'https://www.reddit.com/submit?url=' + u + '&title=' + encodeURIComponent('Eye Spy 3D'), 'reddit'],
+      ['Copy link', 'copy:Link copied.', 'copy']
     ];
-    if (navigator.share) links.push(['More\u2026', 'native:']);
+    if (navigator.share) links.push(['More\u2026', 'native:', 'more']);
     openPanel(`
       <h2>Share Eye Spy 3D</h2>
       <p>Send the game to someone who would enjoy the hunt.</p>
       <div class="es3d-share-grid">
-        ${links.map(([label, target], i) => target.startsWith('copy:') || target.startsWith('native:')
-          ? '<button class="es3d-btn es3d-quiet" type="button" data-share="' + i + '">' + esc(label) + '</button>'
-          : '<a class="es3d-btn es3d-quiet" href="' + esc(target) + '"' + (/^https:/.test(target) ? ' target="_blank" rel="noopener"' : '') + '>' + esc(label) + '</a>').join('')}
+        ${links.map(([label, target, iconName], i) => target.startsWith('copy:') || target.startsWith('native:')
+          ? '<button class="es3d-btn es3d-quiet" type="button" data-share="' + i + '">' + icon(iconName) + esc(label) + '</button>'
+          : '<a class="es3d-btn es3d-quiet" href="' + esc(target) + '"' + (/^https:/.test(target) ? ' target="_blank" rel="noopener"' : '') + '>' + icon(iconName) + esc(label) + '</a>').join('')}
       </div>
       <input type="text" id="es3d-share-link" readonly value="${esc(url)}" aria-label="Link to the game">`);
     document.getElementById('es3d-panel-body').querySelectorAll('button[data-share]').forEach((btn) => {
