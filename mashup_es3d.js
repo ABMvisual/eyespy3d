@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4015)
+// EYE SPY 3D - ENGINE (V4019)
 // Rewrite of V3031. Still loaded into MPEmbed as a custom script, still uses
 // MPEmbed's popups and per-pano clue audio, but the game itself (levels,
 // progress, hints, skipping, scores) now lives here, with its own HUD.
@@ -14,12 +14,23 @@
   if (window.__ES3D_LOADED__) return;
   window.__ES3D_LOADED__ = true;
 
-  const VERSION = 'V4015';
+  // Adding &es3d=off to the page address switches the game off, for looking
+  // at the plain tour.
+  if (/[?&]es3d=off/.test(location.search)) {
+    console.log('EYE SPY 3D \u2014 switched off by the page address');
+    return;
+  }
+
+  const VERSION = 'V4019';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
   // CONFIG
   // ---------------------------------------------------------------------------
+  // The intro video. If INTRO_VIDEO_FILE names a video file in this repo
+  // (an .mp4 under 20 MB), it plays in a plain player with no YouTube
+  // branding. While it is empty, the YouTube video is used instead.
+  const INTRO_VIDEO_FILE = '';
   const YOUTUBE_VIDEO_ID = 'Ly2dwu4pTVo';
   const ASSET_BASE = 'https://cdn.jsdelivr.net/gh/ABMvisual/eyespy3d@main/';
   // Web app URL of backend/leaderboard.gs once deployed. While empty, scores
@@ -600,7 +611,8 @@
     #es3d-welcome .es3d-btn.es3d-quiet, #es3d-video .es3d-btn.es3d-quiet { background: rgba(0,0,0,0.5); color: var(--es-cream); border-color: var(--es-cream); box-shadow: none; }
 
     #es3d-video { background: #000; z-index: 2147483644; }
-    #es3d-video-frame, #es3d-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+    #es3d-video-frame, #es3d-video iframe, #es3d-video-file { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+    #es3d-video-file { display: block !important; visibility: visible !important; opacity: 1 !important; left: 0 !important; background: #000; pointer-events: auto !important; }
     #es3d-video-skip { position: absolute; right: 1.5em; bottom: 1.5em; z-index: 2; }
 
     .es3d-card { background: var(--es-panel); border: 2px solid var(--es-edge); border-radius: 0.45em; box-shadow: 0 6px 24px rgba(0,0,0,0.55); }
@@ -836,7 +848,7 @@
     ui.loading = el('div', 'es3d-loading', 'Opening the store…');
     ui.loading.classList.add('es3d-hidden');
     ui.welcome = el('div', 'es3d-welcome');
-    ui.prompt = el('div', 'es3d-prompt', '<p>Welcome to the store. Watch the short intro and the hunt begins.</p><button class="es3d-btn" type="button" id="es3d-prompt-go">Watch the intro</button>');
+    ui.prompt = el('div', 'es3d-prompt', '<p>Welcome to Eye Spy 3D<br>Watch the short intro and the hunt begins.</p><button class="es3d-btn" type="button" id="es3d-prompt-go">Watch the intro</button>');
     ui.prompt.classList.add('es3d-card', 'es3d-hidden');
     const control = (act, iconName, label, hint) =>
       '<button type="button" data-act="' + act + '" title="' + hint + '" aria-label="' + hint + '">' + icon(iconName) + '<span>' + label + '</span></button>';
@@ -1091,35 +1103,54 @@
       onDone();
     };
     overlay.querySelector('#es3d-video-skip').addEventListener('click', finish);
-    if (!YOUTUBE_VIDEO_ID) { finish(); return; }
 
-    // If the YouTube API never loads, do not leave the player stuck.
-    fallbackTimer = setTimeout(() => {
-      console.warn('Intro video API did not load after 90s, continuing without it.');
-      finish();
-    }, 90000);
-
-    function createPlayer() {
-      clearTimeout(fallbackTimer);
-      if (done) return;
-      introPlayer = new YT.Player(overlay.querySelector('#es3d-video-frame'), {
-        videoId: YOUTUBE_VIDEO_ID,
-        playerVars: { autoplay: 1, controls: 1, rel: 0, modestbranding: 1, playsinline: 1 },
-        events: {
-          onReady: applyMute,
-          onStateChange: (event) => { if (event.data === YT.PlayerState.ENDED) finish(); },
-          onError: (event) => { console.warn('Intro video error, code:', event.data); finish(); }
-        }
-      });
+    if (INTRO_VIDEO_FILE) {
+      const video = document.createElement('video');
+      video.id = 'es3d-video-file';
+      video.src = ASSET_BASE + encodeURIComponent(INTRO_VIDEO_FILE);
+      video.controls = true;
+      video.autoplay = true;
+      video.playsInline = true;
+      video.muted = state.muted;
+      video.addEventListener('ended', finish);
+      // If our own file will not play, fall back to YouTube rather than stall.
+      video.addEventListener('error', () => { video.remove(); if (YOUTUBE_VIDEO_ID) playFromYouTube(); else finish(); });
+      overlay.querySelector('#es3d-video-frame').appendChild(video);
+      return;
     }
+    if (!YOUTUBE_VIDEO_ID) { finish(); return; }
+    playFromYouTube();
 
-    if (window.YT && window.YT.Player) {
-      createPlayer();
-    } else {
-      window.onYouTubeIframeAPIReady = createPlayer;
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      document.head.appendChild(tag);
+    function playFromYouTube() {
+
+      // If the YouTube API never loads, do not leave the player stuck.
+      fallbackTimer = setTimeout(() => {
+        console.warn('Intro video API did not load after 90s, continuing without it.');
+        finish();
+      }, 90000);
+
+      function createPlayer() {
+        clearTimeout(fallbackTimer);
+        if (done) return;
+        introPlayer = new YT.Player(overlay.querySelector('#es3d-video-frame'), {
+          videoId: YOUTUBE_VIDEO_ID,
+          playerVars: { autoplay: 1, controls: 1, rel: 0, modestbranding: 1, playsinline: 1 },
+          events: {
+            onReady: applyMute,
+            onStateChange: (event) => { if (event.data === YT.PlayerState.ENDED) finish(); },
+            onError: (event) => { console.warn('Intro video error, code:', event.data); finish(); }
+          }
+        });
+      }
+
+      if (window.YT && window.YT.Player) {
+        createPlayer();
+      } else {
+        window.onYouTubeIframeAPIReady = createPlayer;
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(tag);
+      }
     }
   }
 
