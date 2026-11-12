@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4013)
+// EYE SPY 3D - ENGINE (V4014)
 // Rewrite of V3031. Still loaded into MPEmbed as a custom script, still uses
 // MPEmbed's popups and per-pano clue audio, but the game itself (levels,
 // progress, hints, skipping, scores) now lives here, with its own HUD.
@@ -14,7 +14,7 @@
   if (window.__ES3D_LOADED__) return;
   window.__ES3D_LOADED__ = true;
 
-  const VERSION = 'V4013';
+  const VERSION = 'V4014';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -1832,6 +1832,33 @@
     });
   }
 
+  // Matterport's own tags (such as one added for Matterport Discover) are
+  // taken out of the game view. This only affects what this page shows; the
+  // tags stay on the space itself. Anything labelled as one of the game's
+  // objects is left alone, in case MPEmbed registers its hotspots as tags.
+  function hideMatterportTags() {
+    const isGameObject = (label) => {
+      const key = norm(label);
+      return !!key && LEVELS.some((level) => level.items.some((item) => item.keys.includes(key)));
+    };
+    try {
+      if (sdk.Tag && sdk.Tag.data && sdk.Tag.remove) {
+        sdk.Tag.data.subscribe({
+          onAdded: (id, tag) => { if (!isGameObject(tag && tag.label)) Promise.resolve(sdk.Tag.remove(id)).catch(() => {}); }
+        });
+        return;
+      }
+      if (sdk.Mattertag && sdk.Mattertag.getData) {
+        sdk.Mattertag.getData().then((tags) => {
+          const ids = tags.filter((tag) => !isGameObject(tag.label)).map((tag) => tag.sid);
+          if (ids.length > 0) return sdk.Mattertag.remove(ids);
+        }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn('Eye Spy 3D: could not hide Matterport tags', e);
+    }
+  }
+
   async function initTour(mpSdk) {
     sdk = mpSdk;
     const collection = await new Promise((resolve) => {
@@ -1844,6 +1871,7 @@
     allSweeps = Object.keys(collection);
     sdk.Sweep.current.subscribe((sweep) => onSweepChanged(sweep && (sweep.sid || sweep.id)));
     attachOverlayObserver();
+    hideMatterportTags();
     setInterval(steadyCursor, 400);
     state.tourReady = true;
     checkReadyToReveal();

@@ -42,8 +42,13 @@
     document.getElementById('mock-sweep').textContent = id;
     mock.sweepSubs.forEach((cb) => cb({ sid: id }));
   }
+  mock.removedTags = [];
   window.mpSdk = {
     on() {},
+    Tag: {
+      data: { subscribe(obs) { setTimeout(() => { obs.onAdded('tag-discover', { label: 'Play Eye Spy 3D' }); obs.onAdded('tag-object', { label: 'Pink Bo-Peep' }); }, 40); } },
+      remove(id) { mock.removedTags.push(id); return Promise.resolve(); }
+    },
     App: { Phase: { PLAYING: 'playing' }, state: { subscribe(cb) { setTimeout(() => cb({ phase: 'loading' }), 50); setTimeout(() => cb({ phase: 'playing' }), 300); setTimeout(() => cb({ phase: 'playing' }), 600); } } },
     Sweep: {
       Transition: { FLY: 'fly', INSTANT: 'instant' },
