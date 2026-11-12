@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4016)
+// EYE SPY 3D - ENGINE (V4017)
 // Rewrite of V3031. Still loaded into MPEmbed as a custom script, still uses
 // MPEmbed's popups and per-pano clue audio, but the game itself (levels,
 // progress, hints, skipping, scores) now lives here, with its own HUD.
@@ -23,7 +23,7 @@
     return;
   }
 
-  const VERSION = 'V4016';
+  const VERSION = 'V4017';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -851,7 +851,7 @@
     ui.loading = el('div', 'es3d-loading', 'Opening the store…');
     ui.loading.classList.add('es3d-hidden');
     ui.welcome = el('div', 'es3d-welcome');
-    ui.prompt = el('div', 'es3d-prompt', '<p>Welcome to the store. Watch the short intro and the hunt begins.</p><button class="es3d-btn" type="button" id="es3d-prompt-go">Watch the intro</button>');
+    ui.prompt = el('div', 'es3d-prompt', '<p>Welcome to Eye Spy 3D.<br>Watch the short intro and the hunt begins.</p><button class="es3d-btn" type="button" id="es3d-prompt-go">Watch the intro</button>');
     ui.prompt.classList.add('es3d-card', 'es3d-hidden');
     const control = (act, iconName, label, hint) =>
       '<button type="button" data-act="' + act + '" title="' + hint + '" aria-label="' + hint + '">' + icon(iconName) + '<span>' + label + '</span></button>';
