@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4011)
+// EYE SPY 3D - ENGINE (V4012)
 // Rewrite of V3031. Still loaded into MPEmbed as a custom script, still uses
 // MPEmbed's popups and per-pano clue audio, but the game itself (levels,
 // progress, hints, skipping, scores) now lives here, with its own HUD.
@@ -14,7 +14,7 @@
   if (window.__ES3D_LOADED__) return;
   window.__ES3D_LOADED__ = true;
 
-  const VERSION = 'V4011';
+  const VERSION = 'V4012';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -701,6 +701,7 @@
     .es3d-help-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(9em, 1fr)); gap: 0.5em; margin: 0 0 0.4em; }
     .es3d-help-card { padding: 0.7em; background: var(--es-panel-soft); border-radius: 0.4em; line-height: 1.4; }
     .es3d-help-card svg { display: block; width: 2em; height: 2em; margin-bottom: 0.3em; color: var(--es-accent); }
+    .es3d-help-intro { font-size: 1.1em; }
     #es3d-rewatch { margin-top: 0.6em !important; }
     .es3d-section { padding: 0.8em 0 0.1em; margin-top: 0.8em; border-top: 2px solid var(--es-line); }
     .es3d-section h3 { margin-top: 0 !important; }
@@ -1146,7 +1147,20 @@
     controls.querySelector('[data-act="next"]').disabled = !level;
     controls.querySelector('[data-act="riddle"]').disabled = !level;
     controls.querySelector('[data-act="hints"]').disabled = !level;
+    fitTopPanel();
   }
+
+  // On wide screens the riddle panel is kept to the left of the bottom bar, so
+  // its right edge lines up with the bar's left edge and the middle of the
+  // view stays clear. On narrow screens it uses the full width.
+  function fitTopPanel() {
+    const top = document.getElementById('es3d-top');
+    const bar = document.getElementById('es3d-controls');
+    if (!top || !bar || ui.hud.classList.contains('es3d-hidden')) return;
+    const barLeft = bar.getBoundingClientRect().left;
+    top.style.width = window.innerWidth > 900 && barLeft > 260 ? Math.round(barLeft - 10) + 'px' : '';
+  }
+  window.addEventListener('resize', fitTopPanel);
 
   let lastTick = Date.now();
   setInterval(() => {
@@ -1233,18 +1247,17 @@
   }
 
   function showHelpPanel() {
-    const steps = [
-      ['Pick a name', 'Enter a player name if you want to be on the leaderboard, then press Start.'],
-      ['Watch the intro', 'When it ends you are taken to the first stop.'],
-      ['Listen to the riddle', 'It names several objects hidden around you. You stay on the spot and look around from there.'],
-      ['Spot and click', 'Click each object when you see it. A photo opens to confirm the find. Close it with the big X.'],
-      ['Clear the stop', 'Find them all and you move on to the next one. There are ' + LEVELS.length + ' stops and ' + TOTAL_ITEMS + ' objects.'],
-      ['Stuck?', 'Use Hints, or Skip and come back later. Your progress is saved on this device.']
-    ];
     const controls = [
       ['mouse', 'Mouse', 'Click and drag to look around. Scroll to zoom.'],
       ['keyboard', 'Keyboard', 'A and D, J and L, or the left and right arrows turn you. I and K look up and down.'],
       ['touch', 'Touch', 'Swipe to look around. Pinch to zoom.']
+    ];
+    const steps = [
+      ['Goal', 'Decipher the clues to find all the hidden objects.'],
+      ['Navigate', 'Drag the screen to look around. Click on an object if you think it is what the clue is talking about.'],
+      ['Investigate', 'Pinch or scroll to zoom in and out. Things can be cleverly hidden in plain sight, so if an object looks relevant to your clue, give it a click.'],
+      ['Decipher', 'Missed the audio clue? It is written at the top of the screen, and you can always look down to read it on the floor. Read carefully: the clues hint at the specific objects you need to find.'],
+      ['Unlock', 'Finding every object at a stop unlocks the next location and your next set of clues. You can skip ahead, but only players who find everything rank on the leaderboard.']
     ];
     const buttons = [
       ['riddle', 'Riddle', 'Plays the riddle again.'],
@@ -1256,12 +1269,14 @@
       ['soundOff', 'Sound', 'Turns all sound on or off.']
     ];
     openPanel(`
-      <h2>How to play</h2>
-      ${steps.map(([title, text], i) => '<div class="es3d-help-row"><span class="es3d-help-num">' + (i + 1) + '</span><div><b>' + title + '</b>' + text + '</div></div>').join('')}
-      <h3>Looking around</h3>
+      <h2>Eye Spy 3D</h2>
+      <p class="es3d-help-intro">A hidden-object hunt inside a real antique store. At each of ${LEVELS.length} stops a riddle plays, naming objects hidden somewhere around you. You stand on the spot, look around, and click each one you find. There are ${TOTAL_ITEMS} objects in all.</p>
+      <h3>Controls</h3>
       <div class="es3d-help-grid">
         ${controls.map(([iconName, title, text]) => '<div class="es3d-help-card">' + icon(iconName) + '<b>' + title + '</b>' + text + '</div>').join('')}
       </div>
+      <h3>How to play</h3>
+      ${steps.map(([title, text], i) => '<div class="es3d-help-row"><span class="es3d-help-num">' + (i + 1) + '</span><div><b>' + title + '</b>' + text + '</div></div>').join('')}
       <h3>The buttons</h3>
       ${buttons.map(([iconName, title, text]) => '<div class="es3d-help-row"><span class="es3d-help-icon">' + icon(iconName) + '</span><div><b>' + title + '</b>' + text + '</div></div>').join('')}
       <button class="es3d-btn" type="button" id="es3d-rewatch">Watch the intro again</button>`);
@@ -1288,6 +1303,7 @@
     root.toggle('es3d-grey', !!access.grey);
     root.toggle('es3d-dyslexia', !!access.dyslexia);
     root.toggle('es3d-still', !!access.still);
+    if (ui.hud) fitTopPanel();
     try { localStorage.setItem(ACCESS_KEY, JSON.stringify(access)); } catch (e) {}
   }
 
