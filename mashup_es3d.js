@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4012)
+// EYE SPY 3D - ENGINE (V4013)
 // Rewrite of V3031. Still loaded into MPEmbed as a custom script, still uses
 // MPEmbed's popups and per-pano clue audio, but the game itself (levels,
 // progress, hints, skipping, scores) now lives here, with its own HUD.
@@ -14,7 +14,7 @@
   if (window.__ES3D_LOADED__) return;
   window.__ES3D_LOADED__ = true;
 
-  const VERSION = 'V4012';
+  const VERSION = 'V4013';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -701,6 +701,7 @@
     .es3d-help-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(9em, 1fr)); gap: 0.5em; margin: 0 0 0.4em; }
     .es3d-help-card { padding: 0.7em; background: var(--es-panel-soft); border-radius: 0.4em; line-height: 1.4; }
     .es3d-help-card svg { display: block; width: 2em; height: 2em; margin-bottom: 0.3em; color: var(--es-accent); }
+    #es3d-panel .es3d-help-title { color: var(--es-accent); }
     .es3d-help-intro { font-size: 1.1em; }
     #es3d-rewatch { margin-top: 0.6em !important; }
     .es3d-section { padding: 0.8em 0 0.1em; margin-top: 0.8em; border-top: 2px solid var(--es-line); }
@@ -1269,7 +1270,7 @@
       ['soundOff', 'Sound', 'Turns all sound on or off.']
     ];
     openPanel(`
-      <h2>Eye Spy 3D</h2>
+      <h2 class="es3d-help-title">Eye Spy 3D</h2>
       <p class="es3d-help-intro">A hidden-object hunt inside a real antique store. At each of ${LEVELS.length} stops a riddle plays, naming objects hidden somewhere around you. You stand on the spot, look around, and click each one you find. There are ${TOTAL_ITEMS} objects in all.</p>
       <h3>Controls</h3>
       <div class="es3d-help-grid">
