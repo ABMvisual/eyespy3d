@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eye Spy 3D - local mock of MPEmbed</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #26313a; color: #fff; font-family: sans-serif; }
+  #fake-tour { cursor: pointer; position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 22px; color: rgba(255,255,255,0.5); }
+  #mock-tools { position: fixed; right: 8px; top: 8px; z-index: 8000; display: flex; flex-direction: column; gap: 4px; max-width: 220px; }
+  #mock-tools button { font-size: 12px; padding: 4px 6px; text-align: left; }
+  #customBillboardFullOverlay { display: none; position: fixed; inset: 0; z-index: 9900; background: rgba(0,0,0,0.8); }
+  #customBillboardFull { position: absolute; inset: 8%; background: #333; }
+  .tag-text-content { position: absolute; bottom: 0; left: 0; right: 0; }
+  .mock-close { position: absolute; top: 4px; right: 4px; }
+</style>
+</head>
+<body>
+<!-- Stands in for MPEmbed + Matterport so the game script can be run locally.
+     Not part of the live game. Open with any static file server. -->
+<div id="fake-tour">sweep: <span id="mock-sweep" style="margin-left:8px">none</span></div>
+<div id="mock-tools"></div>
+<div id="panoPlayer"><audio></audio></div>
+<div id="customBillboardFullOverlay">
+  <div id="customBillboardFull" class="customBillboard photo">
+    <div class="customBillboardBackground">
+      <div class="tag-media-content"></div>
+      <div class="tag-text-content"></div>
+    </div>
+    <button class="mock-close" type="button">close</button>
+  </div>
+</div>
+<script>
+(function () {
+  const sweepIds = ['7k4p5mu5f5eydt8h0f8cygptb', 'cwckxx365uimbeqk6ngp0t5ud', 'ep98q9hxumexd83q38p12k4xc', 't3si6z3gnc6ix4qh6cgmtgnfa',
+    '2cngsqh5q4t1ep85y5ky0h49d', '66yna1yh5e2ig14bmzzf1sn2c', '3hdk0cskxw0apbr2iw8016htb', 'r7sd2g426fhbfa2wdh5dfxy5d',
+    '20qckty5qi20t39838cq274rc', 'dy113u49qt5s7y38ms7ibmd9b', 'rxgziepm3g4e0fgdgnwwk6efd', 'w2bre69ufwyaywn11ch032aaa',
+    'dimg015tts6u2b30hh0pndaqd', 'iwaxrd4g1gki6i64y6dk1iuhd', 'aty78ze3y9ddyg8702gmncdma', 'e5ynaauc9kx9mar4r52hp1rfb', 'extra-sweep-1', 'extra-sweep-2'];
+  const mock = window.__mock = { current: 'extra-sweep-1', enabled: new Set(sweepIds), moves: [], sweepSubs: [] };
+  function setSweep(id) {
+    mock.current = id;
+    document.getElementById('mock-sweep').textContent = id;
+    mock.sweepSubs.forEach((cb) => cb({ sid: id }));
+  }
+  mock.removedTags = [];
+  window.mpSdk = {
+    on() {},
+    Tag: {
+      data: { subscribe(obs) { setTimeout(() => { obs.onAdded('tag-discover', { label: 'Play Eye Spy 3D' }); obs.onAdded('tag-object', { label: 'Pink Bo-Peep' }); }, 40); } },
+      remove(id) { mock.removedTags.push(id); return Promise.resolve(); }
+    },
+    App: { Phase: { PLAYING: 'playing' }, state: { subscribe(cb) { setTimeout(() => cb({ phase: 'loading' }), 50); setTimeout(() => cb({ phase: 'playing' }), 300); setTimeout(() => cb({ phase: 'playing' }), 600); } } },
+    Sweep: {
+      Transition: { FLY: 'fly', INSTANT: 'instant' },
+      Event: { ENTER: 'sweep.enter' },
+      data: { subscribe(obs) { const sub = { cancel() {} }; setTimeout(() => obs.onCollectionUpdated(Object.fromEntries(sweepIds.map((id) => [id, { sid: id }]))), 20); return sub; } },
+      current: { subscribe(cb) { mock.sweepSubs.push(cb); cb({ sid: mock.current }); } },
+      enable(...ids) { ids.forEach((id) => mock.enabled.add(id)); return Promise.resolve(); },
+      disable(...ids) { ids.forEach((id) => mock.enabled.delete(id)); return Promise.resolve(); },
+      moveTo(id, opts) {
+        if (!mock.enabled.has(id)) return Promise.reject(new Error('sweep disabled'));
+        mock.moves.push({ id, transition: opts && opts.transition });
+        return new Promise((resolve) => setTimeout(() => { setSweep(id); resolve(id); }, 80));
+      }
+    }
+  };
+  // Simulate the player walking to a sweep by themselves.
+  mock.walkTo = (id) => { if (mock.enabled.has(id)) setSweep(id); return mock.enabled.has(id); };
+
+  const overlay = document.getElementById('customBillboardFullOverlay');
+  const full = document.getElementById('customBillboardFull');
+  mock.openPopup = (label, file, kind) => {
+    full.classList.remove('photo', 'audio');
+    full.classList.add(kind || 'photo');
+    overlay.querySelector('.tag-text-content').textContent = label;
+    overlay.querySelector('.tag-media-content').innerHTML = kind === 'audio'
+      ? '<audio src="/media/3780/' + file + '"></audio>'
+      : (file ? '<img class="tag-image" src="/media/3780//' + file + '">' : '');
+    overlay.style.display = 'block';
+  };
+  mock.closePopup = () => { overlay.style.display = 'none'; };
+  overlay.querySelector('.mock-close').addEventListener('click', mock.closePopup);
+
+  const tools = document.getElementById('mock-tools');
+  [['Pink Bo-Peep', 'pink bopeep.jpeg'], ['Two white cows', 'two white cows.jpeg'], ['Yourself', 'yourself.jpeg'],
+    ['Bowl of Plastic Fruit', ''], ['Not an item', 'something else.jpeg']].forEach(([label, file]) => {
+    const b = document.createElement('button');
+    b.textContent = 'open: ' + label;
+    b.addEventListener('click', () => mock.openPopup(label, file));
+    tools.appendChild(b);
+  });
+})();
+</script>
+<script src="../mashup_es3d.js"></script>
+</body>
+</html>
