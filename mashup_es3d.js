@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4015)
+// EYE SPY 3D - ENGINE (V4016)
 // Rewrite of V3031. Still loaded into MPEmbed as a custom script, still uses
 // MPEmbed's popups and per-pano clue audio, but the game itself (levels,
 // progress, hints, skipping, scores) now lives here, with its own HUD.
@@ -14,7 +14,16 @@
   if (window.__ES3D_LOADED__) return;
   window.__ES3D_LOADED__ = true;
 
-  const VERSION = 'V4015';
+  // The game only runs on the page players see (MPEmbed's /show/ page). In
+  // MPEmbed's editor it stays out of the way, so the space can be edited
+  // freely. Adding &es3d=off to any address also switches it off.
+  const onPlayerPage = /\/show(\/|$)/.test(location.pathname) || /\/dev\/mock\.html$/.test(location.pathname);
+  if (!onPlayerPage || /[?&]es3d=off/.test(location.search)) {
+    console.log('EYE SPY 3D \u2014 not started on this page (editor or switched off)');
+    return;
+  }
+
+  const VERSION = 'V4016';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -507,6 +516,12 @@
     #customBillboardFull, #customBillboardFull * { transition: none !important; animation: none !important; }
     /* MPEmbed's replay-audio popup is closed by script the moment it opens. */
     body:not(.es3d-show-audio-popup) #customBillboardFull.audio { opacity: 0 !important; }
+    /* Rounded corners on the photo popup, by about as much as the close
+       button overhangs it. Set on the label bar and the photo themselves, as
+       clipping the whole popup would cut the close button off. */
+    #customBillboardFull.photo .tag-text-content { border-radius: 14px 14px 0 0 !important; }
+    #customBillboardFull.photo img.tag-image { border-radius: 0 0 14px 14px !important; }
+
     /* MPEmbed colours the label's inner text itself, so it is set here too. */
     #customBillboardFull.photo .tag-text-content, #customBillboardFull.photo .tag-text-content * {
       color: ${THEME.barText} !important; text-shadow: none !important;
