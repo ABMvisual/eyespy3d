@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4014)
+// EYE SPY 3D - ENGINE (V4015)
 // Rewrite of V3031. Still loaded into MPEmbed as a custom script, still uses
 // MPEmbed's popups and per-pano clue audio, but the game itself (levels,
 // progress, hints, skipping, scores) now lives here, with its own HUD.
@@ -14,7 +14,7 @@
   if (window.__ES3D_LOADED__) return;
   window.__ES3D_LOADED__ = true;
 
-  const VERSION = 'V4014';
+  const VERSION = 'V4015';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -1039,9 +1039,22 @@
   const MUTE_KEY = 'es3d_muted';
   let introPlayer = null;
 
+  // While muted, any sound MPEmbed starts is silenced at the very moment it
+  // starts, so nothing is heard even briefly. Two hooks cover both ways a
+  // sound can begin: a script calling play(), and the browser starting an
+  // element by itself.
+  const nativePlay = HTMLMediaElement.prototype.play;
+  HTMLMediaElement.prototype.play = function () {
+    if (state.muted) this.muted = true;
+    return nativePlay.apply(this, arguments);
+  };
+  document.addEventListener('play', (e) => {
+    if (state.muted && e.target instanceof HTMLMediaElement) e.target.muted = true;
+  }, true);
+
   // One switch for every sound: the riddle, MPEmbed's own players and the
-  // intro video. MPEmbed makes new audio elements as the player moves, so
-  // this is re-applied on a timer.
+  // intro video. Also re-applied on a timer, as a backstop and to turn the
+  // sound back on everywhere after unmuting.
   function applyMute() {
     clueAudio.muted = state.muted;
     document.querySelectorAll('audio, video').forEach((node) => { node.muted = state.muted; });
