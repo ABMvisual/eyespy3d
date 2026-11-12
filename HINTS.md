@@ -273,7 +273,7 @@ Whose **head** is that, to the left of the **hat**, to the right of the **runner
 
 ## Level 14
 
-When I **rowed from Dimboola**, to **Egypt etc**, I wore my **Akubra** and spotted a **tiger**, a **butterfly**, and **horse head** to end it
+When I **rowed from Dimboola**, to **Egypt etc**, I wore my **Akubra** and spied a **tiger**, a **butterfly**, and **horse head** to end it
 
 1. **Dimboola**
    - Nudge: A town in western Victoria. Look for its name in a newspaper clipping.

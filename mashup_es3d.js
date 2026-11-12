@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4008)
+// EYE SPY 3D - ENGINE (V4009)
 // Rewrite of V3031. Still loaded into MPEmbed as a custom script, still uses
 // MPEmbed's popups and per-pano clue audio, but the game itself (levels,
 // progress, hints, skipping, scores) now lives here, with its own HUD.
@@ -14,7 +14,7 @@
   if (window.__ES3D_LOADED__) return;
   window.__ES3D_LOADED__ = true;
 
-  const VERSION = 'V4008';
+  const VERSION = 'V4009';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -42,6 +42,7 @@
   const THEMES = {
     b: { name: 'b', bar: '#1a1714', barText: '#f2c230' }, // charcoal panels, warm yellow accents
     e: { name: 'e', bar: '#1a1714', barText: '#ccff00' }, // charcoal panels, electric yellow accents
+    k: { name: 'k', bar: '#1a1714', barText: '#c4e82c' }, // charcoal panels, the lime of the Eye Spy 3D logo
     d: { name: 'd', bar: '#f2c230', barText: '#2b070c' }  // yellow panels, burgundy text
   };
   const THEME = THEMES[(location.search.match(/[?&]es3dtheme=([a-z])/) || [])[1]] || THEMES.b;
@@ -188,7 +189,7 @@
     },
     {
       sweep: 'aty78ze3y9ddyg8702gmncdma', clue: '',
-      riddle: 'When I {dimboola|rowed from Dimboola}, to {egypt etc|Egypt etc}, I wore my {akubra|Akubra} and spotted a {tiger|tiger}, a {butterfly|butterfly}, and {horse head|horse head} to end it',
+      riddle: 'When I {dimboola|rowed from Dimboola}, to {egypt etc|Egypt etc}, I wore my {akubra|Akubra} and spied a {tiger|tiger}, a {butterfly|butterfly}, and {horse head|horse head} to end it',
       items: [
         { id: 'dimboola', name: 'Dimboola', hint: 'A town in western Victoria. Look for its name in a newspaper clipping.', where: 'To the right of the table in front of the two wooden shelves.' },
         { id: 'egypt etc', name: 'Egypt etc', hint: 'Pyramids, pharaohs and more. Look for the land of the Nile.', where: 'On the second shelf, opposite Dimboola.' },
@@ -504,7 +505,7 @@
   // STYLES
   // Plain sans-serif on solid panels, for readability over a busy scene.
   // Three palettes share one stylesheet (see THEMES). Charcoal with warm
-  // yellow is the default; add &es3dtheme=e or &es3dtheme=d to the page
+  // yellow is the default; add &es3dtheme=k, &es3dtheme=e or &es3dtheme=d to the page
   // address to see the others.
   // ---------------------------------------------------------------------------
   const CSS = `
@@ -560,7 +561,8 @@
       font-size: clamp(15px, 0.62vw + 9px, 30px); color: var(--es-text);
     }
     .es3d.es3d-theme-e { --es-sun: #ccff00; }
-    .es3d.es3d-theme-b, .es3d.es3d-theme-e {
+    .es3d.es3d-theme-k { --es-sun: #c4e82c; }
+    .es3d.es3d-theme-b, .es3d.es3d-theme-e, .es3d.es3d-theme-k {
       --es-panel: #1a1714; --es-panel-soft: #2d2924; --es-text: #fbf3dc; --es-accent: var(--es-sun); --es-on-accent: #1a1714;
       --es-edge: rgba(251,243,220,0.45); --es-line: rgba(251,243,220,0.25); --es-track: rgba(251,243,220,0.2);
     }

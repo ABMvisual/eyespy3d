@@ -32,7 +32,7 @@ https://mpembed.com/show/?m=xqbmbKAYgu6&mpu=3780&customjs=https://cdn.jsdelivr.n
   - Level 6, barley: the location note was unclear; it currently reads "In the same cabinet as hide and seek".
   - Level 12, goanna: the note said "on the floor below the wooden goanna"; what is it below?
   - About a dozen first hints (nudges) are guesses from the riddle wording.
-- **Riddle wording:** the floor discs are the master copy, because the recordings follow them. All 14 levels now match their discs word for word, including which words are highlighted. Level 14 has two disc versions ("spied a tiger" and "spotted a tiger"); the game uses "spotted" until confirmed.
+- **Riddle wording:** the floor discs are the master copy, because the recordings follow them. All 14 levels now match their discs word for word, including which words are highlighted. Level 14 uses "spied a tiger", as in the editable disc template.
 - **Design:** every visual change is shown as options and chosen before it is built. Current look: charcoal panels, cream text, yellow accents, plain sans-serif. Open choices: warm or electric yellow, square riddle discs for the floor (drafts in `nadirs/`), and phone-framed or moving photos.
 - **Intro video:** to be replaced (`YOUTUBE_VIDEO_ID`).
 - **Phones:** tall popup images are a first attempt and untested on a real phone.
