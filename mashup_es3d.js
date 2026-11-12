@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4017)
+// EYE SPY 3D - ENGINE (V4018)
 // Rewrite of V3031. Still loaded into MPEmbed as a custom script, still uses
 // MPEmbed's popups and per-pano clue audio, but the game itself (levels,
 // progress, hints, skipping, scores) now lives here, with its own HUD.
@@ -14,21 +14,23 @@
   if (window.__ES3D_LOADED__) return;
   window.__ES3D_LOADED__ = true;
 
-  // The game only runs on the page players see (MPEmbed's /show/ page). In
-  // MPEmbed's editor it stays out of the way, so the space can be edited
-  // freely. Adding &es3d=off to any address also switches it off.
-  const onPlayerPage = /\/show(\/|$)/.test(location.pathname) || /\/dev\/mock\.html$/.test(location.pathname);
-  if (!onPlayerPage || /[?&]es3d=off/.test(location.search)) {
-    console.log('EYE SPY 3D \u2014 not started on this page (editor or switched off)');
+  // Adding &es3d=off to the page address switches the game off, for looking
+  // at the plain tour.
+  if (/[?&]es3d=off/.test(location.search)) {
+    console.log('EYE SPY 3D \u2014 switched off by the page address');
     return;
   }
 
-  const VERSION = 'V4017';
+  const VERSION = 'V4018';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
   // CONFIG
   // ---------------------------------------------------------------------------
+  // The intro video. If INTRO_VIDEO_FILE names a video file in this repo
+  // (an .mp4 under 20 MB), it plays in a plain player with no YouTube
+  // branding. While it is empty, the YouTube video is used instead.
+  const INTRO_VIDEO_FILE = '';
   const YOUTUBE_VIDEO_ID = 'Ly2dwu4pTVo';
   const ASSET_BASE = 'https://cdn.jsdelivr.net/gh/ABMvisual/eyespy3d@main/';
   // Web app URL of backend/leaderboard.gs once deployed. While empty, scores
@@ -516,12 +518,6 @@
     #customBillboardFull, #customBillboardFull * { transition: none !important; animation: none !important; }
     /* MPEmbed's replay-audio popup is closed by script the moment it opens. */
     body:not(.es3d-show-audio-popup) #customBillboardFull.audio { opacity: 0 !important; }
-    /* Rounded corners on the photo popup, by about as much as the close
-       button overhangs it. Set on the label bar and the photo themselves, as
-       clipping the whole popup would cut the close button off. */
-    #customBillboardFull.photo .tag-text-content { border-radius: 14px 14px 0 0 !important; }
-    #customBillboardFull.photo img.tag-image { border-radius: 0 0 14px 14px !important; }
-
     /* MPEmbed colours the label's inner text itself, so it is set here too. */
     #customBillboardFull.photo .tag-text-content, #customBillboardFull.photo .tag-text-content * {
       color: ${THEME.barText} !important; text-shadow: none !important;
@@ -615,7 +611,8 @@
     #es3d-welcome .es3d-btn.es3d-quiet, #es3d-video .es3d-btn.es3d-quiet { background: rgba(0,0,0,0.5); color: var(--es-cream); border-color: var(--es-cream); box-shadow: none; }
 
     #es3d-video { background: #000; z-index: 2147483644; }
-    #es3d-video-frame, #es3d-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+    #es3d-video-frame, #es3d-video iframe, #es3d-video-file { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+    #es3d-video-file { display: block !important; visibility: visible !important; opacity: 1 !important; left: 0 !important; background: #000; pointer-events: auto !important; }
     #es3d-video-skip { position: absolute; right: 1.5em; bottom: 1.5em; z-index: 2; }
 
     .es3d-card { background: var(--es-panel); border: 2px solid var(--es-edge); border-radius: 0.45em; box-shadow: 0 6px 24px rgba(0,0,0,0.55); }
@@ -1106,35 +1103,54 @@
       onDone();
     };
     overlay.querySelector('#es3d-video-skip').addEventListener('click', finish);
-    if (!YOUTUBE_VIDEO_ID) { finish(); return; }
 
-    // If the YouTube API never loads, do not leave the player stuck.
-    fallbackTimer = setTimeout(() => {
-      console.warn('Intro video API did not load after 90s, continuing without it.');
-      finish();
-    }, 90000);
-
-    function createPlayer() {
-      clearTimeout(fallbackTimer);
-      if (done) return;
-      introPlayer = new YT.Player(overlay.querySelector('#es3d-video-frame'), {
-        videoId: YOUTUBE_VIDEO_ID,
-        playerVars: { autoplay: 1, controls: 1, rel: 0, modestbranding: 1, playsinline: 1 },
-        events: {
-          onReady: applyMute,
-          onStateChange: (event) => { if (event.data === YT.PlayerState.ENDED) finish(); },
-          onError: (event) => { console.warn('Intro video error, code:', event.data); finish(); }
-        }
-      });
+    if (INTRO_VIDEO_FILE) {
+      const video = document.createElement('video');
+      video.id = 'es3d-video-file';
+      video.src = ASSET_BASE + encodeURIComponent(INTRO_VIDEO_FILE);
+      video.controls = true;
+      video.autoplay = true;
+      video.playsInline = true;
+      video.muted = state.muted;
+      video.addEventListener('ended', finish);
+      // If our own file will not play, fall back to YouTube rather than stall.
+      video.addEventListener('error', () => { video.remove(); if (YOUTUBE_VIDEO_ID) playFromYouTube(); else finish(); });
+      overlay.querySelector('#es3d-video-frame').appendChild(video);
+      return;
     }
+    if (!YOUTUBE_VIDEO_ID) { finish(); return; }
+    playFromYouTube();
 
-    if (window.YT && window.YT.Player) {
-      createPlayer();
-    } else {
-      window.onYouTubeIframeAPIReady = createPlayer;
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      document.head.appendChild(tag);
+    function playFromYouTube() {
+
+      // If the YouTube API never loads, do not leave the player stuck.
+      fallbackTimer = setTimeout(() => {
+        console.warn('Intro video API did not load after 90s, continuing without it.');
+        finish();
+      }, 90000);
+
+      function createPlayer() {
+        clearTimeout(fallbackTimer);
+        if (done) return;
+        introPlayer = new YT.Player(overlay.querySelector('#es3d-video-frame'), {
+          videoId: YOUTUBE_VIDEO_ID,
+          playerVars: { autoplay: 1, controls: 1, rel: 0, modestbranding: 1, playsinline: 1 },
+          events: {
+            onReady: applyMute,
+            onStateChange: (event) => { if (event.data === YT.PlayerState.ENDED) finish(); },
+            onError: (event) => { console.warn('Intro video error, code:', event.data); finish(); }
+          }
+        });
+      }
+
+      if (window.YT && window.YT.Player) {
+        createPlayer();
+      } else {
+        window.onYouTubeIframeAPIReady = createPlayer;
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(tag);
+      }
     }
   }
 
