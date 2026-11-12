@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4007)
+// EYE SPY 3D - ENGINE (V4008)
 // Rewrite of V3031. Still loaded into MPEmbed as a custom script, still uses
 // MPEmbed's popups and per-pano clue audio, but the game itself (levels,
 // progress, hints, skipping, scores) now lives here, with its own HUD.
@@ -14,7 +14,7 @@
   if (window.__ES3D_LOADED__) return;
   window.__ES3D_LOADED__ = true;
 
-  const VERSION = 'V4007';
+  const VERSION = 'V4008';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -510,6 +510,9 @@
   const CSS = `
     * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
 
+    /* Removes the "CSS TEST" badge left over from the Custom CSS field test. */
+    body::after { content: none !important; display: none !important; }
+
     /* A V3031 copy of this script may still be loaded by MPEmbed's saved
        settings. Its screens must never show alongside this version's. */
     #eye-spy-start-ui, #eye-spy-image-cover, #eye-spy-dark-overlay, #eye-spy-video-overlay { display: none !important; }
@@ -793,7 +796,24 @@
     return node;
   }
 
+  // The browser tab's icon and name, when the game is opened on its own page.
+  // (Embedded in another site, the tab shows that site's icon instead.)
+  const FAVICON = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='#1a1714'/>" +
+    "<path d='M6 32c8-13 17-19 26-19s18 6 26 19c-8 13-17 19-26 19S14 45 6 32z' fill='#f2c230'/>" +
+    "<circle cx='32' cy='32' r='11' fill='#1a1714'/><circle cx='36' cy='28' r='4' fill='#fbf3dc'/></svg>";
+
+  function setTabIcon() {
+    document.querySelectorAll('link[rel~="icon"], link[rel="apple-touch-icon"]').forEach((node) => node.remove());
+    const link = document.createElement('link');
+    link.rel = 'icon';
+    link.type = 'image/svg+xml';
+    link.href = 'data:image/svg+xml,' + encodeURIComponent(FAVICON);
+    document.head.appendChild(link);
+    document.title = 'Eye Spy 3D';
+  }
+
   function buildUI() {
+    setTabIcon();
     const style = document.createElement('style');
     style.textContent = CSS;
     document.head.appendChild(style);
