@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4009)
+// EYE SPY 3D - ENGINE (V4010)
 // Rewrite of V3031. Still loaded into MPEmbed as a custom script, still uses
 // MPEmbed's popups and per-pano clue audio, but the game itself (levels,
 // progress, hints, skipping, scores) now lives here, with its own HUD.
@@ -14,7 +14,7 @@
   if (window.__ES3D_LOADED__) return;
   window.__ES3D_LOADED__ = true;
 
-  const VERSION = 'V4009';
+  const VERSION = 'V4010';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -25,25 +25,16 @@
   // Web app URL of backend/leaderboard.gs once deployed. While empty, scores
   // are kept on this device only and stage-two sign-ups are switched off.
   const BACKEND_URL = '';
-  // Per-item sound effect when an object is found. Off: the game is played to
-  // the riddle audio alone.
-  const ITEM_SOUNDS = false;
   // Clicking a riddle disc on the floor: true replays the riddle, false does
   // nothing (the Riddle button is then the only way to hear it again). The
   // discs' clickable area is a square, so stray clicks on the corners are common.
   const DISC_CLICK_REPLAYS = false;
   // Page the Share button hands out. Empty = the page that embeds the game.
   const SHARE_URL = 'https://abmvisual.com/eye-spy-3d';
-  // Fetch each level's popup photos in the background on arrival, so a popup
-  // opens without waiting for its photo. Add &es3dpreload=0 to the page
-  // address to turn it off, and &es3ddebug=1 to show how long each photo took.
-  const PRELOAD_PHOTOS = !/[?&]es3dpreload=0/.test(location.search);
-  const DEBUG_TIMING = /[?&]es3ddebug=1/.test(location.search);
   const THEMES = {
     b: { name: 'b', bar: '#1a1714', barText: '#f2c230' }, // charcoal panels, warm yellow accents
     e: { name: 'e', bar: '#1a1714', barText: '#ccff00' }, // charcoal panels, electric yellow accents
-    k: { name: 'k', bar: '#1a1714', barText: '#c4e82c' }, // charcoal panels, the lime of the Eye Spy 3D logo
-    d: { name: 'd', bar: '#f2c230', barText: '#2b070c' }  // yellow panels, burgundy text
+    k: { name: 'k', bar: '#1a1714', barText: '#c4e82c' }  // charcoal panels, the lime of the Eye Spy 3D logo
   };
   const THEME = THEMES[(location.search.match(/[?&]es3dtheme=([a-z])/) || [])[1]] || THEMES.b;
   const SAVE_KEY = 'es3d_save_v1';
@@ -289,7 +280,6 @@
     revealed: false,
     resume: false,
     advancePending: false,
-    returnLevel: null, // where a jump from the Found list came from
     currentSweep: '',
     arrivedAt: 0,
     photoBase: '/media/3780//',
@@ -344,12 +334,10 @@
 
   // ---------------------------------------------------------------------------
   // AUDIO
-  // A small fixed pool, unlocked by the first button press, because phones only
-  // let a page play sound on elements a real tap has already started.
+  // The riddle player is unlocked by the first button press, because phones
+  // only let a page play sound on elements a real tap has already started.
   // ---------------------------------------------------------------------------
-  const sfxPool = [new Audio(), new Audio()];
   const clueAudio = new Audio();
-  let sfxTurn = 0;
   let audioUnlocked = false;
 
   function silentWavUrl() {
@@ -368,11 +356,8 @@
     if (audioUnlocked) return;
     audioUnlocked = true;
     soundContext();
-    const url = silentWavUrl();
-    sfxPool.concat(clueAudio).forEach((el) => {
-      el.src = url;
-      el.play().catch(() => {});
-    });
+    clueAudio.src = silentWavUrl();
+    clueAudio.play().catch(() => {});
   }
 
   let audioCtx = null;
@@ -407,60 +392,24 @@
     });
   }
 
-  function playItemSound(item) {
-    if (!ITEM_SOUNDS) return;
-    const el = sfxPool[sfxTurn++ % sfxPool.length];
-    el.src = ASSET_BASE + encodeURIComponent(item.id + '.mp3');
-    el.currentTime = 0;
-    el.play().catch(() => {});
-  }
-
-  // Fetch the current level's item sounds ahead of time so the first play is
-  // instant. Replaces the old boot-time warm-up of every sound in the game.
-  function preloadLevelSounds() {
-    const level = LEVELS[state.levelIndex];
-    if (!ITEM_SOUNDS || !level) return;
-    level.items.forEach((item, i) => {
-      if (state.found[item.id]) return;
-      setTimeout(() => {
-        fetch(ASSET_BASE + encodeURIComponent(item.id + '.mp3'), { mode: 'no-cors' }).catch(() => {});
-      }, 300 + i * 200);
-    });
-  }
-
   // MPEmbed serves a popup's photo from its media folder under the same file
   // name every time, so asking for it early puts it in the browser's cache.
   const preloaded = {};
   function preloadLevelPhotos() {
     const level = LEVELS[state.levelIndex];
-    if (!PRELOAD_PHOTOS || !level) return;
+    if (!level) return;
     level.items.forEach((item, i) => {
       if (state.found[item.id] || preloaded[item.id]) return;
-      setTimeout(() => {
-        const img = new Image();
-        img.onload = () => { preloaded[item.id] = 'ready'; };
-        img.onerror = () => { preloaded[item.id] = 'failed'; };
-        preloaded[item.id] = 'loading';
-        img.src = state.photoBase + (item.photo || item.id + '.jpeg');
-      }, 400 + i * 150);
+      preloaded[item.id] = true;
+      setTimeout(() => { new Image().src = state.photoBase + (item.photo || item.id + '.jpeg'); }, 400 + i * 150);
     });
   }
 
-  // Reports how long a popup's photo took to appear once the popup opened.
-  function timePopupPhoto(img, item) {
-    if (!img) return;
-    const src = img.getAttribute('src') || '';
+  // Keeps the media folder's address in step with what MPEmbed actually uses.
+  function notePhotoFolder(img) {
+    const src = img ? img.getAttribute('src') || '' : '';
     const cut = src.lastIndexOf('/');
     if (cut > 0) state.photoBase = src.slice(0, cut + 1);
-    const started = performance.now();
-    const report = () => {
-      const ms = Math.round(performance.now() - started);
-      const note = 'photo ready in ' + ms + ' ms (preload ' + (PRELOAD_PHOTOS ? (item && preloaded[item.id]) || 'not requested' : 'off') + ')';
-      console.log('Eye Spy 3D: ' + (item ? item.name : src) + ', ' + note);
-      if (DEBUG_TIMING) toast(note);
-    };
-    if (img.complete && img.naturalWidth > 0) report();
-    else img.addEventListener('load', report, { once: true });
   }
 
   function mpeClueElement() {
@@ -505,14 +454,11 @@
   // STYLES
   // Plain sans-serif on solid panels, for readability over a busy scene.
   // Three palettes share one stylesheet (see THEMES). Charcoal with warm
-  // yellow is the default; add &es3dtheme=k, &es3dtheme=e or &es3dtheme=d to the page
+  // yellow is the default; add &es3dtheme=k or &es3dtheme=e to the page
   // address to see the others.
   // ---------------------------------------------------------------------------
   const CSS = `
     * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
-
-    /* Removes the "CSS TEST" badge left over from the Custom CSS field test. */
-    body::after { content: none !important; display: none !important; }
 
     /* A V3031 copy of this script may still be loaded by MPEmbed's saved
        settings. Its screens must never show alongside this version's. */
@@ -530,7 +476,7 @@
     div[style*="bottom: 0px"] [class*="close"], div[style*="bottom: 0"] [class*="close"], .mpe-media-close,
     .pano-media, .mpe-media-overlay, .pano-media [class*="close"], .mpe-media-overlay [class*="close"],
     #panoPlayer .audioplayer, #panoPlayer .audiopalyerpano, #panoPlayer .closetab,
-    #panoPlayer i.closetab, #panoPlayer i[class*="times-circle"] {
+    #panoPlayer i.closetab, #panoPlayer i[class*="times-circle"], #panoPlayer [class*="close"] {
       display: none !important; opacity: 0 !important; position: absolute !important; left: -9999px !important;
       pointer-events: none !important; visibility: hidden !important;
     }
@@ -558,8 +504,16 @@
       --es-sun: #f2c230; --es-night: #2b070c; --es-cream: #fbf3dc;
       --es-panel: #f2c230; --es-panel-soft: #f7d566; --es-text: #2b070c; --es-accent: #2b070c; --es-on-accent: #f2c230;
       --es-edge: #2b070c; --es-line: rgba(43,7,12,0.4); --es-track: rgba(43,7,12,0.18);
-      font-size: clamp(15px, 0.62vw + 9px, 30px); color: var(--es-text);
+      font-size: calc(clamp(15px, 0.62vw + 9px, 30px) * var(--es-scale, 1)); color: var(--es-text);
     }
+    html.es3d-text-l .es3d { --es-scale: 1.2; }
+    html.es3d-text-xl .es3d { --es-scale: 1.45; }
+    html.es3d-contrast .es3d {
+      --es-panel: #000; --es-panel-soft: #1c1c1c; --es-text: #fff; --es-on-accent: #000;
+      --es-edge: #fff; --es-line: #fff; --es-track: #666;
+    }
+    html.es3d-contrast .es3d-card { border-width: 3px; }
+    html.es3d-grey { filter: grayscale(1); }
     .es3d.es3d-theme-e { --es-sun: #ccff00; }
     .es3d.es3d-theme-k { --es-sun: #c4e82c; }
     .es3d.es3d-theme-b, .es3d.es3d-theme-e, .es3d.es3d-theme-k {
@@ -662,7 +616,7 @@
       width: 1.5em; height: 1.5em; flex: 0 0 auto; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
       background: var(--es-on-accent); color: var(--es-accent); font-weight: 900; line-height: 1;
     }
-    .es3d-tick.es3d-on-yellow { background: var(--es-accent); color: var(--es-on-accent); }
+    .es3d-tick.es3d-on-panel { background: var(--es-accent); color: var(--es-on-accent); }
 
     #es3d-controls {
       position: absolute; left: 50%; bottom: max(12px, env(safe-area-inset-bottom)); transform: translateX(-50%);
@@ -681,6 +635,17 @@
       color: var(--es-text); background: var(--es-panel); border: 2px solid var(--es-edge); border-radius: 50%; box-shadow: 0 4px 14px rgba(0,0,0,0.5);
     }
     #es3d-corner button:hover, #es3d-corner button.es3d-muted { background: var(--es-accent); color: var(--es-on-accent); border-color: var(--es-on-accent); }
+
+    #es3d-return {
+      position: fixed; left: 50%; bottom: 6.6em; transform: translateX(-50%); z-index: 9700; display: flex; align-items: center; gap: 0.6em;
+      padding: 0.55em 1.1em; font-size: 1.1em; font-weight: 800; color: var(--es-on-accent); background: var(--es-accent);
+      border: 2px solid var(--es-on-accent); border-radius: 2em; box-shadow: 0 4px 18px rgba(0,0,0,0.55); white-space: nowrap;
+    }
+    #es3d-return b {
+      min-width: 1.7em; height: 1.7em; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
+      background: var(--es-on-accent); color: var(--es-accent);
+    }
+    body.es3d-popup-open #es3d-return { opacity: 0; pointer-events: none !important; }
 
     #es3d-panel {
       position: fixed; inset: 0; z-index: 9500; display: flex; align-items: center; justify-content: center; padding: 16px;
@@ -733,7 +698,7 @@
     .es3d-consent input { width: 1.3em; height: 1.3em; margin-top: 0.1em; flex: 0 0 auto; accent-color: var(--es-accent); }
 
     #es3d-toast {
-      position: fixed; left: 50%; bottom: 7em; transform: translateX(-50%); z-index: 9600; max-width: calc(100vw - 32px);
+      position: fixed; left: 50%; bottom: 10.5em; transform: translateX(-50%); z-index: 9600; max-width: calc(100vw - 32px);
       padding: 0.6em 1.2em; font-size: 1.15em; font-weight: 700; color: var(--es-on-accent); background: var(--es-accent);
       border: 2px solid var(--es-on-accent); border-radius: 0.4em; box-shadow: 0 4px 18px rgba(0,0,0,0.5);
       opacity: 0; pointer-events: none; transition: opacity 0.25s ease; text-align: center;
@@ -756,6 +721,8 @@
       #es3d-controls { gap: 0; }
       #es3d-controls button { min-width: 3.6em; padding: 0.35em 0.2em; }
       #es3d-corner { bottom: 5.8em; }
+      #es3d-return { bottom: 10.5em; }
+      #es3d-toast { bottom: 14.5em; }
     }
   `;
 
@@ -777,7 +744,8 @@
     more: '<path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3.5"/>',
     undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/>',
     soundOff: '<path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l5 6M22 9l-5 6"/>',
-    help: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>'
+    help: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>',
+    access: '<circle cx="12" cy="4.5" r="1.7"/><path d="M5 9h14M12 9v6M12 15l-3.5 5.5M12 15l3.5 5.5"/>'
   };
 
   function icon(name) {
@@ -800,16 +768,14 @@
 
   // The browser tab's icon and name, when the game is opened on its own page.
   // (Embedded in another site, the tab shows that site's icon instead.)
-  const FAVICON = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='#1a1714'/>" +
-    "<path d='M6 32c8-13 17-19 26-19s18 6 26 19c-8 13-17 19-26 19S14 45 6 32z' fill='#f2c230'/>" +
-    "<circle cx='32' cy='32' r='11' fill='#1a1714'/><circle cx='36' cy='28' r='4' fill='#fbf3dc'/></svg>";
+  const TAB_ICON = 'data:image/png;base64,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';
 
   function setTabIcon() {
     document.querySelectorAll('link[rel~="icon"], link[rel="apple-touch-icon"]').forEach((node) => node.remove());
     const link = document.createElement('link');
     link.rel = 'icon';
-    link.type = 'image/svg+xml';
-    link.href = 'data:image/svg+xml,' + encodeURIComponent(FAVICON);
+    link.type = 'image/png';
+    link.href = TAB_ICON;
     document.head.appendChild(link);
     document.title = 'Eye Spy 3D';
   }
@@ -847,7 +813,11 @@
     ui.hud.classList.add('es3d-hidden');
     ui.panel = el('div', 'es3d-panel', '<div id="es3d-panel-card" class="es3d-card"><button id="es3d-panel-close" type="button" aria-label="Close">&times;</button><div id="es3d-panel-body"></div><div id="es3d-more" class="es3d-hidden"><span>More below &#8595;</span></div></div>');
     ui.panel.classList.add('es3d-hidden');
-    ui.corner = el('div', 'es3d-corner', '<button type="button" data-corner="return" class="es3d-hidden">' + icon('undo') + '</button>' +
+    ui.returnPill = el('button', 'es3d-return');
+    ui.returnPill.type = 'button';
+    ui.returnPill.classList.add('es3d-hidden');
+    ui.returnPill.addEventListener('click', () => { const level = returnTarget; hideReturnPill(); goToLevel(level); });
+    ui.corner = el('div', 'es3d-corner', '<button type="button" data-corner="access" title="Display settings" aria-label="Display settings">' + icon('access') + '</button>' +
       '<button type="button" data-corner="mute"></button>' +
       '<button type="button" data-corner="help" title="How to play" aria-label="How to play">' + icon('help') + '</button>');
     ui.corner.classList.add('es3d-hidden');
@@ -864,7 +834,7 @@
       const btn = e.target.closest('button[data-corner]');
       if (!btn) return;
       if (btn.dataset.corner === 'mute') setMuted(!state.muted);
-      else if (btn.dataset.corner === 'return') goToLevel(state.returnLevel);
+      else if (btn.dataset.corner === 'access') showAccessPanel();
       else showHelpPanel();
     });
     // A "?" slot opens the hints for that object.
@@ -872,6 +842,7 @@
       const slot = e.target.closest('button[data-slot]');
       if (slot) showHintPanel(Number(slot.dataset.slot));
     });
+    applyAccess();
     setMuted(state.muted);
     setInterval(applyMute, 700);
     document.getElementById('es3d-panel-close').addEventListener('click', closePanel);
@@ -1027,7 +998,7 @@
   // intro video. MPEmbed makes new audio elements as the player moves, so
   // this is re-applied on a timer.
   function applyMute() {
-    sfxPool.concat(clueAudio).forEach((node) => { node.muted = state.muted; });
+    clueAudio.muted = state.muted;
     document.querySelectorAll('audio, video').forEach((node) => { node.muted = state.muted; });
     try {
       if (introPlayer && introPlayer.mute) { if (state.muted) introPlayer.mute(); else introPlayer.unMute(); }
@@ -1107,13 +1078,6 @@
     ui.hud.classList.toggle('es3d-hidden', !inGame);
     ui.prompt.classList.toggle('es3d-hidden', state.phase !== 'lobby');
     ui.corner.classList.toggle('es3d-hidden', !inGame && state.phase !== 'lobby');
-    const back = ui.corner.querySelector('[data-corner="return"]');
-    const canReturn = inGame && state.returnLevel !== null && state.returnLevel !== state.levelIndex;
-    back.classList.toggle('es3d-hidden', !canReturn);
-    if (canReturn) {
-      back.title = 'Return to level ' + (state.returnLevel + 1);
-      back.setAttribute('aria-label', back.title);
-    }
     if (!inGame) return;
 
     const level = LEVELS[state.levelIndex];
@@ -1194,7 +1158,7 @@
     const cards = level.items.map((item, i) => {
       const title = esc(item.riddleWords);
       if (state.found[item.id]) {
-        return '<div class="es3d-hint-card es3d-found"><div class="es3d-hint-title">' + title + '<span class="es3d-tick es3d-on-yellow" aria-label="found">&#10003;</span></div></div>';
+        return '<div class="es3d-hint-card es3d-found"><div class="es3d-hint-title">' + title + '<span class="es3d-tick es3d-on-panel" aria-label="found">&#10003;</span></div></div>';
       }
       const steps = hintSteps(item);
       const stage = Math.min(state.hintStage[item.id] || 0, steps.length);
@@ -1229,17 +1193,64 @@
     openPanel(`
       <h2>How to play</h2>
       <ol>
-        <li>At each stop a riddle plays. It names several objects hidden around you.</li>
-        <li>Look around and click each object when you spot it.</li>
-        <li>Find them all and you move on to the next stop. There are ${LEVELS.length} stops.</li>
+        <li>Enter a player name if you want to be on the leaderboard, then press Start.</li>
+        <li>Watch the intro. When it ends you are taken to the first stop.</li>
+        <li>At each stop a riddle plays. It names several objects hidden around you. You stay on the spot and look around from there.</li>
+        <li>Click each object when you spot it. A photo opens to confirm the find. Close it with the big X.</li>
+        <li>Find them all and you move on to the next stop. There are ${LEVELS.length} stops and ${TOTAL_ITEMS} objects.</li>
+        <li>Stuck? Use Hints, or Skip and come back later. Your progress is saved on this device.</li>
       </ol>
+      <h3>Looking around</h3>
+      <p><b>Mouse:</b> click and drag to look around, scroll to zoom.<br>
+        <b>Keyboard:</b> A and D or J and L (or the left and right arrows) turn you, I and K look up and down.<br>
+        <b>Touch:</b> swipe to look around, pinch to zoom.</p>
       <h3>The buttons</h3>
-      <p><b>Riddle</b> plays the riddle again. <b>Hints</b> gives up to three hints for each object, or click a <b>?</b> at the top. <b>Found</b> shows everything you have found and lets you jump between stops. <b>Back</b> and <b>Skip</b> move a stop at a time. The round speaker button turns all sound on or off. After jumping to another stop from <b>Found</b>, a round arrow button takes you back.</p>
+      <p><b>Riddle</b> plays the riddle again. <b>Hints</b> gives up to three hints for each object, or click a <b>?</b> at the top. <b>Found</b> shows everything you have found and lets you jump between stops. <b>Back</b> and <b>Skip</b> move a stop at a time. <b>Share</b> sends the game to a friend.</p>
+      <p>On the right, the round buttons open the display settings (text size, contrast, black and white), turn all sound on or off, and open this page.</p>
       <button class="es3d-btn" type="button" id="es3d-rewatch">Watch the intro again</button>`);
     document.getElementById('es3d-rewatch').addEventListener('click', () => {
       closePanel();
       clueAudio.pause();
       playIntroVideo(() => {});
+    });
+  }
+
+  // --- DISPLAY SETTINGS ---
+  // Text size, high contrast and black and white. Kept on this device.
+  const ACCESS_KEY = 'es3d_display';
+  const access = (() => {
+    try { return Object.assign({ text: 'm', contrast: false, grey: false }, JSON.parse(localStorage.getItem(ACCESS_KEY) || '{}')); } catch (e) { return { text: 'm', contrast: false, grey: false }; }
+  })();
+
+  function applyAccess() {
+    const root = document.documentElement.classList;
+    root.toggle('es3d-text-l', access.text === 'l');
+    root.toggle('es3d-text-xl', access.text === 'xl');
+    root.toggle('es3d-contrast', !!access.contrast);
+    root.toggle('es3d-grey', !!access.grey);
+    try { localStorage.setItem(ACCESS_KEY, JSON.stringify(access)); } catch (e) {}
+  }
+
+  function showAccessPanel() {
+    const choice = (key, value, label) =>
+      '<button class="es3d-btn es3d-small ' + (access[key] === value ? '' : 'es3d-quiet') + '" type="button" data-set="' + key + '" data-value="' + value + '" aria-pressed="' + (access[key] === value) + '">' + label + '</button> ';
+    openPanel(`
+      <h2>Display settings</h2>
+      <h3>Text size</h3>
+      <p>${choice('text', 'm', 'Standard')}${choice('text', 'l', 'Large')}${choice('text', 'xl', 'Extra large')}</p>
+      <h3>High contrast</h3>
+      <p class="es3d-note">Black panels, white text and heavier outlines.</p>
+      <p>${choice('contrast', false, 'Off')}${choice('contrast', true, 'On')}</p>
+      <h3>Black and white</h3>
+      <p class="es3d-note">Removes colour from the whole screen, including the store.</p>
+      <p>${choice('grey', false, 'Off')}${choice('grey', true, 'On')}</p>`);
+    document.getElementById('es3d-panel-body').querySelectorAll('button[data-set]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const value = btn.dataset.value;
+        access[btn.dataset.set] = value === 'true' ? true : value === 'false' ? false : value;
+        applyAccess();
+        showAccessPanel();
+      });
     });
   }
 
@@ -1438,7 +1449,7 @@
   }
 
   function arriveAtLevel(index, returnTo) {
-    state.returnLevel = typeof returnTo === 'number' && returnTo !== index ? returnTo : null;
+    if (typeof returnTo === 'number' && returnTo !== index) showReturnPill(returnTo); else hideReturnPill();
     state.levelIndex = index;
     state.phase = index >= LEVELS.length ? 'end' : 'playing';
     state.advancePending = false;
@@ -1451,10 +1462,34 @@
       submitScore();
       showEndPanel();
     } else {
-      preloadLevelSounds();
       preloadLevelPhotos();
       watchClueAudio();
     }
+  }
+
+  // After a jump from the Found list, a "Return to level N" button appears at
+  // the bottom of the screen for a few seconds, in case the jump was a mistake.
+  const RETURN_SECONDS = 3;
+  let returnTarget = null;
+  let returnTimer = null;
+
+  function hideReturnPill() {
+    clearInterval(returnTimer);
+    returnTarget = null;
+    ui.returnPill.classList.add('es3d-hidden');
+  }
+
+  function showReturnPill(level) {
+    hideReturnPill();
+    returnTarget = level;
+    let left = RETURN_SECONDS;
+    const draw = () => { ui.returnPill.innerHTML = icon('undo') + '<span>Return to level ' + (level + 1) + '</span><b>' + left + '</b>'; };
+    draw();
+    ui.returnPill.classList.remove('es3d-hidden');
+    returnTimer = setInterval(() => {
+      left--;
+      if (left <= 0) hideReturnPill(); else draw();
+    }, 1000);
   }
 
   // returnTo: the level to offer a way back to (set by jumps from the Found list).
@@ -1592,7 +1627,6 @@
     }
     if (state.found[item.id]) return;
     state.found[item.id] = true;
-    playItemSound(item);
     playFoundSound();
     if (isLevelComplete(level)) state.advancePending = true;
     if (foundCount() === TOTAL_ITEMS) state.finished = true;
@@ -1654,8 +1688,7 @@
         document.body.classList.toggle('es3d-show-audio-popup', isAudioClue);
         if (labelEl) stylePopup(overlay, labelEl, isAudioClue);
         if (!isAudioClue) {
-          const level = LEVELS[state.levelIndex];
-          timePopupPhoto(img, level ? matchItem(level, labelEl ? labelEl.textContent : '', img ? img.getAttribute('src') : '') : null);
+          notePhotoFolder(img);
           registerFind(labelEl ? labelEl.textContent : '', img ? img.getAttribute('src') : '');
         }
       });
@@ -1679,28 +1712,6 @@
       requestAnimationFrame(() => { scheduled = false; handleOverlayState(); });
     }).observe(overlay, { attributes: true, attributeFilter: ['style', 'class'], childList: true, subtree: true, characterData: true });
     handleOverlayState();
-  }
-
-  // Hides the close icon on MPEmbed's per-pano audio player. The audio itself
-  // must keep playing, it is the level's clue.
-  function attachPanoAudioChromeHider() {
-    const panoPlayer = document.getElementById('panoPlayer');
-    if (!panoPlayer) { setTimeout(attachPanoAudioChromeHider, 250); return; }
-    let scheduled = false;
-    const hideChrome = () => {
-      if (scheduled) return;
-      scheduled = true;
-      requestAnimationFrame(() => {
-        scheduled = false;
-        panoPlayer.querySelectorAll('.closetab, i[class*="times-circle"], [class*="close"]').forEach((node) => {
-          node.style.setProperty('display', 'none', 'important');
-          node.style.setProperty('opacity', '0', 'important');
-          node.style.setProperty('pointer-events', 'none', 'important');
-        });
-      });
-    };
-    new MutationObserver(hideChrome).observe(panoPlayer, { childList: true, subtree: true });
-    hideChrome();
   }
 
   // ---------------------------------------------------------------------------
@@ -1760,8 +1771,7 @@
     allSweeps = Object.keys(collection);
     sdk.Sweep.current.subscribe((sweep) => onSweepChanged(sweep && (sweep.sid || sweep.id)));
     attachOverlayObserver();
-    attachPanoAudioChromeHider();
-    setInterval(steadyCursor, 250);
+    setInterval(steadyCursor, 400);
     state.tourReady = true;
     checkReadyToReveal();
   }
