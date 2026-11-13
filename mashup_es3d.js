@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4024)
+// EYE SPY 3D - ENGINE (V4025)
 // Copyright (c) 2026 ABM visual, Adelaide, South Australia. All rights reserved.
 // Not open source. No part of this game, its code, riddles, hints, design, text,
 // audio or artwork may be copied, modified or reused without written permission.
@@ -26,7 +26,7 @@
     return;
   }
 
-  const VERSION = 'V4024';
+  const VERSION = 'V4025';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -40,7 +40,7 @@
   const ASSET_BASE = 'https://cdn.jsdelivr.net/gh/ABMvisual/eyespy3d@main/';
   // Web app URL of backend/leaderboard.gs once deployed. While empty, scores
   // are kept on this device only and stage-two sign-ups are switched off.
-  const BACKEND_URL = '';
+  const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbyC6M1AOGc_zlOsFhreSPAwyzKQN4vqWRnuI1hA1wUG6_FR8iEVwBGC4JSt6Ek2dJ1xfA/exec';
   // Clicking a riddle disc on the floor: true replays the riddle, false does
   // nothing (the Riddle button is then the only way to hear it again). The
   // discs' clickable area is a square, so stray clicks on the corners are common.
