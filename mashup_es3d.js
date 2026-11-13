@@ -1,5 +1,10 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4019)
+// EYE SPY 3D - ENGINE (V4023)
+// Copyright (c) 2026 ABM visual, Adelaide, South Australia. All rights reserved.
+// Not open source. No part of this game, its code, riddles, hints, design, text,
+// audio or artwork may be copied, modified or reused without written permission.
+// See the LICENSE file in this repository.
+//
 // Rewrite of V3031. Still loaded into MPEmbed as a custom script, still uses
 // MPEmbed's popups and per-pano clue audio, but the game itself (levels,
 // progress, hints, skipping, scores) now lives here, with its own HUD.
@@ -21,7 +26,7 @@
     return;
   }
 
-  const VERSION = 'V4019';
+  const VERSION = 'V4023';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -874,7 +879,7 @@
     ui.returnPill.type = 'button';
     ui.returnPill.classList.add('es3d-hidden');
     ui.returnPill.addEventListener('click', () => { const level = returnTarget; hideReturnPill(); goToLevel(level); });
-    ui.corner = el('div', 'es3d-corner', '<button type="button" data-corner="access" title="Display settings" aria-label="Display settings">' + icon('access') + '</button>' +
+    ui.corner = el('div', 'es3d-corner', '<button type="button" data-corner="access" title="Accessibility settings" aria-label="Accessibility settings">' + icon('access') + '</button>' +
       '<button type="button" data-corner="mute"></button>' +
       '<button type="button" data-corner="help" title="How to play" aria-label="How to play">' + icon('help') + '</button>');
     ui.corner.classList.add('es3d-hidden');
@@ -1294,28 +1299,28 @@
   function showHelpPanel() {
     const controls = [
       ['mouse', 'Mouse', 'Click and drag to look around. Scroll to zoom.'],
-      ['keyboard', 'Keyboard', 'A and D, J and L, or the left and right arrows turn you. I and K look up and down.'],
+      ['keyboard', 'Keyboard', 'J and L pan left and right. I and K pan up and down.'],
       ['touch', 'Touch', 'Swipe to look around. Pinch to zoom.']
     ];
     const steps = [
-      ['Goal', 'Decipher the clues to find all the hidden objects.'],
-      ['Navigate', 'Drag the screen to look around. Click on an object if you think it is what the clue is talking about.'],
-      ['Investigate', 'Pinch or scroll to zoom in and out. Things can be cleverly hidden in plain sight, so if an object looks relevant to your clue, give it a click.'],
-      ['Decipher', 'Missed the audio clue? It is written at the top of the screen, and you can always look down to read it on the floor. Read carefully: the clues hint at the specific objects you need to find.'],
-      ['Unlock', 'Finding every object at a stop unlocks the next location and your next set of clues. You can skip ahead, but only players who find everything rank on the leaderboard.']
+      ['Listen', 'Each riddle is read aloud and written at the top of the screen. You can also look down and read it on the floor. To hear it again, press Riddle in the bar at the bottom of the screen.'],
+      ['Find', 'If an object looks like what you think the riddle describes, click or tap it. You\u2019ll receive a popup notification every time you correctly identify and find an object.'],
+      ['Stuck?', 'Press Hints for up to three hints per object. Hints point you closer, but never find anything for you.'],
+      ['Move on', 'Finding everything in a level unlocks the next one. You can skip ahead or go back, but only players who find all ' + TOTAL_ITEMS + ' have completed the game.'],
+      ['Accessibility', 'We want as many people as possible to play. Accessibility settings offer larger text, high contrast, black and white, a dyslexia-friendly typeface and reduced motion. Every riddle is written as well as spoken, and sound can be switched off at any time.']
     ];
     const buttons = [
       ['riddle', 'Riddle', 'Plays the riddle again.'],
       ['hints', 'Hints', 'Up to three hints for each object. You can also click a ? at the top.'],
-      ['list', 'Found', 'Everything you have found, with a way to jump between stops.'],
-      ['back', 'Back and Skip', 'Move one stop at a time.'],
+      ['list', 'Found', 'Everything you have found, with a way to jump between levels.'],
+      ['back', 'Back and Skip', 'Move one level at a time.'],
       ['share', 'Share', 'Send the game to a friend.'],
-      ['access', 'Display', 'Text size, high contrast, black and white, easier-reading text and reduced motion.'],
+      ['access', 'Accessibility', 'Text size, high contrast, black and white, easier-reading text and reduced motion.'],
       ['soundOff', 'Sound', 'Turns all sound on or off.']
     ];
     openPanel(`
       <h2 class="es3d-help-title">Eye Spy 3D</h2>
-      <p class="es3d-help-intro">A hidden-object hunt inside a real antique store. At each of ${LEVELS.length} stops a riddle plays, naming objects hidden somewhere around you. You stand on the spot, look around, and click each one you find. There are ${TOTAL_ITEMS} objects in all.</p>
+      <p class="es3d-help-intro">Eye Spy 3D is a hidden-object game set inside a real antique store. There are ${LEVELS.length} levels, each with its own riddle and its own objects to find, ${TOTAL_ITEMS} in all. You\u2019re locked in position at each level, so the hunt is all about looking. Play the levels in order or jump around. The fastest player to find every object takes the top spot on the leaderboard.</p>
       <h3>Controls</h3>
       <div class="es3d-help-grid">
         ${controls.map(([iconName, title, text]) => '<div class="es3d-help-card">' + icon(iconName) + '<b>' + title + '</b>' + text + '</div>').join('')}
@@ -1340,6 +1345,13 @@
     try { return Object.assign({ text: 'm', contrast: false, grey: false, dyslexia: false, still: false }, JSON.parse(localStorage.getItem(ACCESS_KEY) || '{}')); } catch (e) { return { text: 'm', contrast: false, grey: false, dyslexia: false, still: false }; }
   })();
 
+  // Reduced motion: chosen here, or already switched on in the device's own
+  // settings.
+  function reducedMotion() {
+    if (access.still) return true;
+    try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; }
+  }
+
   function applyAccess() {
     const root = document.documentElement.classList;
     root.toggle('es3d-text-l', access.text === 'l');
@@ -1356,7 +1368,7 @@
     const choice = (key, value, label) =>
       '<button class="es3d-btn es3d-small ' + (access[key] === value ? '' : 'es3d-quiet') + '" type="button" data-set="' + key + '" data-value="' + value + '" aria-pressed="' + (access[key] === value) + '">' + label + '</button> ';
     openPanel(`
-      <h2>Display settings</h2>
+      <h2>Accessibility settings</h2>
       <h3>Text size</h3>
       <p>${choice('text', 'm', 'Standard')}${choice('text', 'l', 'Large')}${choice('text', 'xl', 'Extra large')}</p>
       <h3>High contrast</h3>
@@ -1369,7 +1381,7 @@
       <p class="es3d-note">A dyslexia-friendly typeface with wider letter, word and line spacing.</p>
       <p>${choice('dyslexia', false, 'Off')}${choice('dyslexia', true, 'On')}</p>
       <h3>Reduce motion</h3>
-      <p class="es3d-note">Turns off fades and moving backgrounds.</p>
+      <p class="es3d-note">Fades between levels instead of flying through the store, and turns off panel fades.</p>
       <p>${choice('still', false, 'Off')}${choice('still', true, 'On')}</p>`);
     document.getElementById('es3d-panel-body').querySelectorAll('button[data-set]').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -1568,8 +1580,12 @@
   async function moveToSweep(sweepId) {
     await sdk.Sweep.enable(sweepId).catch(() => {});
     if (state.currentSweep === sweepId) return;
+    // With reduced motion on, the view fades to the next level instead of
+    // flying through the store.
+    const T = sdk.Sweep.Transition;
+    const gentle = reducedMotion() ? (T.FADEOUT || T.INSTANT) : T.FLY;
     try {
-      await sdk.Sweep.moveTo(sweepId, { transition: sdk.Sweep.Transition.FLY });
+      await sdk.Sweep.moveTo(sweepId, { transition: gentle });
     } catch (flyError) {
       await sdk.Sweep.moveTo(sweepId, { transition: sdk.Sweep.Transition.INSTANT });
     }
