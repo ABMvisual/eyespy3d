@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4021)
+// EYE SPY 3D - ENGINE (V4022)
 // Copyright (c) 2026 ABM visual, Adelaide, South Australia. All rights reserved.
 // Not open source. No part of this game, its code, riddles, hints, design, text,
 // audio or artwork may be copied, modified or reused without written permission.
@@ -26,7 +26,7 @@
     return;
   }
 
-  const VERSION = 'V4021';
+  const VERSION = 'V4022';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -559,7 +559,6 @@
       letter-spacing: 0.04em; word-spacing: 0.14em;
     }
     html.es3d-dyslexia .es3d p, html.es3d-dyslexia #es3d-riddle, html.es3d-dyslexia .es3d-hint, html.es3d-dyslexia .es3d-help-row { line-height: 1.7 !important; }
-    html.es3d-still .es3d, html.es3d-still .es3d * { animation: none !important; transition: none !important; }
     @media (prefers-reduced-motion: reduce) { .es3d, .es3d * { animation: none !important; transition: none !important; } }
     .es3d button:focus-visible, .es3d a:focus-visible, .es3d input:focus-visible, .es3d textarea:focus-visible {
       outline: 3px solid var(--es-sun); outline-offset: 2px;
@@ -1307,7 +1306,7 @@
       ['Find', 'If an object looks like what you think the riddle describes, click or tap it. You\u2019ll receive a popup notification every time you correctly identify and find an object.'],
       ['Stuck?', 'Press Hints for up to three hints per object. Hints point you closer, but never find anything for you.'],
       ['Move on', 'Finding everything in a level unlocks the next one. You can skip ahead or go back, but only players who find all ' + TOTAL_ITEMS + ' have completed the game.'],
-      ['Accessibility', 'We want as many people as possible to play. Accessibility settings offer larger text, high contrast, black and white, a dyslexia-friendly typeface and reduced motion. Every riddle is written as well as spoken, and sound can be switched off at any time.']
+      ['Accessibility', 'We want as many people as possible to play. Accessibility settings offer larger text, high contrast, black and white, and a dyslexia-friendly typeface. Every riddle is written as well as spoken, and sound can be switched off at any time.']
     ];
     const buttons = [
       ['riddle', 'Riddle', 'Plays the riddle again.'],
@@ -1315,7 +1314,7 @@
       ['list', 'Found', 'Everything you have found, with a way to jump between levels.'],
       ['back', 'Back and Skip', 'Move one level at a time.'],
       ['share', 'Share', 'Send the game to a friend.'],
-      ['access', 'Accessibility', 'Text size, high contrast, black and white, easier-reading text and reduced motion.'],
+      ['access', 'Accessibility', 'Text size, high contrast, black and white and easier-reading text.'],
       ['soundOff', 'Sound', 'Turns all sound on or off.']
     ];
     openPanel(`
@@ -1338,11 +1337,11 @@
   }
 
   // --- DISPLAY SETTINGS ---
-  // Text size, high contrast, black and white, easier-reading text and
-  // reduced motion. Kept on this device.
+  // Text size, high contrast, black and white and easier-reading text.
+  // Kept on this device.
   const ACCESS_KEY = 'es3d_display';
   const access = (() => {
-    try { return Object.assign({ text: 'm', contrast: false, grey: false, dyslexia: false, still: false }, JSON.parse(localStorage.getItem(ACCESS_KEY) || '{}')); } catch (e) { return { text: 'm', contrast: false, grey: false, dyslexia: false, still: false }; }
+    try { return Object.assign({ text: 'm', contrast: false, grey: false, dyslexia: false }, JSON.parse(localStorage.getItem(ACCESS_KEY) || '{}')); } catch (e) { return { text: 'm', contrast: false, grey: false, dyslexia: false }; }
   })();
 
   function applyAccess() {
@@ -1352,7 +1351,6 @@
     root.toggle('es3d-contrast', !!access.contrast);
     root.toggle('es3d-grey', !!access.grey);
     root.toggle('es3d-dyslexia', !!access.dyslexia);
-    root.toggle('es3d-still', !!access.still);
     if (ui.hud) fitTopPanel();
     try { localStorage.setItem(ACCESS_KEY, JSON.stringify(access)); } catch (e) {}
   }
@@ -1372,10 +1370,7 @@
       <p>${choice('grey', false, 'Off')}${choice('grey', true, 'On')}</p>
       <h3>Easier-reading text</h3>
       <p class="es3d-note">A dyslexia-friendly typeface with wider letter, word and line spacing.</p>
-      <p>${choice('dyslexia', false, 'Off')}${choice('dyslexia', true, 'On')}</p>
-      <h3>Reduce motion</h3>
-      <p class="es3d-note">Turns off fades and moving backgrounds.</p>
-      <p>${choice('still', false, 'Off')}${choice('still', true, 'On')}</p>`);
+      <p>${choice('dyslexia', false, 'Off')}${choice('dyslexia', true, 'On')}</p>`);
     document.getElementById('es3d-panel-body').querySelectorAll('button[data-set]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const value = btn.dataset.value;
