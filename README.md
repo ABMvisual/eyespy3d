@@ -40,3 +40,7 @@ After merging a change into `main`, open `https://purge.jsdelivr.net/gh/ABMvisua
 - **Intro video:** to be replaced (`YOUTUBE_VIDEO_ID`).
 - **Phones:** tall popup images are a first attempt and untested on a real phone.
 - **Multiplayer:** shared rooms so friends in different places can play together and talk, most likely as a Discord Activity.
+
+## Copyright
+
+Copyright (c) 2026 ABM visual. All rights reserved. This repository is public only so the game can be delivered to players; it is not open source. See `LICENSE`.

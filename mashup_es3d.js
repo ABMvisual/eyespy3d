@@ -1,5 +1,10 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4020)
+// EYE SPY 3D - ENGINE (V4021)
+// Copyright (c) 2026 ABM visual, Adelaide, South Australia. All rights reserved.
+// Not open source. No part of this game, its code, riddles, hints, design, text,
+// audio or artwork may be copied, modified or reused without written permission.
+// See the LICENSE file in this repository.
+//
 // Rewrite of V3031. Still loaded into MPEmbed as a custom script, still uses
 // MPEmbed's popups and per-pano clue audio, but the game itself (levels,
 // progress, hints, skipping, scores) now lives here, with its own HUD.
@@ -21,7 +26,7 @@
     return;
   }
 
-  const VERSION = 'V4020';
+  const VERSION = 'V4021';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -874,7 +879,7 @@
     ui.returnPill.type = 'button';
     ui.returnPill.classList.add('es3d-hidden');
     ui.returnPill.addEventListener('click', () => { const level = returnTarget; hideReturnPill(); goToLevel(level); });
-    ui.corner = el('div', 'es3d-corner', '<button type="button" data-corner="access" title="Display settings" aria-label="Display settings">' + icon('access') + '</button>' +
+    ui.corner = el('div', 'es3d-corner', '<button type="button" data-corner="access" title="Accessibility settings" aria-label="Accessibility settings">' + icon('access') + '</button>' +
       '<button type="button" data-corner="mute"></button>' +
       '<button type="button" data-corner="help" title="How to play" aria-label="How to play">' + icon('help') + '</button>');
     ui.corner.classList.add('es3d-hidden');
@@ -1302,7 +1307,7 @@
       ['Find', 'If an object looks like what you think the riddle describes, click or tap it. You\u2019ll receive a popup notification every time you correctly identify and find an object.'],
       ['Stuck?', 'Press Hints for up to three hints per object. Hints point you closer, but never find anything for you.'],
       ['Move on', 'Finding everything in a level unlocks the next one. You can skip ahead or go back, but only players who find all ' + TOTAL_ITEMS + ' have completed the game.'],
-      ['Make it yours', 'Display settings offer larger text, high contrast, black and white, easier-reading text and reduced motion. Sound can be switched off at any time.']
+      ['Accessibility', 'We want as many people as possible to play. Accessibility settings offer larger text, high contrast, black and white, a dyslexia-friendly typeface and reduced motion. Every riddle is written as well as spoken, and sound can be switched off at any time.']
     ];
     const buttons = [
       ['riddle', 'Riddle', 'Plays the riddle again.'],
@@ -1310,7 +1315,7 @@
       ['list', 'Found', 'Everything you have found, with a way to jump between levels.'],
       ['back', 'Back and Skip', 'Move one level at a time.'],
       ['share', 'Share', 'Send the game to a friend.'],
-      ['access', 'Display', 'Text size, high contrast, black and white, easier-reading text and reduced motion.'],
+      ['access', 'Accessibility', 'Text size, high contrast, black and white, easier-reading text and reduced motion.'],
       ['soundOff', 'Sound', 'Turns all sound on or off.']
     ];
     openPanel(`
@@ -1356,7 +1361,7 @@
     const choice = (key, value, label) =>
       '<button class="es3d-btn es3d-small ' + (access[key] === value ? '' : 'es3d-quiet') + '" type="button" data-set="' + key + '" data-value="' + value + '" aria-pressed="' + (access[key] === value) + '">' + label + '</button> ';
     openPanel(`
-      <h2>Display settings</h2>
+      <h2>Accessibility settings</h2>
       <h3>Text size</h3>
       <p>${choice('text', 'm', 'Standard')}${choice('text', 'l', 'Large')}${choice('text', 'xl', 'Extra large')}</p>
       <h3>High contrast</h3>
