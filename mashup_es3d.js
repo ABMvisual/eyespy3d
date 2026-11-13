@@ -1,5 +1,5 @@
 // =============================================================================
-// EYE SPY 3D - ENGINE (V4023)
+// EYE SPY 3D - ENGINE (V4024)
 // Copyright (c) 2026 ABM visual, Adelaide, South Australia. All rights reserved.
 // Not open source. No part of this game, its code, riddles, hints, design, text,
 // audio or artwork may be copied, modified or reused without written permission.
@@ -26,7 +26,7 @@
     return;
   }
 
-  const VERSION = 'V4023';
+  const VERSION = 'V4024';
   console.log('EYE SPY 3D — ' + VERSION + ' loaded');
 
   // ---------------------------------------------------------------------------
@@ -644,7 +644,7 @@
       font-size: 1.2em; line-height: 1.35;
     }
     #es3d-riddle.es3d-collapsed { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #es3d-riddle .es3d-item { font-weight: 800; color: var(--es-accent); }
+    #es3d-riddle .es3d-item { font-weight: 800; color: var(--es-accent); cursor: pointer; text-decoration: none; }
     /* Found words are shown as a solid highlight, like the found pills below. */
     #es3d-riddle .es3d-item.es3d-found {
       background: var(--es-accent); color: var(--es-on-accent); padding: 0.02em 0.3em; border-radius: 0.2em;
@@ -861,7 +861,7 @@
       <div id="es3d-top" class="es3d-card">
         <div id="es3d-status"><span id="es3d-level"></span><span id="es3d-count"></span><span id="es3d-timer">00:00</span></div>
         <div id="es3d-bar"><div id="es3d-bar-fill"></div></div>
-        <button id="es3d-riddle" type="button" aria-label="Riddle, tap to shrink or expand"></button>
+        <button id="es3d-riddle" type="button" aria-label="Riddle. Tap highlighted words for hints, or the rest to shrink or expand"></button>
         <div id="es3d-slots"></div>
       </div>
       <div id="es3d-controls" class="es3d-card">
@@ -909,7 +909,18 @@
     setInterval(applyMute, 700);
     document.getElementById('es3d-panel-close').addEventListener('click', closePanel);
     ui.panel.addEventListener('click', (e) => { if (e.target === ui.panel) closePanel(); });
-    document.getElementById('es3d-riddle').addEventListener('click', (e) => e.currentTarget.classList.toggle('es3d-collapsed'));
+    // Clicking highlighted words opens the hints for that object. Clicking
+    // anywhere else on the riddle shrinks or expands it.
+    document.getElementById('es3d-riddle').addEventListener('click', (e) => {
+      const riddle = e.currentTarget;
+      const words = e.target.closest('.es3d-item');
+      if (words && !riddle.classList.contains('es3d-collapsed')) {
+        const level = LEVELS[state.levelIndex];
+        const index = level ? level.items.findIndex((item) => item.id === words.dataset.item) : -1;
+        if (index >= 0) { showHintPanel(index); return; }
+      }
+      riddle.classList.toggle('es3d-collapsed');
+    });
     document.getElementById('es3d-controls').addEventListener('click', (e) => {
       const btn = e.target.closest('button[data-act]');
       if (!btn || btn.disabled) return;
@@ -1164,7 +1175,7 @@
   // ---------------------------------------------------------------------------
   function riddleHtml(level) {
     return esc(level.riddle).replace(/\{([^|}]+)\|([^}]+)\}/g, (m, id, words) =>
-      '<span class="es3d-item' + (state.found[id] ? ' es3d-found' : '') + '">' + words + '</span>');
+      '<span class="es3d-item' + (state.found[id] ? ' es3d-found' : '') + '" data-item="' + id + '">' + words + '</span>');
   }
 
   function renderHud() {
